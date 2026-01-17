@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createUser } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,18 +31,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log the signup attempt
-    console.log("=== SIGNUP ATTEMPT ===");
+    // Create user in database
+    const { user, error } = await createUser(email, password);
+
+    if (error) {
+      return NextResponse.json({ error }, { status: 400 });
+    }
+
+    // Log successful signup
+    console.log("=== SIGNUP SUCCESS ===");
+    console.log("User ID:", user?.id);
     console.log("Email:", email);
-    console.log("Password:", password);
     console.log("Timestamp:", new Date().toISOString());
     console.log("=====================");
 
-    // Return success response
+    // Return success response (without password)
     return NextResponse.json(
       {
         message: "Signup successful",
-        email: email,
+        user: {
+          id: user?.id,
+          email: user?.email,
+          created_at: user?.created_at,
+        },
       },
       { status: 201 }
     );

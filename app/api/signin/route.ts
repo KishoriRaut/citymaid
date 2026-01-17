@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyUser } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,18 +23,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log the signin attempt
-    console.log("=== SIGNIN ATTEMPT ===");
+    // Verify user credentials
+    const { user, error } = await verifyUser(email, password);
+
+    if (error || !user) {
+      return NextResponse.json({ error: error || "Invalid credentials" }, { status: 401 });
+    }
+
+    // Log successful signin
+    console.log("=== SIGNIN SUCCESS ===");
+    console.log("User ID:", user.id);
     console.log("Email:", email);
-    console.log("Password:", password);
     console.log("Timestamp:", new Date().toISOString());
     console.log("=====================");
 
-    // Return success response
+    // Return success response (without password)
     return NextResponse.json(
       {
         message: "Signin successful",
-        email: email,
+        user: {
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+        },
       },
       { status: 200 }
     );
