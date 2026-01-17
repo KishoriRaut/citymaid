@@ -180,3 +180,107 @@ export async function verifyUser(
     return { user: null, error: "Internal server error" };
   }
 }
+
+// Update user profile
+export async function updateUserProfile(
+  userId: string,
+  updates: { email?: string }
+): Promise<{ user: User | null; error: string | null }> {
+  try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured) {
+      return {
+        user: null,
+        error: "Database is not configured. Please set up Supabase credentials in .env.local",
+      };
+    }
+
+    // Validate email if provided
+    if (updates.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updates.email)) {
+        return { user: null, error: "Invalid email format" };
+      }
+
+      // Check if email is already taken by another user
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("id, email")
+        .eq("email", updates.email)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== "PGRST116") {
+        console.error("Error checking existing email:", checkError);
+        return { user: null, error: "Database error" };
+      }
+
+      if (existingUser && existingUser.id !== userId) {
+        return { user: null, error: "Email is already in use by another account" };
+      }
+    }
+
+    // Build update object
+    const updateData: { email?: string } = {};
+    if (updates.email) {
+      updateData.email = updates.email;
+    }
+
+    // Update user
+    const { data, error } = await supabase
+      .from("users")
+      .update(updateData)
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Database update error:", error);
+      return { user: null, error: `Failed to update profile: ${error.message || "Database error"}` };
+    }
+
+    if (!data) {
+      return { user: null, error: "User not found" };
+    }
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = data;
+    return { user: userWithoutPassword as User, error: null };
+  } catch (error) {
+    console.error("Update user profile error:", error);
+    return { user: null, error: "Internal server error" };
+  }
+}
+
+// Find user by ID
+export async function findUserById(
+  userId: string
+): Promise<{ user: User | null; error: string | null }> {
+  try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured) {
+      return {
+        user: null,
+        error: "Database is not configured. Please set up Supabase credentials in .env.local",
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return { user: null, error: "User not found" };
+      }
+      console.error("Database error:", error);
+      return { user: null, error: "Database error" };
+    }
+
+    return { user: data as User, error: null };
+  } catch (error) {
+    console.error("Find user by ID error:", error);
+    return { user: null, error: "Internal server error" };
+  }
+}

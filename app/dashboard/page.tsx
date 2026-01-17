@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser, clearSession, type User } from "@/lib/session";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -73,10 +74,12 @@ export default function DashboardPage() {
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
             <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                View Profile
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Link href="/profile">
+                <Button variant="outline" className="w-full justify-start">
+                  View Profile
+                </Button>
+              </Link>
+              <Button variant="outline" className="w-full justify-start" disabled>
                 Settings
               </Button>
             </div>
