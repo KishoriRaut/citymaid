@@ -25,8 +25,6 @@ export default function RootLayout({
             <div className="container mx-auto px-4 py-4">
               <nav className="flex items-center justify-between">
                 <div className="text-xl font-bold text-primary">Siscora</div>
-                <div className="flex gap-4">
-                </div>
               </nav>
             </div>
           </header>
