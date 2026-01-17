@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,7 +26,20 @@ export default function RootLayout({
           <header className="border-b">
             <div className="container mx-auto px-4 py-4">
               <nav className="flex items-center justify-between">
-                <div className="text-xl font-bold text-primary">Siscora</div>
+                <Link href="/" className="text-xl font-bold text-primary hover:opacity-80">
+                  Siscora
+                </Link>
+                <div className="flex items-center gap-4">
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                  <Link href="/signup">
+                    <Button size="sm">Sign up</Button>
+                  </Link>
+                </div>
               </nav>
             </div>
           </header>

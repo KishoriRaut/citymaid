@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -40,12 +42,12 @@ export default function LoginPage() {
                 >
                   Password
                 </label>
-                <Link
-                  href="#"
+                <button
+                  type="button"
                   className="text-sm text-primary hover:underline"
                 >
                   Forgot password?
-                </Link>
+                </button>
               </div>
               <input
                 id="password"
@@ -80,7 +82,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
-            <Link href="#" className="font-medium text-primary hover:underline">
+            <Link href="/signup" className="font-medium text-primary hover:underline">
               Sign up
             </Link>
           </div>

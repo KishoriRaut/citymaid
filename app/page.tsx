@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -11,9 +12,11 @@ export default function Home() {
           Building Smart Software Solutions
         </p>
         <div className="pt-4">
-          <Button size="lg" className="text-lg px-8 py-6">
-            Get Started
-          </Button>
+          <Link href="/signup">
+            <Button size="lg" className="text-lg px-8 py-6">
+              Get Started
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
