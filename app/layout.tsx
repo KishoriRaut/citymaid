@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { appConfig } from "@/lib/config";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Siscora - Building Smart Software Solutions",
-  description: "Building Smart Software Solutions",
+  title: `${appConfig.brand.name} - ${appConfig.brand.tagline}`,
+  description: appConfig.brand.description,
 };
 
 export default function RootLayout({
@@ -22,9 +25,24 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <div className="flex min-h-screen flex-col">
           <header className="border-b">
-            <div className="container mx-auto px-4 py-4">
+            <div className="container mx-auto px-4 py-3 sm:py-4">
               <nav className="flex items-center justify-between">
-                <div className="text-xl font-bold text-primary">Siscora</div>
+                <Link href={appConfig.routes.home} className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                  {appConfig.brand.name}
+                </Link>
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <Link
+                    href={appConfig.routes.login}
+                    className="text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 px-2 py-1.5 sm:px-0 sm:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                  >
+                    Sign in
+                  </Link>
+                  <Link href={appConfig.routes.signup}>
+                    <Button size="sm" className="text-xs sm:text-sm min-h-[36px] sm:min-h-0 px-3 sm:px-4">
+                      Sign up
+                    </Button>
+                  </Link>
+                </div>
               </nav>
             </div>
           </header>
@@ -32,7 +50,7 @@ export default function RootLayout({
           <footer className="border-t bg-secondary text-secondary-foreground">
             <div className="container mx-auto px-4 py-6">
               <div className="text-center text-sm">
-                <p>&copy; {new Date().getFullYear()} Siscora. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} {appConfig.brand.name}. All rights reserved.</p>
               </div>
             </div>
           </footer>
