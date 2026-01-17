@@ -2,8 +2,10 @@
  * Validation utilities for the application
  */
 
+import { appConfig } from "./config";
+
 // Email validation regex - defined once for consistency
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_REGEX = appConfig.validation.emailRegex;
 
 /**
  * Validate email format
@@ -15,7 +17,7 @@ export function isValidEmail(email: string): boolean {
 /**
  * Validate password length
  */
-export function isValidPassword(password: string, minLength: number = 8): boolean {
+export function isValidPassword(password: string, minLength: number = appConfig.validation.passwordMinLength): boolean {
   return password.length >= minLength;
 }
 

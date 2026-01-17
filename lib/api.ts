@@ -2,7 +2,9 @@
  * API utility functions with timeout and error handling
  */
 
-const DEFAULT_TIMEOUT = 30000; // 30 seconds - industry standard
+import { appConfig } from "./config";
+
+const DEFAULT_TIMEOUT = appConfig.api.timeout;
 
 interface FetchOptions extends RequestInit {
   timeout?: number;
