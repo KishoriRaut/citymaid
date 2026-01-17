@@ -2,15 +2,28 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [redirectCountdown, setRedirectCountdown] = useState(0);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +38,21 @@ export default function SignUpPage() {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/signup", {
         method: "POST",
@@ -34,20 +62,67 @@ export default function SignUpPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Sign up failed");
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error("Failed to parse response as JSON:", jsonError);
+        setError(`Sign up failed: ${response.status} ${response.statusText}`);
+        setIsLoading(false);
         return;
       }
 
-      setSuccess(data.message || "Account created successfully!");
+      if (!response.ok) {
+        const errorMessage = data?.error || `Sign up failed: ${response.status}`;
+        console.error("Signup API error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorMessage,
+          fullResponse: data,
+        });
+        setError(errorMessage);
+        setIsLoading(false);
+        return;
+      }
+
+      setSuccess(data.message || "Account created successfully! Redirecting to login...");
+      
+      // Store user data in localStorage (optional, for session management)
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
       // Reset form
       setEmail("");
       setPassword("");
       setConfirmPassword("");
+
+      // Show countdown and redirect to login page after successful signup
+      setRedirectCountdown(3);
+      
+      // Clear any existing interval
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+      
+      countdownIntervalRef.current = setInterval(() => {
+        setRedirectCountdown((prev) => {
+          const newCount = prev - 1;
+          if (newCount <= 0) {
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+              countdownIntervalRef.current = null;
+            }
+            router.push("/login");
+            return 0;
+          }
+          return newCount;
+        });
+      }, 1000);
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      console.error("Signup request failed:", err);
+      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -158,13 +233,46 @@ export default function SignUpPage() {
             </div>
 
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
+              <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive flex items-start gap-2">
+                <svg
+                  className="h-5 w-5 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>{error}</span>
               </div>
             )}
             {success && (
-              <div className="rounded-md bg-accent/10 p-3 text-sm text-accent-foreground">
-                {success}
+              <div className="rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200 flex items-start gap-3">
+                <svg
+                  className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600 dark:text-green-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="font-medium">{success}</p>
+                  {redirectCountdown > 0 && (
+                    <p className="mt-1 text-xs text-green-700 dark:text-green-300">
+                      Redirecting in {redirectCountdown} second{redirectCountdown !== 1 ? "s" : ""}...
+                    </p>
+                  )}
+                </div>
               </div>
             )}
             <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
