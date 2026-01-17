@@ -24,10 +24,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user credentials
-    const { user, error } = await verifyUser(email, password);
+    const { user, error, errorType } = await verifyUser(email, password);
 
     if (error || !user) {
-      return NextResponse.json({ error: error || "Invalid credentials" }, { status: 401 });
+      return NextResponse.json(
+        { 
+          error: error || "Invalid credentials",
+          errorType: errorType || "general"
+        }, 
+        { status: 401 }
+      );
     }
 
     // Log successful signin

@@ -1,4 +1,6 @@
-import { supabase } from "./supabase";
+import "server-only";
+
+import { supabase, isSupabaseConfigured } from "./supabase";
 import bcrypt from "bcryptjs";
 
 export interface User {
@@ -29,12 +31,32 @@ export async function createUser(
   password: string
 ): Promise<{ user: User | null; error: string | null }> {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured) {
+      console.error("❌ Supabase not configured. Check .env.local and restart server.");
+      return {
+        user: null,
+        error: "Database is not configured. Please check your .env.local file and restart the dev server.",
+      };
+    }
+
+    console.log("✅ Supabase configured, checking if user exists...");
+
     // Check if user already exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: checkError } = await supabase
       .from("users")
       .select("email")
       .eq("email", email)
-      .single();
+      .maybeSingle();
+
+    // If error is not "not found", it's a real error
+    if (checkError && checkError.code !== "PGRST116") {
+      console.error("Error checking existing user:", checkError);
+      return {
+        user: null,
+        error: `Database error: ${checkError.message || "Failed to check user"}`,
+      };
+    }
 
     if (existingUser) {
       return { user: null, error: "User with this email already exists" };
@@ -44,6 +66,7 @@ export async function createUser(
     const hashedPassword = await hashPassword(password);
 
     // Insert user
+    console.log("📝 Inserting new user into database...");
     const { data, error } = await supabase
       .from("users")
       .insert({
@@ -54,9 +77,33 @@ export async function createUser(
       .single();
 
     if (error) {
-      console.error("Database error:", error);
-      return { user: null, error: "Failed to create user" };
+      console.error("❌ Database insert error:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      console.error("Error details:", error.details);
+      // Provide more specific error messages
+      if (error.code === "42P01") {
+        return { 
+          user: null, 
+          error: "Database table 'users' does not exist. Please run the SQL schema from database/supabase-setup.sql in your Supabase SQL Editor." 
+        };
+      }
+      if (error.code === "23505") {
+        return { user: null, error: "User with this email already exists" };
+      }
+      if (error.code === "PGRST301" || error.message?.includes("relation") || error.message?.includes("does not exist")) {
+        return { 
+          user: null, 
+          error: "Database table 'users' does not exist. Please run the SQL schema from database/supabase-setup.sql in your Supabase SQL Editor." 
+        };
+      }
+      return { 
+        user: null, 
+        error: `Failed to create user: ${error.message || error.code || "Database error"}` 
+      };
     }
+
+    console.log("✅ User created successfully:", data?.id);
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = data;
@@ -72,6 +119,14 @@ export async function findUserByEmail(
   email: string
 ): Promise<{ user: User | null; error: string | null }> {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured) {
+      return {
+        user: null,
+        error: "Database is not configured. Please set up Supabase credentials in .env.local",
+      };
+    }
+
     const { data, error } = await supabase
       .from("users")
       .select("*")
@@ -98,19 +153,23 @@ export async function findUserByEmail(
 export async function verifyUser(
   email: string,
   password: string
-): Promise<{ user: User | null; error: string | null }> {
+): Promise<{ user: User | null; error: string | null; errorType?: "email" | "password" }> {
   try {
     const { user, error: findError } = await findUserByEmail(email);
 
     if (findError || !user) {
-      return { user: null, error: "Invalid email or password" };
+      // Check if it's a "user not found" error specifically
+      if (findError === "User not found") {
+        return { user: null, error: "No account found with this email address", errorType: "email" };
+      }
+      return { user: null, error: findError || "Invalid email or password", errorType: "email" };
     }
 
     // Verify password
     const isValid = await verifyPassword(password, user.password);
 
     if (!isValid) {
-      return { user: null, error: "Invalid email or password" };
+      return { user: null, error: "Incorrect password", errorType: "password" };
     }
 
     // Remove password from response

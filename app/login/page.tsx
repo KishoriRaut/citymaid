@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [success, setSuccess] = useState("");
   const [redirectCountdown, setRedirectCountdown] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -28,7 +30,23 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setEmailError("");
+    setPasswordError("");
     setSuccess("");
+
+    // Client-side email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!password) {
+      setPasswordError("Password is required");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch("/api/signin", {
@@ -51,13 +69,25 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorMessage = data?.error || `Sign in failed: ${response.status}`;
+        const errorType = data?.errorType || "general";
+        
         console.error("Signin API error:", {
           status: response.status,
           statusText: response.statusText,
           error: errorMessage,
+          errorType: errorType,
           fullResponse: data,
         });
-        setError(errorMessage);
+
+        // Set field-specific errors
+        if (errorType === "email") {
+          setEmailError(errorMessage);
+        } else if (errorType === "password") {
+          setPasswordError(errorMessage);
+        } else {
+          setError(errorMessage);
+        }
+        
         setIsLoading(false);
         return;
       }
@@ -130,10 +160,36 @@ export default function LoginPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError("");
+                  setError("");
+                }}
+                className={`w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  emailError
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : "border-input"
+                }`}
                 placeholder="you@example.com"
               />
+              {emailError && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <svg
+                    className="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  {emailError}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -158,10 +214,36 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError("");
+                  setError("");
+                }}
+                className={`w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  passwordError
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : "border-input"
+                }`}
                 placeholder="Enter your password"
               />
+              {passwordError && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <svg
+                    className="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  {passwordError}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center">
@@ -179,7 +261,7 @@ export default function LoginPage() {
               </label>
             </div>
 
-            {error && (
+            {error && !emailError && !passwordError && (
               <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive flex items-start gap-2">
                 <svg
                   className="h-5 w-5 flex-shrink-0 mt-0.5"
