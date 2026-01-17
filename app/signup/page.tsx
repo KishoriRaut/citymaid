@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { isLoggedIn } from "@/lib/session";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -15,6 +16,13 @@ export default function SignUpPage() {
   const [success, setSuccess] = useState("");
   const [redirectCountdown, setRedirectCountdown] = useState(0);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check if user is already logged in and redirect to dashboard
+  useEffect(() => {
+    if (isLoggedIn()) {
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -87,10 +95,8 @@ export default function SignUpPage() {
 
       setSuccess(data.message || "Account created successfully! Redirecting to login...");
       
-      // Store user data in localStorage (optional, for session management)
-      if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
+      // Note: We don't automatically log in after signup - user needs to sign in
+      // User data is stored temporarily but they'll need to log in separately
 
       // Reset form
       setEmail("");
