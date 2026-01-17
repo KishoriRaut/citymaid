@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { setSession } from "@/lib/session";
+import { setSession, type User } from "@/lib/session";
 import { isValidEmail } from "@/lib/validation";
 import { useAuthRedirect } from "@/lib/hooks";
 import { Spinner } from "@/components/ui/spinner";
@@ -52,10 +52,10 @@ export default function LoginPage() {
         timeout: 30000, // 30 seconds
       });
 
-      let data;
+      let data: { error?: string; errorType?: string; user?: User; message?: string };
       try {
-        data = await parseJSONResponse(response);
-      } catch (jsonError) {
+        data = await parseJSONResponse<{ error?: string; errorType?: string; user?: User; message?: string }>(response);
+      } catch {
         setError(`Sign in failed: ${response.status} ${response.statusText}`);
         setIsLoading(false);
         return;
@@ -264,7 +264,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
+            <span className="text-muted-foreground">Don&apos;t have an account? </span>
             <Link href="/signup" className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
               Sign up
             </Link>

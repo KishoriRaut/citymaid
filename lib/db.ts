@@ -105,6 +105,7 @@ export async function createUser(
     }
 
     // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = data;
     return { user: userWithoutPassword as User, error: null };
   } catch (error) {
@@ -178,6 +179,7 @@ export async function verifyUser(
     }
 
     // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
     return { user: userWithoutPassword as User, error: null };
   } catch (error) {
@@ -253,6 +255,7 @@ export async function updateUserProfile(
     }
 
     // Remove password from response
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = data;
     return { user: userWithoutPassword as User, error: null };
   } catch (error) {

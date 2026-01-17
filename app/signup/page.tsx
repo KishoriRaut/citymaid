@@ -56,10 +56,10 @@ export default function SignUpPage() {
         timeout: 30000, // 30 seconds
       });
 
-      let data;
+      let data: { error?: string; message?: string; user?: { id: string; email: string; created_at: string } };
       try {
-        data = await parseJSONResponse(response);
-      } catch (jsonError) {
+        data = await parseJSONResponse<{ error?: string; message?: string; user?: { id: string; email: string; created_at: string } }>(response);
+      } catch {
         setError(`Sign up failed: ${response.status} ${response.statusText}`);
         setIsLoading(false);
         return;

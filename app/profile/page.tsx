@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, setSession, type User } from "@/lib/session";
+import { setSession, type User } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { isValidEmail } from "@/lib/validation";
 import { useAuth } from "@/lib/hooks";
@@ -62,7 +62,7 @@ export default function ProfilePage() {
     };
 
     fetchProfileData(currentUser.id);
-  }, [router]);
+  }, [router, currentUser]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -110,7 +110,7 @@ export default function ProfilePage() {
         timeout: 30000,
       });
 
-      const data = await parseJSONResponse(response);
+      const data = await parseJSONResponse<{ error?: string; user?: ProfileUser; message?: string }>(response);
 
       if (!response.ok) {
         setError(data.error || "Failed to update profile");
