@@ -26,7 +26,6 @@ export default function RootLayout({
               <nav className="flex items-center justify-between">
                 <div className="text-xl font-bold text-primary">Siscora</div>
                 <div className="flex gap-4">
-                  {/* Navigation items can be added here */}
                 </div>
               </nav>
             </div>
