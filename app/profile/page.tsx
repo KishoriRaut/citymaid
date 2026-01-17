@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, setSession, isLoggedIn, type User } from "@/lib/session";
+import { getCurrentUser, setSession, type User } from "@/lib/session";
 import { Button } from "@/components/ui/button";
+import { isValidEmail } from "@/lib/validation";
+import { useAuth } from "@/lib/hooks";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 
 interface ProfileUser extends User {
   updated_at?: string;
@@ -19,24 +24,18 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Check authentication and load user data
+  // Check authentication - redirects if not logged in
+  const currentUser = useAuth("/login");
+  
   useEffect(() => {
-    // Check authentication first
-    if (!isLoggedIn()) {
-      router.push("/login");
-      return;
-    }
-
-    const currentUser = getCurrentUser();
     if (!currentUser) {
-      router.push("/login");
-      return;
+      return; // Will redirect via useAuth
     }
 
     // Set initial user data from localStorage immediately so page shows right away
     setUser(currentUser);
     setEmail(currentUser.email);
-    setIsLoading(false); // Set loading to false immediately so page renders
+    setIsLoading(false);
     
     // Fetch fresh data from API using userId in the background
     const fetchProfileData = async (userId: string) => {
@@ -45,8 +44,9 @@ export default function ProfilePage() {
         const data = await response.json();
 
         if (!response.ok) {
-          console.error("Failed to fetch profile:", data.error);
-          // If API fails, we'll keep showing the cached user data from localStorage
+          if (process.env.NODE_ENV === "development") {
+            console.error("Failed to fetch profile:", data.error);
+          }
           return;
         }
 
@@ -55,8 +55,9 @@ export default function ProfilePage() {
           setEmail(data.user.email);
         }
       } catch (err) {
-        console.error("Error fetching profile:", err);
-        // On error, we'll keep showing the cached user data from localStorage
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error fetching profile:", err);
+        }
       }
     };
 
@@ -82,8 +83,7 @@ export default function ProfilePage() {
     if (!user) return;
 
     // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       setError("Please enter a valid email address");
       return;
     }
@@ -98,7 +98,7 @@ export default function ProfilePage() {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/profile/update", {
+      const response = await fetchWithTimeout("/api/profile/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -107,9 +107,10 @@ export default function ProfilePage() {
           userId: user.id,
           email: email,
         }),
+        timeout: 30000,
       });
 
-      const data = await response.json();
+      const data = await parseJSONResponse(response);
 
       if (!response.ok) {
         setError(data.error || "Failed to update profile");
@@ -125,8 +126,8 @@ export default function ProfilePage() {
         setIsEditing(false);
       }
     } catch (err) {
-      console.error("Error updating profile:", err);
-      setError("An error occurred while updating your profile");
+      const errorMessage = handleAPIError(err);
+      setError(errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -134,9 +135,20 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Loading profile...</p>
+      <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
+        <div className="max-w-3xl mx-auto">
+          <Skeleton className="h-8 sm:h-10 w-48 mb-6 sm:mb-8" />
+          <div className="rounded-lg border bg-card p-4 sm:p-6 lg:p-8 shadow-sm space-y-5 sm:space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-10 w-32" />
+          </div>
         </div>
       </div>
     );
@@ -147,25 +159,26 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => router.push("/dashboard")}
+              className="min-h-[44px] sm:min-h-0 transition-all duration-200"
             >
-              ← Back to Dashboard
+              <span className="hidden sm:inline">← </span>Back to Dashboard
             </Button>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-2">Profile</h1>
-          <p className="text-muted-foreground">Manage your account information</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">Profile</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your account information</p>
         </div>
 
         {/* Profile Card */}
-        <div className="rounded-lg border bg-card p-8 shadow-sm space-y-6">
+        <div className="rounded-lg border bg-card p-4 sm:p-6 lg:p-8 shadow-sm space-y-5 sm:space-y-6">
           {/* Success Message */}
           {success && (
             <div className="rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200 flex items-start gap-3">
@@ -221,7 +234,7 @@ export default function ProfilePage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2.5 sm:py-2 text-base sm:text-sm ring-offset-background placeholder:text-muted-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 hover:border-ring"
                   placeholder="you@example.com"
                   disabled={isSaving}
                 />
@@ -231,7 +244,14 @@ export default function ProfilePage() {
                     disabled={isSaving}
                     size="sm"
                   >
-                    {isSaving ? "Saving..." : "Save Changes"}
+                    {isSaving ? (
+                      <span className="flex items-center gap-2">
+                        <Spinner size="sm" />
+                        Saving...
+                      </span>
+                    ) : (
+                      "Save Changes"
+                    )}
                   </Button>
                   <Button
                     onClick={handleCancel}

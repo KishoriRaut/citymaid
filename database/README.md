@@ -1,63 +1,31 @@
-# Database Schema
+# Database Setup
 
-This directory contains SQL schemas for the users table.
+This directory contains the SQL schema for setting up the users table in Supabase.
 
 ## Files
 
-- `schema.sql` - MySQL/MariaDB version
-- `schema-postgres.sql` - PostgreSQL version
+- `supabase-setup.sql` - Complete setup script with RLS policies (use this one)
 
-## Users Table
+## Quick Start
 
-The users table stores user authentication information with the following fields:
+1. Open your Supabase project dashboard
+2. Go to **SQL Editor**
+3. Copy and paste the contents of `supabase-setup.sql`
+4. Click **Run** to execute
 
-- `id` - Primary key (auto-increment)
-- `email` - User email address (unique, required)
-- `password` - Hashed password (required)
-- `created_at` - Timestamp when user was created
-- `updated_at` - Timestamp when user was last updated
+## Table Structure
 
-## Important Notes
+The `users` table includes:
 
-⚠️ **Security**: Always hash passwords before storing them in the database. Never store plain text passwords.
+- `id` - UUID primary key (auto-generated)
+- `email` - VARCHAR(255), unique, required
+- `password` - VARCHAR(255), required (should be hashed)
+- `created_at` - Timestamp (auto-set)
+- `updated_at` - Timestamp (auto-updated)
 
-Recommended password hashing libraries:
-- Node.js: `bcrypt` or `argon2`
-- Always use salt rounds (minimum 10 for bcrypt)
+## Security Notes
 
-## Usage
-
-### MySQL/MariaDB
-```bash
-mysql -u username -p database_name < schema.sql
-```
-
-### PostgreSQL
-```bash
-psql -U username -d database_name -f schema-postgres.sql
-```
-
-## Example Queries
-
-### Create a user (with hashed password)
-```sql
-INSERT INTO users (email, password) 
-VALUES ('user@example.com', '$2b$10$hashedpasswordhere');
-```
-
-### Find user by email
-```sql
-SELECT * FROM users WHERE email = 'user@example.com';
-```
-
-### Update user password
-```sql
-UPDATE users 
-SET password = 'newhashedpassword' 
-WHERE id = 1;
-```
-
-### Delete user
-```sql
-DELETE FROM users WHERE id = 1;
-```
+⚠️ **Important**: 
+- Always hash passwords before storing (use `bcrypt` or `argon2`)
+- The password field stores hashed passwords, never plain text
+- RLS policies protect user data at the database level

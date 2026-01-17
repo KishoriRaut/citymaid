@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { findUserByEmail, findUserById } from "@/lib/db";
+import { isValidEmail } from "@/lib/validation";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,8 +19,7 @@ export async function GET(request: NextRequest) {
       error = result.error;
     } else if (email) {
       // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!isValidEmail(email)) {
         return NextResponse.json(
           { error: "Invalid email format" },
           { status: 400 }
@@ -53,7 +53,9 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Profile fetch error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Profile fetch error:", error);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -2,6 +2,7 @@ import "server-only";
 
 import { supabase, isSupabaseConfigured } from "./supabase";
 import bcrypt from "bcryptjs";
+import { isValidEmail } from "./validation";
 
 export interface User {
   id: string;
@@ -33,14 +34,14 @@ export async function createUser(
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured) {
-      console.error("❌ Supabase not configured. Check .env.local and restart server.");
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Supabase not configured. Check .env.local and restart server.");
+      }
       return {
         user: null,
         error: "Database is not configured. Please check your .env.local file and restart the dev server.",
       };
     }
-
-    console.log("✅ Supabase configured, checking if user exists...");
 
     // Check if user already exists
     const { data: existingUser, error: checkError } = await supabase
@@ -51,7 +52,9 @@ export async function createUser(
 
     // If error is not "not found", it's a real error
     if (checkError && checkError.code !== "PGRST116") {
-      console.error("Error checking existing user:", checkError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error checking existing user:", checkError);
+      }
       return {
         user: null,
         error: `Database error: ${checkError.message || "Failed to check user"}`,
@@ -66,7 +69,6 @@ export async function createUser(
     const hashedPassword = await hashPassword(password);
 
     // Insert user
-    console.log("📝 Inserting new user into database...");
     const { data, error } = await supabase
       .from("users")
       .insert({
@@ -77,10 +79,9 @@ export async function createUser(
       .single();
 
     if (error) {
-      console.error("❌ Database insert error:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      console.error("Error details:", error.details);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Database insert error:", error);
+      }
       // Provide more specific error messages
       if (error.code === "42P01") {
         return { 
@@ -103,13 +104,13 @@ export async function createUser(
       };
     }
 
-    console.log("✅ User created successfully:", data?.id);
-
     // Remove password from response
     const { password: _, ...userWithoutPassword } = data;
     return { user: userWithoutPassword as User, error: null };
   } catch (error) {
-    console.error("Create user error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Create user error:", error);
+    }
     return { user: null, error: "Internal server error" };
   }
 }
@@ -138,13 +139,17 @@ export async function findUserByEmail(
         // No rows returned
         return { user: null, error: "User not found" };
       }
-      console.error("Database error:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Database error:", error);
+      }
       return { user: null, error: "Database error" };
     }
 
     return { user: data as User, error: null };
   } catch (error) {
-    console.error("Find user error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Find user error:", error);
+    }
     return { user: null, error: "Internal server error" };
   }
 }
@@ -176,7 +181,9 @@ export async function verifyUser(
     const { password: _, ...userWithoutPassword } = user;
     return { user: userWithoutPassword as User, error: null };
   } catch (error) {
-    console.error("Verify user error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Verify user error:", error);
+    }
     return { user: null, error: "Internal server error" };
   }
 }
@@ -197,8 +204,7 @@ export async function updateUserProfile(
 
     // Validate email if provided
     if (updates.email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(updates.email)) {
+      if (!isValidEmail(updates.email)) {
         return { user: null, error: "Invalid email format" };
       }
 
@@ -210,7 +216,9 @@ export async function updateUserProfile(
         .maybeSingle();
 
       if (checkError && checkError.code !== "PGRST116") {
-        console.error("Error checking existing email:", checkError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error checking existing email:", checkError);
+        }
         return { user: null, error: "Database error" };
       }
 
@@ -234,7 +242,9 @@ export async function updateUserProfile(
       .single();
 
     if (error) {
-      console.error("Database update error:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Database update error:", error);
+      }
       return { user: null, error: `Failed to update profile: ${error.message || "Database error"}` };
     }
 
@@ -246,7 +256,9 @@ export async function updateUserProfile(
     const { password: _, ...userWithoutPassword } = data;
     return { user: userWithoutPassword as User, error: null };
   } catch (error) {
-    console.error("Update user profile error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Update user profile error:", error);
+    }
     return { user: null, error: "Internal server error" };
   }
 }
@@ -274,13 +286,17 @@ export async function findUserById(
       if (error.code === "PGRST116") {
         return { user: null, error: "User not found" };
       }
-      console.error("Database error:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Database error:", error);
+      }
       return { user: null, error: "Database error" };
     }
 
     return { user: data as User, error: null };
   } catch (error) {
-    console.error("Find user by ID error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Find user by ID error:", error);
+    }
     return { user: null, error: "Internal server error" };
   }
 }

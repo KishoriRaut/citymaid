@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateUserProfile } from "@/lib/db";
+import { isValidEmail } from "@/lib/validation";
 
 export async function PUT(request: NextRequest) {
   try {
@@ -22,8 +23,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 }
@@ -50,7 +50,9 @@ export async function PUT(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Profile update error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Profile update error:", error);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

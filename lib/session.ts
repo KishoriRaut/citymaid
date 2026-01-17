@@ -22,7 +22,9 @@ export function getCurrentUser(): User | null {
     const user = JSON.parse(userStr) as User;
     return user;
   } catch (error) {
-    console.error("Error parsing user from localStorage:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error parsing user from localStorage:", error);
+    }
     return null;
   }
 }

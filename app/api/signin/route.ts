@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyUser } from "@/lib/db";
+import { isValidEmail } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 }
@@ -36,13 +36,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Log successful signin
-    console.log("=== SIGNIN SUCCESS ===");
-    console.log("User ID:", user.id);
-    console.log("Email:", email);
-    console.log("Timestamp:", new Date().toISOString());
-    console.log("=====================");
-
     // Return success response (without password)
     return NextResponse.json(
       {
@@ -56,7 +49,9 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Signin error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Signin error:", error);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

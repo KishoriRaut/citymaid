@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createUser } from "@/lib/db";
+import { isValidEmail, isValidPassword } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,8 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       return NextResponse.json(
         { error: "Invalid email format" },
         { status: 400 }
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate password length
-    if (password.length < 8) {
+    if (!isValidPassword(password)) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters long" },
         { status: 400 }
@@ -35,15 +35,18 @@ export async function POST(request: NextRequest) {
     const { user, error } = await createUser(email, password);
 
     if (error) {
-      return NextResponse.json({ error }, { status: 400 });
+      return NextResponse.json(
+        { error: error || "Failed to create user" },
+        { status: 400 }
+      );
     }
 
-    // Log successful signup
-    console.log("=== SIGNUP SUCCESS ===");
-    console.log("User ID:", user?.id);
-    console.log("Email:", email);
-    console.log("Timestamp:", new Date().toISOString());
-    console.log("=====================");
+    if (!user) {
+      return NextResponse.json(
+        { error: "Failed to create user" },
+        { status: 500 }
+      );
+    }
 
     // Return success response (without password)
     return NextResponse.json(
@@ -58,7 +61,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Signup error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Signup error:", error);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

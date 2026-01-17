@@ -2,9 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { isLoggedIn, setSession } from "@/lib/session";
+import { setSession } from "@/lib/session";
+import { isValidEmail } from "@/lib/validation";
+import { useAuthRedirect } from "@/lib/hooks";
+import { Spinner } from "@/components/ui/spinner";
+import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,25 +18,9 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [redirectCountdown, setRedirectCountdown] = useState(0);
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Check if user is already logged in and redirect to dashboard
-  useEffect(() => {
-    if (isLoggedIn()) {
-      router.push("/dashboard");
-    }
-  }, [router]);
-
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-      }
-    };
-  }, []);
+  // Redirect if already logged in
+  useAuthRedirect("/dashboard");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,11 +28,9 @@ export default function LoginPage() {
     setError("");
     setEmailError("");
     setPasswordError("");
-    setSuccess("");
 
     // Client-side email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       setEmailError("Please enter a valid email address");
       setIsLoading(false);
       return;
@@ -57,19 +43,19 @@ export default function LoginPage() {
     }
 
     try {
-      const response = await fetch("/api/signin", {
+      const response = await fetchWithTimeout("/api/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        timeout: 30000, // 30 seconds
       });
 
       let data;
       try {
-        data = await response.json();
+        data = await parseJSONResponse(response);
       } catch (jsonError) {
-        console.error("Failed to parse response as JSON:", jsonError);
         setError(`Sign in failed: ${response.status} ${response.statusText}`);
         setIsLoading(false);
         return;
@@ -79,13 +65,15 @@ export default function LoginPage() {
         const errorMessage = data?.error || `Sign in failed: ${response.status}`;
         const errorType = data?.errorType || "general";
         
-        console.error("Signin API error:", {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorMessage,
-          errorType: errorType,
-          fullResponse: data,
-        });
+        if (process.env.NODE_ENV === "development") {
+          console.error("Signin API error:", {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorMessage,
+            errorType: errorType,
+            fullResponse: data,
+          });
+        }
 
         // Set field-specific errors
         if (errorType === "email") {
@@ -100,8 +88,6 @@ export default function LoginPage() {
         return;
       }
 
-      setSuccess(data.message || "Sign in successful! Redirecting...");
-      
       // Store user data in session
       if (data.user) {
         setSession(data.user);
@@ -111,49 +97,27 @@ export default function LoginPage() {
       setEmail("");
       setPassword("");
 
-      // Show countdown and redirect to dashboard after successful login
-      setRedirectCountdown(2);
-      
-      // Clear any existing interval
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-      }
-      
-      countdownIntervalRef.current = setInterval(() => {
-        setRedirectCountdown((prev) => {
-          const newCount = prev - 1;
-          if (newCount <= 0) {
-            if (countdownIntervalRef.current) {
-              clearInterval(countdownIntervalRef.current);
-              countdownIntervalRef.current = null;
-            }
-            router.push("/dashboard");
-            return 0;
-          }
-          return newCount;
-        });
-      }, 1000);
+      // Redirect immediately to dashboard after successful login
+      router.push("/dashboard");
     } catch (err) {
-      console.error("Signin request failed:", err);
-      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      const errorMessage = handleAPIError(err);
       setError(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
+    <div className="flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-8 sm:py-12">
+      <div className="w-full max-w-md space-y-6 sm:space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">Welcome back</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome back</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Sign in to your account to continue
           </p>
         </div>
 
-        <div className="rounded-lg border bg-card p-8 shadow-sm">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="rounded-lg border bg-card p-6 sm:p-8 shadow-sm">
+          <form className="space-y-5 sm:space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label
                 htmlFor="email"
@@ -173,10 +137,10 @@ export default function LoginPage() {
                   setEmailError("");
                   setError("");
                 }}
-                className={`w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`w-full rounded-md border bg-background px-3 py-2.5 sm:py-2 text-base sm:text-sm ring-offset-background placeholder:text-muted-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                   emailError
                     ? "border-destructive focus-visible:ring-destructive"
-                    : "border-input"
+                    : "border-input hover:border-ring"
                 }`}
                 placeholder="you@example.com"
               />
@@ -210,7 +174,7 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                 >
                   Forgot password?
                 </button>
@@ -227,10 +191,10 @@ export default function LoginPage() {
                   setPasswordError("");
                   setError("");
                 }}
-                className={`w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`w-full rounded-md border bg-background px-3 py-2.5 sm:py-2 text-base sm:text-sm ring-offset-background placeholder:text-muted-foreground transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
                   passwordError
                     ? "border-destructive focus-visible:ring-destructive"
-                    : "border-input"
+                    : "border-input hover:border-ring"
                 }`}
                 placeholder="Enter your password"
               />
@@ -287,39 +251,21 @@ export default function LoginPage() {
                 <span>{error}</span>
               </div>
             )}
-            {success && (
-              <div className="rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200 flex items-start gap-3">
-                <svg
-                  className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600 dark:text-green-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <div className="flex-1">
-                  <p className="font-medium">{success}</p>
-                  {redirectCountdown > 0 && (
-                    <p className="mt-1 text-xs text-green-700 dark:text-green-300">
-                      Redirecting in {redirectCountdown} second{redirectCountdown !== 1 ? "s" : ""}...
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign in"}
+            <Button type="submit" className="w-full min-h-[44px] sm:min-h-0" size="lg" disabled={isLoading}>
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner size="sm" />
+                  Signing in...
+                </span>
+              ) : (
+                "Sign in"
+              )}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
-            <Link href="/signup" className="font-medium text-primary hover:underline">
+            <Link href="/signup" className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
               Sign up
             </Link>
           </div>

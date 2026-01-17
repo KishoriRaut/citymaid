@@ -35,6 +35,13 @@ CREATE TRIGGER update_users_updated_at
 -- Enable Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to make script idempotent)
+DROP POLICY IF EXISTS "Service role can manage users" ON public.users;
+DROP POLICY IF EXISTS "Users can view own data" ON public.users;
+DROP POLICY IF EXISTS "Users can update own data" ON public.users;
+DROP POLICY IF EXISTS "Allow public signup" ON public.users;
+DROP POLICY IF EXISTS "Authenticated users can insert" ON public.users;
+
 -- Policy: Allow service role to do everything (for API routes)
 CREATE POLICY "Service role can manage users" ON public.users
     FOR ALL
