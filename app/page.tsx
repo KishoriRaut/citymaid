@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { getPublicPostsClient, type PostWithMaskedContact } from "@/lib/posts-client";
+import { getPublicPostsClient } from "@/lib/posts-client";
+import type { PostWithMaskedContact } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
@@ -89,7 +90,9 @@ export default function Home() {
       
       setIsLoading(false);
     } catch (err) {
-      console.error("Error loading posts:", err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading posts:", err);
+      }
       setError("Failed to load posts");
       setIsLoading(false);
     }

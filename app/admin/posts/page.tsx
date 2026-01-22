@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllPosts, updatePostStatus, deletePost, type Post } from "@/lib/posts";
+import { getAllPosts, updatePostStatus, deletePost } from "@/lib/posts";
+import type { Post } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
 

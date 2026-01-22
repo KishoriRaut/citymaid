@@ -174,6 +174,13 @@ CREATE POLICY "Service role has full access to payments" ON public.payments
 -- Create a secure function that returns posts with protected contact information
 -- Contacts are only visible when payment is approved
 -- This function uses SECURITY DEFINER to bypass RLS and check payment status
+-- 
+-- EXPIRATION POLICY:
+-- Posts automatically expire from public view after 30 days (soft expiration)
+-- - Old posts are NOT deleted, only hidden from homepage
+-- - Admin can still see all posts (old + new) in admin panel
+-- - This keeps the marketplace fresh and relevant
+-- - Future enhancement: Paid extensions can extend visibility beyond 30 days
 CREATE OR REPLACE FUNCTION public.get_public_posts()
 RETURNS TABLE (
     id UUID,
@@ -211,6 +218,9 @@ BEGIN
         p.created_at
     FROM public.posts p
     WHERE p.status = 'approved'
+        -- 30-day expiration: Only show posts created within the last 30 days
+        -- This is a soft expiration - posts are not deleted, just hidden from public view
+        AND p.created_at >= now() - interval '30 days'
     ORDER BY p.created_at DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

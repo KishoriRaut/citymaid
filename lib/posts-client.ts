@@ -1,23 +1,7 @@
 "use client";
 
 import { supabaseClient } from "./supabase-client";
-
-export interface Post {
-  id: string;
-  post_type: "employer" | "employee";
-  work: string;
-  time: string;
-  place: string;
-  salary: string;
-  contact: string;
-  photo_url: string | null;
-  status: "pending" | "approved" | "hidden";
-  created_at: string;
-}
-
-export interface PostWithMaskedContact extends Omit<Post, "contact"> {
-  contact: string | null; // null if payment not approved, otherwise the actual contact
-}
+import type { PostWithMaskedContact } from "./types";
 
 // Get public posts (client-side version for public pages)
 export async function getPublicPostsClient(filters?: {
@@ -27,21 +11,15 @@ export async function getPublicPostsClient(filters?: {
   offset?: number;
 }) {
   try {
-    console.log("🔍 Attempting to fetch posts via RPC...");
-    
-    // First, try the RPC function
     const { data: rpcData, error: rpcError } = await supabaseClient.rpc("get_public_posts");
 
     if (rpcError) {
-      console.error("❌ RPC Error:", rpcError);
-      console.error("Error code:", rpcError.code);
-      console.error("Error message:", rpcError.message);
+      if (process.env.NODE_ENV === "development") {
+        console.error("RPC Error:", rpcError);
+      }
       
       // If function doesn't exist, try direct query as fallback
       if (rpcError.code === "42883" || rpcError.message?.includes("does not exist")) {
-        console.warn("⚠️ RPC function not found, trying direct query fallback...");
-        
-        // Fallback: Direct query (will only work if RLS allows it)
         const { data: directData, error: directError } = await supabaseClient
           .from("posts")
           .select("*")
@@ -49,7 +27,6 @@ export async function getPublicPostsClient(filters?: {
           .order("created_at", { ascending: false });
 
         if (directError) {
-          console.error("❌ Direct query also failed:", directError);
           return {
             posts: [],
             total: 0,
@@ -57,15 +34,13 @@ export async function getPublicPostsClient(filters?: {
           };
         }
 
-        console.log("✅ Direct query succeeded, masking contacts...");
         // Mask all contacts in fallback mode (no payment check)
         const fallbackPosts = (directData || []).map((p) => ({
           ...p,
-          contact: null, // Hide contacts in fallback
+          contact: null,
         })) as PostWithMaskedContact[];
 
         let posts = fallbackPosts;
-        // Apply filters
         if (filters?.post_type) {
           posts = posts.filter((p) => p.post_type === filters.post_type);
         }
@@ -87,8 +62,6 @@ export async function getPublicPostsClient(filters?: {
 
       return { posts: [], total: 0, error: rpcError.message };
     }
-
-    console.log("✅ RPC call succeeded, got", rpcData?.length || 0, "posts");
     let posts = (rpcData || []) as PostWithMaskedContact[];
 
     // Apply filters
@@ -111,7 +84,9 @@ export async function getPublicPostsClient(filters?: {
       error: null,
     };
   } catch (error) {
-    console.error("Error in getPublicPostsClient:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in getPublicPostsClient:", error);
+    }
     return { posts: [], total: 0, error: "Failed to fetch posts" };
   }
 }

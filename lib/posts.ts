@@ -1,118 +1,7 @@
 "use server";
 
 import { supabase } from "./supabase";
-
-export interface Post {
-  id: string;
-  post_type: "employer" | "employee";
-  work: string;
-  time: string;
-  place: string;
-  salary: string;
-  contact: string;
-  photo_url: string | null;
-  status: "pending" | "approved" | "hidden";
-  created_at: string;
-}
-
-export interface PostWithMaskedContact extends Omit<Post, "contact"> {
-  contact: string | null; // null if payment not approved, otherwise the actual contact
-}
-
-// Get public posts (approved only, with contact protection)
-export async function getPublicPosts(filters?: {
-  post_type?: "employer" | "employee";
-  work?: string;
-  limit?: number;
-  offset?: number;
-}) {
-  try {
-    // Use the secure function that protects contacts
-    const { data, error } = await supabase.rpc("get_public_posts");
-
-    if (error) {
-      console.error("Error fetching posts via RPC:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-      
-      // If function doesn't exist (code 42883), provide helpful message
-      if (error.code === "42883" || error.message?.includes("does not exist")) {
-        return {
-          posts: [],
-          total: 0,
-          error: "Database function not found. Please run the SQL setup script in Supabase SQL Editor.",
-        };
-      }
-
-      // For other errors, try direct query as fallback (service_role can bypass RLS)
-      console.warn("RPC function failed, attempting direct query fallback");
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("status", "approved")
-        .order("created_at", { ascending: false });
-
-      if (fallbackError) {
-        console.error("Fallback query also failed:", fallbackError);
-        return {
-          posts: [],
-          total: 0,
-          error: `RPC failed: ${error.message}. Fallback also failed: ${fallbackError.message}`,
-        };
-      }
-
-      // Mask contacts in fallback (no payment check)
-      const fallbackPosts = (fallbackData || []).map((p) => ({
-        ...p,
-        contact: null, // Hide contacts in fallback mode
-      })) as PostWithMaskedContact[];
-
-      let posts = fallbackPosts;
-      // Apply filters
-      if (filters?.post_type) {
-        posts = posts.filter((p) => p.post_type === filters.post_type);
-      }
-      if (filters?.work) {
-        posts = posts.filter((p) => p.work.toLowerCase().includes(filters.work!.toLowerCase()));
-      }
-
-      const total = posts.length;
-      const limit = filters?.limit || 20;
-      const offset = filters?.offset || 0;
-      const paginatedPosts = posts.slice(offset, offset + limit);
-
-      return {
-        posts: paginatedPosts,
-        total,
-        error: null,
-      };
-    }
-
-    let posts = (data || []) as PostWithMaskedContact[];
-
-    // Apply filters
-    if (filters?.post_type) {
-      posts = posts.filter((p) => p.post_type === filters.post_type);
-    }
-    if (filters?.work) {
-      posts = posts.filter((p) => p.work.toLowerCase().includes(filters.work!.toLowerCase()));
-    }
-
-    // Apply pagination
-    const total = posts.length;
-    const limit = filters?.limit || 20;
-    const offset = filters?.offset || 0;
-    const paginatedPosts = posts.slice(offset, offset + limit);
-
-    return {
-      posts: paginatedPosts,
-      total,
-      error: null,
-    };
-  } catch (error) {
-    console.error("Error in getPublicPosts:", error);
-    return { posts: [], total: 0, error: "Failed to fetch posts" };
-  }
-}
+import type { Post } from "./types";
 
 // Create a new post (public)
 // Includes spam prevention and duplicate detection
@@ -142,7 +31,9 @@ export async function createPost(post: {
       .in("status", ["pending", "approved", "hidden"]);
 
     if (duplicateError) {
-      console.error("Error checking for duplicates:", duplicateError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error checking for duplicates:", duplicateError);
+      }
       // Continue with creation if check fails (don't block on validation error)
     } else if (duplicateCheck && duplicateCheck.length > 0) {
       return {
@@ -168,7 +59,9 @@ export async function createPost(post: {
       .in("status", ["pending", "approved"]);
 
     if (countError1) {
-      console.error("Error counting posts by type:", countError1);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error counting posts by type:", countError1);
+      }
       // Continue with creation if check fails
     } else if (activePostsByType !== null && activePostsByType >= 2) {
       return {
@@ -185,7 +78,9 @@ export async function createPost(post: {
       .in("status", ["pending", "approved"]);
 
     if (countError2) {
-      console.error("Error counting total posts:", countError2);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error counting total posts:", countError2);
+      }
       // Continue with creation if check fails
     } else if (totalActivePosts !== null && totalActivePosts >= 4) {
       return {
@@ -207,13 +102,17 @@ export async function createPost(post: {
       .single();
 
     if (error) {
-      console.error("Error creating post:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating post:", error);
+      }
       return { post: null, error: error.message };
     }
 
     return { post: data as Post, error: null };
   } catch (error) {
-    console.error("Error in createPost:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in createPost:", error);
+    }
     return { post: null, error: "Failed to create post" };
   }
 }
@@ -228,13 +127,17 @@ export async function getPostById(postId: string) {
       .single();
 
     if (error) {
-      console.error("Error fetching post:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching post:", error);
+      }
       return { post: null, error: error.message };
     }
 
     return { post: data as Post, error: null };
   } catch (error) {
-    console.error("Error in getPostById:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in getPostById:", error);
+    }
     return { post: null, error: "Failed to fetch post" };
   }
 }
@@ -257,13 +160,17 @@ export async function getAllPosts(filters?: {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching posts:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching posts:", error);
+      }
       return { posts: [], error: error.message };
     }
 
     return { posts: (data || []) as Post[], error: null };
   } catch (error) {
-    console.error("Error in getAllPosts:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in getAllPosts:", error);
+    }
     return { posts: [], error: "Failed to fetch posts" };
   }
 }
@@ -279,13 +186,17 @@ export async function updatePostStatus(postId: string, status: "pending" | "appr
       .single();
 
     if (error) {
-      console.error("Error updating post:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating post:", error);
+      }
       return { post: null, error: error.message };
     }
 
     return { post: data as Post, error: null };
   } catch (error) {
-    console.error("Error in updatePostStatus:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in updatePostStatus:", error);
+    }
     return { post: null, error: "Failed to update post" };
   }
 }
@@ -296,13 +207,17 @@ export async function deletePost(postId: string) {
     const { error } = await supabase.from("posts").delete().eq("id", postId);
 
     if (error) {
-      console.error("Error deleting post:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting post:", error);
+      }
       return { error: error.message };
     }
 
     return { error: null };
   } catch (error) {
-    console.error("Error in deletePost:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in deletePost:", error);
+    }
     return { error: "Failed to delete post" };
   }
 }

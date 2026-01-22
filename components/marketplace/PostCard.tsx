@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { type PostWithMaskedContact } from "@/lib/posts-client";
+import type { PostWithMaskedContact } from "@/lib/types";
 import { maskContact } from "@/lib/utils";
 
 interface PostCardProps {

@@ -7,7 +7,7 @@ import { appConfig } from "@/lib/config";
 import { getPostById } from "@/lib/posts";
 import { maskContact } from "@/lib/utils";
 import { createPayment } from "@/lib/payments";
-import type { Post } from "@/lib/posts";
+import type { Post } from "@/lib/types";
 
 const PAYMENT_METHODS = [
   { value: "qr", label: "QR Code" },
