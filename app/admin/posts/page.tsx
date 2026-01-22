@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllPosts, updatePostStatus, deletePost } from "@/lib/posts";
+import { getAllPosts, updatePostStatus, deletePost, updatePost } from "@/lib/posts";
 import type { Post } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
@@ -75,6 +75,29 @@ export default function AdminPostsPage() {
     }
   };
 
+  const handleEdit = async (postId: string, updates: {
+    post_type?: "employer" | "employee";
+    work?: string;
+    time?: string;
+    place?: string;
+    salary?: string;
+    contact?: string;
+    photo_url?: string | null;
+    status?: "pending" | "approved" | "hidden";
+  }) => {
+    try {
+      const { error: updateError } = await updatePost(postId, updates);
+      if (updateError) {
+        alert(`Error: ${updateError}`);
+        return;
+      }
+      loadPosts();
+    } catch (err) {
+      console.error("Error updating post:", err);
+      alert("Failed to update post");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-6xl mx-auto">
@@ -133,6 +156,7 @@ export default function AdminPostsPage() {
                 post={post}
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
+                onEdit={handleEdit}
               />
             ))}
           </div>
@@ -146,11 +170,72 @@ function PostCard({
   post,
   onStatusChange,
   onDelete,
+  onEdit,
 }: {
   post: Post;
   onStatusChange: (postId: string, status: "approved" | "hidden") => void;
   onDelete: (postId: string) => void;
+  onEdit: (postId: string, updates: {
+    post_type?: "employer" | "employee";
+    work?: string;
+    time?: string;
+    place?: string;
+    salary?: string;
+    contact?: string;
+    photo_url?: string | null;
+    status?: "pending" | "approved" | "hidden";
+  }) => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    post_type: post.post_type,
+    work: post.work,
+    time: post.time,
+    place: post.place,
+    salary: post.salary,
+    contact: post.contact,
+    photo_url: post.photo_url || "",
+    status: post.status,
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onEdit(post.id, {
+        post_type: formData.post_type,
+        work: formData.work,
+        time: formData.time,
+        place: formData.place,
+        salary: formData.salary,
+        contact: formData.contact,
+        photo_url: formData.photo_url || null,
+        status: formData.status,
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      post_type: post.post_type,
+      work: post.work,
+      time: post.time,
+      place: post.place,
+      salary: post.salary,
+      contact: post.contact,
+      photo_url: post.photo_url || "",
+      status: post.status,
+    });
+    setIsEditing(false);
+  };
+
+  const TIME_OPTIONS = ["Morning", "Day (9–5)", "Evening", "Night", "Full Time", "Part Time"];
+
   return (
     <div className="rounded-lg border bg-card p-4 sm:p-6">
       <div className="flex flex-col lg:flex-row gap-4">
@@ -190,63 +275,175 @@ function PostCard({
             </span>
           </div>
 
-          <h3 className="font-semibold text-lg mb-2">{post.work}</h3>
-          <div className="text-sm text-muted-foreground space-y-1 mb-4">
-            <p>
-              <span className="font-medium">Time:</span> {post.time}
-            </p>
-            <p>
-              <span className="font-medium">Place:</span> {post.place}
-            </p>
-            <p>
-              <span className="font-medium">Salary:</span> {post.salary}
-            </p>
-            <p>
-              <span className="font-medium">Contact:</span> {post.contact}
-            </p>
-            <p>
-              <span className="font-medium">Created:</span>{" "}
-              {new Date(post.created_at).toLocaleString()}
-            </p>
-          </div>
+          {isEditing ? (
+            /* Edit Form */
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Post Type</label>
+                  <select
+                    value={formData.post_type}
+                    onChange={(e) => setFormData({ ...formData, post_type: e.target.value as "employer" | "employee" })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  >
+                    <option value="employer">Hiring</option>
+                    <option value="employee">Looking for Work</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Status</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as "pending" | "approved" | "hidden" })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="hidden">Hidden</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Work</label>
+                  <input
+                    type="text"
+                    value={formData.work}
+                    onChange={(e) => setFormData({ ...formData, work: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Time</label>
+                  <select
+                    value={formData.time}
+                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  >
+                    {TIME_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Place</label>
+                  <input
+                    type="text"
+                    value={formData.place}
+                    onChange={(e) => setFormData({ ...formData, place: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1.5">Salary</label>
+                  <input
+                    type="text"
+                    value={formData.salary}
+                    onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium mb-1.5">Contact</label>
+                  <input
+                    type="text"
+                    value={formData.contact}
+                    onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+                    className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                  />
+                </div>
+                {formData.post_type === "employee" && (
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium mb-1.5">Photo URL</label>
+                    <input
+                      type="text"
+                      value={formData.photo_url}
+                      onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Leave empty to remove photo</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button onClick={handleSave} size="sm" disabled={isSaving}>
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+                <Button onClick={handleCancel} size="sm" variant="outline" disabled={isSaving}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            /* View Mode */
+            <>
+              <h3 className="font-semibold text-lg mb-2">{post.work}</h3>
+              <div className="text-sm text-muted-foreground space-y-1 mb-4">
+                <p>
+                  <span className="font-medium">Time:</span> {post.time}
+                </p>
+                <p>
+                  <span className="font-medium">Place:</span> {post.place}
+                </p>
+                <p>
+                  <span className="font-medium">Salary:</span> {post.salary}
+                </p>
+                <p>
+                  <span className="font-medium">Contact:</span> {post.contact}
+                </p>
+                <p>
+                  <span className="font-medium">Created:</span>{" "}
+                  {new Date(post.created_at).toLocaleString()}
+                </p>
+              </div>
 
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2">
-            {post.status === "pending" && (
-              <Button
-                onClick={() => onStatusChange(post.id, "approved")}
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                Approve
-              </Button>
-            )}
-            {post.status !== "hidden" && (
-              <Button
-                onClick={() => onStatusChange(post.id, "hidden")}
-                size="sm"
-                variant="outline"
-              >
-                Hide
-              </Button>
-            )}
-            {post.status === "hidden" && (
-              <Button
-                onClick={() => onStatusChange(post.id, "approved")}
-                size="sm"
-                variant="outline"
-              >
-                Unhide
-              </Button>
-            )}
-            <Button
-              onClick={() => onDelete(post.id)}
-              size="sm"
-              variant="destructive"
-            >
-              Delete
-            </Button>
-          </div>
+              {/* Actions */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Edit
+                </Button>
+                {post.status === "pending" && (
+                  <Button
+                    onClick={() => onStatusChange(post.id, "approved")}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Approve
+                  </Button>
+                )}
+                {post.status !== "hidden" && (
+                  <Button
+                    onClick={() => onStatusChange(post.id, "hidden")}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Hide
+                  </Button>
+                )}
+                {post.status === "hidden" && (
+                  <Button
+                    onClick={() => onStatusChange(post.id, "approved")}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Unhide
+                  </Button>
+                )}
+                <Button
+                  onClick={() => onDelete(post.id)}
+                  size="sm"
+                  variant="destructive"
+                >
+                  Delete
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

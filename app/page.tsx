@@ -88,6 +88,12 @@ export default function Home() {
       // Store all filtered posts
       setAllPosts(filteredPosts);
       
+      // Debug logging (development only)
+      if (process.env.NODE_ENV === "development") {
+        console.log("Total filtered posts:", filteredPosts.length);
+        console.log("Posts per load:", POSTS_PER_LOAD);
+      }
+      
       // Apply Load More pattern
       if (append) {
         // Append more posts
@@ -95,11 +101,19 @@ export default function Home() {
         const newPosts = filteredPosts.slice(currentCount, currentCount + POSTS_PER_LOAD);
         setPosts([...posts, ...newPosts]);
         setHasMore(currentCount + newPosts.length < filteredPosts.length);
+        
+        if (process.env.NODE_ENV === "development") {
+          console.log("Appending posts. Current:", currentCount, "New:", newPosts.length, "Total after:", posts.length + newPosts.length);
+        }
       } else {
         // Initial load - show first batch
         const initialPosts = filteredPosts.slice(0, POSTS_PER_LOAD);
         setPosts(initialPosts);
         setHasMore(filteredPosts.length > POSTS_PER_LOAD);
+        
+        if (process.env.NODE_ENV === "development") {
+          console.log("Initial load. Showing:", initialPosts.length, "out of", filteredPosts.length, "total posts");
+        }
       }
       
       setIsLoading(false);
