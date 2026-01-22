@@ -101,7 +101,7 @@ export async function createPost(post: {
       } else if (activePostsByType !== null && activePostsByType >= 2) {
         return {
           post: null,
-          error: "You already have active posts. Please delete or wait for approval.",
+          error: "You already have 2 active posts of this type. Please wait for approval or contact admin.",
         };
       }
 
@@ -120,7 +120,7 @@ export async function createPost(post: {
       } else if (totalActivePosts !== null && totalActivePosts >= 4) {
         return {
           post: null,
-          error: "You already have active posts. Please delete or wait for approval.",
+          error: "You already have 4 active posts. Please wait for approval or contact admin.",
         };
       }
     }

@@ -13,6 +13,7 @@ export default function PostPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     post_type: "employer" as "employer" | "employee",
@@ -38,6 +39,7 @@ export default function PostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
     setIsSubmitting(true);
 
     try {
@@ -82,8 +84,14 @@ export default function PostPage() {
         return;
       }
 
-      // Redirect to homepage
-      router.push(appConfig.routes.home);
+      // Show success message
+      setSuccess(true);
+      setIsSubmitting(false);
+
+      // Redirect to homepage after showing success message
+      setTimeout(() => {
+        router.push(appConfig.routes.home);
+      }, 2000);
     } catch (err) {
       console.error("Error submitting form:", err);
       setError("An unexpected error occurred");
@@ -262,6 +270,31 @@ export default function PostPage() {
                   Selected: {formData.photo.name}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200 flex items-start gap-3">
+              <svg
+                className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600 dark:text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div className="flex-1">
+                <p className="font-semibold mb-1">Post submitted successfully!</p>
+                <p className="text-green-700 dark:text-green-300">
+                  Your post is pending admin approval. It will appear on the homepage once approved.
+                </p>
+              </div>
             </div>
           )}
 
