@@ -23,14 +23,14 @@ export function PostCard({ post }: PostCardProps) {
   const isHiring = post.post_type === "employer";
 
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col transform hover:-translate-y-1">
+    <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200 flex flex-col transform hover:-translate-y-0.5 h-full">
       {/* Role Badge at Top */}
       <div className="mb-3">
         <span
-          className={`inline-block px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
+          className={`inline-block px-3 py-1.5 text-xs font-semibold rounded-full uppercase tracking-wide ${
             isHiring
-              ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-              : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+              ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary"
+              : "bg-accent/10 text-accent dark:bg-accent/20 dark:text-accent"
           }`}
         >
           {isHiring ? "HIRE A WORKER" : "FIND A JOB"}
@@ -86,21 +86,21 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Work Type (Bold) */}
-      <h3 className="font-bold text-lg mb-3 text-foreground line-clamp-2">{post.work}</h3>
+      <h3 className="font-semibold text-lg mb-3 text-foreground line-clamp-2 leading-snug">{post.work}</h3>
 
       {/* Time (Small Tag) */}
-      <div className="mb-3">
-        <span className="inline-block px-2 py-1 text-xs font-medium rounded-md bg-muted text-muted-foreground">
+      <div className="mb-4">
+        <span className="inline-block px-2.5 py-1 text-xs font-medium rounded-md bg-muted/60 text-muted-foreground">
           {post.time}
         </span>
       </div>
 
       {/* Details */}
-      <div className="space-y-2.5 mb-4 flex-1">
+      <div className="space-y-3 mb-5 flex-1">
         {/* Location */}
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2.5 text-sm">
           <svg
-            className="w-4 h-4 text-muted-foreground flex-shrink-0"
+            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -118,13 +118,13 @@ export function PostCard({ post }: PostCardProps) {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <span className="text-muted-foreground">{post.place}</span>
+          <span className="text-muted-foreground leading-relaxed">{post.place}</span>
         </div>
 
         {/* Salary (Formatted) */}
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2.5 text-sm">
           <svg
-            className="w-4 h-4 text-muted-foreground flex-shrink-0"
+            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -136,13 +136,13 @@ export function PostCard({ post }: PostCardProps) {
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <span className="font-semibold text-foreground">{formatSalary(post.salary)}</span>
+          <span className="font-semibold text-foreground leading-relaxed">{formatSalary(post.salary)}</span>
         </div>
 
         {/* Contact */}
-        <div className="flex items-center gap-2 text-sm pt-2 border-t">
+        <div className="flex items-center gap-2.5 text-sm pt-3 border-t border-border/50">
           <svg
-            className="w-4 h-4 text-muted-foreground flex-shrink-0"
+            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -164,9 +164,9 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* CTA Button */}
       {!contactVisible && (
-        <div className="mt-auto space-y-2">
+        <div className="mt-auto space-y-2.5 pt-2">
           <Link href={`${appConfig.routes.unlock}/${post.id}`} className="block">
-            <Button className="w-full" size="lg">
+            <Button className="w-full font-medium shadow-sm hover:shadow transition-shadow duration-200" size="lg">
               🔓 Unlock Contact
             </Button>
           </Link>

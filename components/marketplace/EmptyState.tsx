@@ -50,7 +50,7 @@ export function EmptyState({ activeTab }: EmptyStateProps) {
         </p>
 
         <Link href={appConfig.routes.post}>
-          <Button size="lg" className="text-base px-8">
+          <Button size="lg" className="px-8">
             {isAll ? "➕ Create Post" : isHiring ? "➕ Post a Job" : "➕ Find a Job"}
           </Button>
         </Link>

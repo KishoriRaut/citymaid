@@ -106,20 +106,21 @@ export default function PostPage() {
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">{pageTitle}</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">{pageTitle}</h1>
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">Fill in the details to create your post</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Role Toggle */}
           <div>
-            <label className="block text-sm font-medium mb-2">I want to</label>
-            <div className="flex gap-4">
+            <label className="block text-sm font-semibold mb-3 text-foreground">I want to</label>
+            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => handlePostTypeChange("employer")}
-                className={`flex-1 px-4 py-3 rounded-md border-2 transition-colors ${
+                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all duration-200 font-medium ${
                   formData.post_type === "employer"
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-background hover:bg-accent"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
+                    : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
                 }`}
               >
                 Hire a Worker
@@ -127,27 +128,27 @@ export default function PostPage() {
               <button
                 type="button"
                 onClick={() => handlePostTypeChange("employee")}
-                className={`flex-1 px-4 py-3 rounded-md border-2 transition-colors ${
+                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all duration-200 font-medium ${
                   formData.post_type === "employee"
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-input bg-background hover:bg-accent"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
+                    : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
                 }`}
               >
                 Find a Job
               </button>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">Select your purpose to continue</p>
+            <p className="mt-2.5 text-sm text-muted-foreground">Select your purpose to continue</p>
           </div>
 
           {/* Work Dropdown */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
               Work <span className="text-destructive">*</span>
             </label>
             <select
               value={formData.work}
               onChange={(e) => setFormData({ ...formData, work: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md bg-background"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
               required
             >
               <option value="">Select work type</option>
@@ -167,7 +168,7 @@ export default function PostPage() {
                 placeholder="Specify work type"
                 value={formData.workOther}
                 onChange={(e) => setFormData({ ...formData, workOther: e.target.value })}
-                className="w-full mt-2 px-3 py-2 border rounded-md bg-background"
+                className="w-full mt-2.5 px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
                 required
               />
             )}
@@ -175,13 +176,13 @@ export default function PostPage() {
 
           {/* Time Dropdown */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
               Time <span className="text-destructive">*</span>
             </label>
             <select
               value={formData.time}
               onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              className="w-full px-3 py-2 border rounded-md bg-background"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
               required
             >
               <option value="">Select time</option>
@@ -201,7 +202,7 @@ export default function PostPage() {
                 placeholder="Specify schedule"
                 value={formData.timeOther}
                 onChange={(e) => setFormData({ ...formData, timeOther: e.target.value })}
-                className="w-full mt-2 px-3 py-2 border rounded-md bg-background"
+                className="w-full mt-2.5 px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
                 required
               />
             )}
@@ -209,7 +210,7 @@ export default function PostPage() {
 
           {/* Place */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
               Place <span className="text-destructive">*</span>
             </label>
             <input
@@ -217,14 +218,14 @@ export default function PostPage() {
               value={formData.place}
               onChange={(e) => setFormData({ ...formData, place: e.target.value })}
               placeholder="e.g., Kathmandu, Lalitpur"
-              className="w-full px-3 py-2 border rounded-md bg-background"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
               required
             />
           </div>
 
           {/* Salary */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
               Salary <span className="text-destructive">*</span>
             </label>
             <input
@@ -232,14 +233,14 @@ export default function PostPage() {
               value={formData.salary}
               onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
               placeholder="e.g., 5000, Negotiable"
-              className="w-full px-3 py-2 border rounded-md bg-background"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
               required
             />
           </div>
 
           {/* Contact */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
               Contact <span className="text-destructive">*</span>
             </label>
             <input
@@ -247,7 +248,7 @@ export default function PostPage() {
               value={formData.contact}
               onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
               placeholder="Phone number or contact info"
-              className="w-full px-3 py-2 border rounded-md bg-background"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
               required
             />
           </div>
@@ -255,7 +256,7 @@ export default function PostPage() {
           {/* Photo Upload - Only for Employee Posts */}
           {formData.post_type === "employee" && (
             <div>
-              <label className="block text-sm font-medium mb-2">Photo (Optional)</label>
+              <label className="block text-sm font-semibold mb-2.5 text-foreground">Photo (Optional)</label>
               <input
                 type="file"
                 accept="image/*"
@@ -263,10 +264,10 @@ export default function PostPage() {
                   const file = e.target.files?.[0] || null;
                   setFormData({ ...formData, photo: file });
                 }}
-                className="w-full px-3 py-2 border rounded-md bg-background"
+                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
               />
               {formData.photo && (
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2.5 text-sm text-muted-foreground">
                   Selected: {formData.photo.name}
                 </p>
               )}
@@ -306,16 +307,16 @@ export default function PostPage() {
           )}
 
           {/* Submit Button */}
-          <div className="flex gap-4">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push(appConfig.routes.home)}
-              className="flex-1"
+              className="flex-1 border-border hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
+            <Button type="submit" disabled={isSubmitting} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
               {isSubmitting ? "Submitting..." : "Submit Post"}
             </Button>
           </div>

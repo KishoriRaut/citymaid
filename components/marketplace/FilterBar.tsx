@@ -39,8 +39,8 @@ export function FilterBar({
     salaryFilter !== "";
 
   return (
-    <div className="mb-6 sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm -mx-4 px-4 md:mx-0 md:px-0 md:border-b-0 md:shadow-none">
-      <div className="py-4">
+    <div className="mb-8 sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50 shadow-sm -mx-4 px-4 md:mx-0 md:px-0 md:border-b-0 md:shadow-none">
+      <div className="py-5">
         {/* Desktop Layout: Horizontal Row */}
         <div className="hidden md:flex items-center gap-4">
           {/* Work Type */}
@@ -51,7 +51,7 @@ export function FilterBar({
             <select
               value={workFilter}
               onChange={(e) => onWorkChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
             >
               {WORK_OPTIONS.map((option) => (
                 <option key={option} value={option === "All Work Types" ? "All" : option}>
@@ -69,7 +69,7 @@ export function FilterBar({
             <select
               value={timeFilter}
               onChange={(e) => onTimeChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
             >
               {TIME_OPTIONS.map((option) => (
                 <option key={option} value={option === "All Times" ? "All" : option}>
@@ -89,7 +89,7 @@ export function FilterBar({
               placeholder="Search location..."
               value={placeFilter}
               onChange={(e) => onPlaceChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
             />
           </div>
 
@@ -103,7 +103,7 @@ export function FilterBar({
               placeholder="Search salary..."
               value={salaryFilter}
               onChange={(e) => onSalaryChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-colors"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
             />
           </div>
 
@@ -112,13 +112,13 @@ export function FilterBar({
             {hasActiveFilters && (
               <button
                 onClick={onReset}
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap border rounded-lg hover:bg-accent"
+                className="px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 whitespace-nowrap border border-border rounded-lg hover:bg-primary/10 hover:border-primary/30"
               >
                 Reset
               </button>
             )}
             <Link href={appConfig.routes.post}>
-              <Button className="whitespace-nowrap">
+              <Button size="lg" className="whitespace-nowrap shadow-sm hover:shadow transition-shadow duration-200">
                 + Create Post
               </Button>
             </Link>
@@ -136,7 +136,7 @@ export function FilterBar({
               <select
                 value={workFilter}
                 onChange={(e) => onWorkChange(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
               >
                 {WORK_OPTIONS.map((option) => (
                   <option key={option} value={option === "All Work Types" ? "All" : option}>
@@ -152,7 +152,7 @@ export function FilterBar({
               <select
                 value={timeFilter}
                 onChange={(e) => onTimeChange(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
               >
                 {TIME_OPTIONS.map((option) => (
                   <option key={option} value={option === "All Times" ? "All" : option}>
@@ -173,7 +173,7 @@ export function FilterBar({
               placeholder="Search location..."
               value={placeFilter}
               onChange={(e) => onPlaceChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
             />
           </div>
 
@@ -187,7 +187,7 @@ export function FilterBar({
               placeholder="Search salary..."
               value={salaryFilter}
               onChange={(e) => onSalaryChange(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
             />
           </div>
 
@@ -196,13 +196,13 @@ export function FilterBar({
             {hasActiveFilters && (
               <button
                 onClick={onReset}
-                className="flex-1 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border rounded-lg hover:bg-accent"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 border border-border rounded-lg hover:bg-primary/10 hover:border-primary/30"
               >
                 Reset Filters
               </button>
             )}
             <Link href={appConfig.routes.post} className={hasActiveFilters ? "flex-1" : "w-full"}>
-              <Button className="w-full whitespace-nowrap">
+              <Button size="lg" className="w-full whitespace-nowrap shadow-sm hover:shadow transition-shadow duration-200">
                 + Create Post
               </Button>
             </Link>

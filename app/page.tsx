@@ -162,9 +162,9 @@ export default function Home() {
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8">
       {/* Clean Header */}
-      <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">CityMaid Marketplace</h1>
-        <p className="text-muted-foreground text-lg">Hire trusted local workers or find jobs near you — fast and safe.</p>
+      <div className="mb-10 text-center sm:text-left">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 tracking-tight">CityMaid Marketplace</h1>
+        <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">Hire trusted local workers or find jobs near you — fast and safe.</p>
       </div>
 
       {/* Primary Tabs */}
@@ -185,9 +185,9 @@ export default function Home() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 rounded-md bg-destructive/10 text-destructive">
-          <p className="font-semibold mb-2">Error loading posts:</p>
-          <p className="text-sm">{error}</p>
+        <div className="mb-8 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+          <p className="font-semibold mb-1.5">Error loading posts:</p>
+          <p className="text-sm leading-relaxed">{error}</p>
         </div>
       )}
 

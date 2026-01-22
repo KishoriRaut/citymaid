@@ -126,7 +126,7 @@ export default function UnlockPage() {
       <div className="container mx-auto px-4 py-8 sm:py-12">
         <div className="max-w-2xl mx-auto">
           <div className="p-4 rounded-md bg-destructive/10 text-destructive">{error}</div>
-          <Button onClick={() => router.push(appConfig.routes.home)} className="mt-4">
+          <Button onClick={() => router.push(appConfig.routes.home)} size="lg" className="mt-4">
             Go Home
           </Button>
         </div>
@@ -149,17 +149,18 @@ export default function UnlockPage() {
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">Unlock Contact</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">Unlock Contact</h1>
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">Complete payment to view contact information</p>
 
         {/* Post Summary */}
-        <div className="rounded-xl border bg-card p-6 mb-6 shadow-sm">
+        <div className="rounded-xl border border-border/50 bg-card p-6 mb-8 shadow-sm">
           {/* Badge */}
           <div className="mb-4">
             <span
-              className={`inline-block px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
+              className={`inline-block px-3 py-1.5 text-xs font-semibold rounded-full uppercase tracking-wide ${
                 isHiring
-                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                  : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                  ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary"
+                  : "bg-accent/10 text-accent dark:bg-accent/20 dark:text-accent"
               }`}
             >
               {isHiring ? "HIRE A WORKER" : "FIND A JOB"}
@@ -217,8 +218,8 @@ export default function UnlockPage() {
           </div>
 
           {/* Post Details */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-foreground">{post.work}</h2>
+          <div className="space-y-5">
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground leading-tight">{post.work}</h2>
             
             <div className="grid gap-3 sm:grid-cols-2">
               {/* Time */}
@@ -291,9 +292,9 @@ export default function UnlockPage() {
               </div>
 
               {/* Contact */}
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border-2 border-dashed">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border-2 border-dashed border-border/50">
                 <svg
-                  className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0"
+                  className="w-5 h-5 text-muted-foreground/70 mt-0.5 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -317,33 +318,35 @@ export default function UnlockPage() {
 
         {/* Payment Form */}
         {success ? (
-          <div className="rounded-lg border bg-green-50 dark:bg-green-900/20 p-6 text-center">
+          <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-6 text-center shadow-sm">
             <h2 className="text-xl font-semibold mb-2 text-green-800 dark:text-green-200">
               Payment Submitted!
             </h2>
-            <p className="text-green-700 dark:text-green-300 mb-4">
+            <p className="text-green-700 dark:text-green-300 mb-5 leading-relaxed">
               Your payment request has been submitted. The contact will be unlocked after
               verification.
             </p>
-            <Button onClick={() => router.push(appConfig.routes.home)}>Go Home</Button>
+            <Button onClick={() => router.push(appConfig.routes.home)} size="lg" className="shadow-sm hover:shadow transition-shadow duration-200">
+              Go Home
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <h2 className="text-lg font-semibold mb-4">Payment Information</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Amount: <span className="font-semibold">Rs. 3,000</span>
+            <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
+              <h2 className="text-lg font-semibold mb-1 text-foreground">Payment Information</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Amount: <span className="font-semibold text-foreground">Rs. 3,000</span>
               </p>
 
               {/* Payment Method */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Payment Method</label>
+              <div className="mb-5">
+                <label className="block text-sm font-semibold mb-2.5 text-foreground">Payment Method</label>
                 <select
                   value={formData.method}
                   onChange={(e) =>
                     setFormData({ ...formData, method: e.target.value as "qr" | "esewa" | "bank" })
                   }
-                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
                   required
                 >
                   {PAYMENT_METHODS.map((method) => (
@@ -356,7 +359,7 @@ export default function UnlockPage() {
 
               {/* Reference ID */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-semibold mb-2.5 text-foreground">
                   Reference ID / Transaction ID
                 </label>
                 <input
@@ -364,10 +367,10 @@ export default function UnlockPage() {
                   value={formData.reference_id}
                   onChange={(e) => setFormData({ ...formData, reference_id: e.target.value })}
                   placeholder="Enter your payment reference"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
+                  className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
                   required
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
                   Enter the transaction ID or reference number from your payment
                 </p>
               </div>
@@ -375,22 +378,22 @@ export default function UnlockPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+              <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
                 {error}
               </div>
             )}
 
             {/* Submit Button */}
-            <div className="flex gap-4">
+            <div className="flex gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.push(appConfig.routes.home)}
-                className="flex-1"
+                className="flex-1 border-border hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
+              <Button type="submit" disabled={isSubmitting} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
                 {isSubmitting ? "Submitting..." : "Submit Payment"}
               </Button>
             </div>
