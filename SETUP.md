@@ -24,7 +24,7 @@ npm install --save-dev @types/bcryptjs
    - Copy your **service_role key** (keep this secret!)
 
 4. **Create environment file**:
-   - Create a file named `.env.local` in the `siscora-app` directory
+   - Create a file named `.env.local` in the `citymaid` directory
    - Add the following:
    ```
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url

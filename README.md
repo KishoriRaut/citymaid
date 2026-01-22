@@ -1,6 +1,6 @@
-# Siscora Starter App
+# CityMaid Marketplace
 
-A modern, production-ready Next.js starter template for building Siscora-branded applications with authentication, responsive design, and best practices built-in.
+A modern, production-ready Next.js marketplace application for connecting employers with workers. Built with authentication, responsive design, and best practices built-in.
 
 ## 🚀 Features
 
@@ -50,7 +50,7 @@ A modern, production-ready Next.js starter template for building Siscora-branded
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd siscora-app
+cd citymaid
 
 # Install dependencies
 npm install
@@ -92,7 +92,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 📁 Project Structure
 
 ```
-siscora-app/
+citymaid/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
 │   ├── dashboard/         # Dashboard page
@@ -207,7 +207,7 @@ This is a starter template. Feel free to:
 
 ## 📄 License
 
-This starter template is provided as-is for building Siscora-branded applications.
+This marketplace application is provided as-is for building CityMaid-branded applications.
 
 ## 🆘 Support
 
@@ -227,4 +227,4 @@ After setting up:
 
 ---
 
-**Built with ❤️ for Siscora**
+**Built with ❤️ for CityMaid**

@@ -1,19 +1,19 @@
 /**
  * Application configuration
- * Customize these values for your Siscora-branded application
+ * Customize these values for your CityMaid-branded application
  */
 
 export const appConfig = {
   // Brand Information
   brand: {
-    name: "Siscora",
-    tagline: "Building Smart Software Solutions",
-    description: "Building Smart Software Solutions",
+    name: "CityMaid",
+    tagline: "Find work or hire help in your city",
+    description: "CityMaid Marketplace - Connect employers with workers for local services",
   },
   
   // App Information
   app: {
-    name: "siscora-app",
+    name: "citymaid",
     version: "0.1.0",
   },
   

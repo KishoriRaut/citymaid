@@ -14,7 +14,7 @@ if (process.env.NODE_ENV === "development") {
     console.error("   SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "***" + supabaseServiceKey.slice(-10) : "MISSING");
     console.error("");
     console.error("📝 SOLUTION:");
-    console.error("   1. Create/check .env.local file in: siscora-app/.env.local");
+    console.error("   1. Create/check .env.local file in: citymaid/.env.local");
     console.error("   2. Add these lines (NO spaces around =):");
     console.error("      NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co");
     console.error("      SUPABASE_SERVICE_ROLE_KEY=your-service-role-key");
