@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
+import { appConfig } from "@/lib/config";
 
 interface ProfileUser extends User {
   updated_at?: string;
@@ -25,7 +26,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("");
 
   // Check authentication - redirects if not logged in
-  const currentUser = useAuth("/login");
+  const currentUser = useAuth(appConfig.routes.login);
   
   useEffect(() => {
     if (!currentUser) {
@@ -167,7 +168,7 @@ export default function ProfilePage() {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => router.push("/admin")}
+              onClick={() => router.push(appConfig.routes.admin)}
               className="min-h-[44px] sm:min-h-0 transition-all duration-200"
             >
               <span className="hidden sm:inline">← </span>Back to Dashboard
@@ -329,7 +330,7 @@ export default function ProfilePage() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => router.push("/login")}
+            onClick={() => router.push(appConfig.routes.login)}
           >
             Change Password
           </Button>

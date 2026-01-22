@@ -23,7 +23,7 @@ export function useAuth(redirectTo: string = "/login") {
 /**
  * Hook to redirect logged-in users away from auth pages
  */
-export function useAuthRedirect(redirectTo: string = "/dashboard") {
+export function useAuthRedirect(redirectTo: string = "/admin") {
   const router = useRouter();
 
   useEffect(() => {

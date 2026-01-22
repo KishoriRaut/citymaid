@@ -8,6 +8,7 @@ import { setSession, type User } from "@/lib/session";
 import { isValidEmail } from "@/lib/validation";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
+import { appConfig } from "@/lib/config";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -94,7 +95,7 @@ export default function LoginPage() {
       setPassword("");
 
       // Redirect immediately to admin dashboard after successful login
-      router.push("/admin");
+      router.push(appConfig.routes.admin);
     } catch (err) {
       const errorMessage = handleAPIError(err);
       setError(errorMessage);

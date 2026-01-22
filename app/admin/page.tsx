@@ -6,6 +6,7 @@ import { getCurrentUser, clearSession, type User } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { appConfig } from "@/lib/config";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      router.push("/login");
+      router.push(appConfig.routes.login);
       return;
     }
     setUser(currentUser);
@@ -24,7 +25,7 @@ export default function AdminDashboardPage() {
 
   const handleLogout = () => {
     clearSession();
-    router.push("/login");
+    router.push(appConfig.routes.login);
   };
 
   if (isLoading) {
@@ -92,7 +93,7 @@ export default function AdminDashboardPage() {
           <div className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
             <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-2">Quick Actions</h2>
             <div className="space-y-2">
-              <Link href="/admin/profile" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
+              <Link href={appConfig.routes.adminProfile} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
                 <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0">
                   View Profile
                 </Button>

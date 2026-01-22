@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { isValidEmail, isValidPassword } from "@/lib/validation";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
+import { appConfig } from "@/lib/config";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -83,7 +84,7 @@ export default function SignUpPage() {
 
       // Redirect to login page after successful signup
       // Note: Public signup is disabled - this is admin-only
-      router.push("/login");
+      router.push(appConfig.routes.login);
     } catch (err) {
       const errorMessage = handleAPIError(err);
       setError(errorMessage);
@@ -228,7 +229,7 @@ export default function SignUpPage() {
           <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Admin accounts are created by administrators only.</span>
             <div className="mt-2">
-              <Link href="/login" className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+              <Link href={appConfig.routes.login} className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
                 Sign in
               </Link>
             </div>
