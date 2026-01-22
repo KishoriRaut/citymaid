@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
@@ -11,41 +9,44 @@ import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
-import { Pagination } from "@/components/marketplace/Pagination";
+import { LoadMore } from "@/components/marketplace/LoadMore";
 
 export default function Home() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Primary tab: "Hiring" (employer) is default
-  const [activeTab, setActiveTab] = useState<"employer" | "employee">("employer");
+  // Primary tab: "All" is default
+  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("all");
   
   // Filters
   const [filters, setFilters] = useState({
     work: "All",
     time: "All",
     place: "",
-    salary: "",
+    salaryMin: "",
+    salaryMax: "",
   });
   
   const [hasMore, setHasMore] = useState(true);
-  const [offset, setOffset] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const POSTS_PER_PAGE = 9; // 8-10 cards initially
+  const POSTS_PER_LOAD = 12; // Load 10-15 posts at a time
 
   // Store all fetched posts for client-side filtering
   const [allPosts, setAllPosts] = useState<PostWithMaskedContact[]>([]);
 
-  const loadPosts = async () => {
-    setIsLoading(true);
-    setError(null);
+  const loadPosts = async (append = false) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+      setError(null);
+    }
 
     try {
-      // Fetch all posts for the active tab (use large limit to get all)
-      // We'll handle pagination client-side after filtering
+      // Fetch all posts (use large limit to get all for filtering)
       const { posts: fetchedPosts, total, error: fetchError } = await getPublicPostsClient({
-        post_type: activeTab,
+        post_type: activeTab === "all" ? undefined : activeTab,
         work: filters.work === "All" ? undefined : filters.work,
         limit: 1000, // Large limit to fetch all, then filter client-side
         offset: 0,
@@ -54,11 +55,17 @@ export default function Home() {
       if (fetchError) {
         setError(fetchError);
         setIsLoading(false);
+        setIsLoadingMore(false);
         return;
       }
 
-      // Apply client-side filters (time, place, salary)
+      // Apply client-side filters
       let filteredPosts = fetchedPosts;
+      
+      // Filter by post_type if not "all"
+      if (activeTab !== "all") {
+        filteredPosts = filteredPosts.filter((p) => p.post_type === activeTab);
+      }
       
       if (filters.time !== "All") {
         filteredPosts = filteredPosts.filter((p) => 
@@ -72,60 +79,51 @@ export default function Home() {
         );
       }
       
-      if (filters.salary) {
-        filteredPosts = filteredPosts.filter((p) =>
-          p.salary.toLowerCase().includes(filters.salary.toLowerCase())
-        );
+      // Salary range filter (extract numbers from salary strings)
+      if (filters.salaryMin || filters.salaryMax) {
+        filteredPosts = filteredPosts.filter((p) => {
+          const salaryStr = p.salary.toLowerCase();
+          const salaryNum = parseInt(salaryStr.replace(/[^0-9]/g, "")) || 0;
+          const minNum = parseInt(filters.salaryMin.replace(/[^0-9]/g, "")) || 0;
+          const maxNum = parseInt(filters.salaryMax.replace(/[^0-9]/g, "")) || Infinity;
+          
+          if (filters.salaryMin && salaryNum < minNum) return false;
+          if (filters.salaryMax && salaryNum > maxNum) return false;
+          return true;
+        });
       }
 
       // Store all filtered posts
       setAllPosts(filteredPosts);
       
-      // Apply pagination - show first page
-      const paginatedPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
-      setPosts(paginatedPosts);
-      setOffset(POSTS_PER_PAGE);
-      setHasMore(filteredPosts.length > POSTS_PER_PAGE);
-      setCurrentPage(1);
+      // Apply Load More pattern
+      if (append) {
+        // Append more posts
+        const currentCount = posts.length;
+        const newPosts = filteredPosts.slice(currentCount, currentCount + POSTS_PER_LOAD);
+        setPosts([...posts, ...newPosts]);
+        setHasMore(currentCount + newPosts.length < filteredPosts.length);
+      } else {
+        // Initial load - show first batch
+        const initialPosts = filteredPosts.slice(0, POSTS_PER_LOAD);
+        setPosts(initialPosts);
+        setHasMore(filteredPosts.length > POSTS_PER_LOAD);
+      }
       
       setIsLoading(false);
+      setIsLoadingMore(false);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
         console.error("Error loading posts:", err);
       }
       setError("Failed to load posts");
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(allPosts.length / POSTS_PER_PAGE));
-
-  const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages) return;
-    
-    const startIndex = (page - 1) * POSTS_PER_PAGE;
-    const endIndex = startIndex + POSTS_PER_PAGE;
-    const paginatedPosts = allPosts.slice(startIndex, endIndex);
-    
-    setPosts(paginatedPosts);
-    setCurrentPage(page);
-    setOffset(endIndex);
-    setHasMore(endIndex < allPosts.length);
-    
-    // Scroll to top of posts grid
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handlePrevious = () => {
-    if (currentPage > 1) {
-      goToPage(currentPage - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      goToPage(currentPage + 1);
-    }
+  const handleLoadMore = () => {
+    loadPosts(true);
   };
 
   const handleResetFilters = () => {
@@ -133,27 +131,27 @@ export default function Home() {
       work: "All",
       time: "All",
       place: "",
-      salary: "",
+      salaryMin: "",
+      salaryMax: "",
     });
   };
 
-  // Reload when tab or any filter changes
+  // Reload when tab or any filter changes (initial load, not append)
   useEffect(() => {
-    loadPosts();
-  }, [activeTab, filters.work, filters.time, filters.place, filters.salary]);
+    loadPosts(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, filters.work, filters.time, filters.place, filters.salaryMin, filters.salaryMax]);
 
-  const handleTabChange = (tab: "employer" | "employee") => {
+  const handleTabChange = (tab: "all" | "employer" | "employee") => {
     setActiveTab(tab);
-    setOffset(0);
+    setPosts([]);
     setHasMore(true);
-    setCurrentPage(1);
   };
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setOffset(0);
+    setPosts([]);
     setHasMore(true);
-    setCurrentPage(1);
   };
 
   return (
@@ -172,11 +170,13 @@ export default function Home() {
         workFilter={filters.work}
         timeFilter={filters.time}
         placeFilter={filters.place}
-        salaryFilter={filters.salary}
+        salaryMin={filters.salaryMin}
+        salaryMax={filters.salaryMax}
         onWorkChange={(value) => handleFilterChange("work", value)}
         onTimeChange={(value) => handleFilterChange("time", value)}
         onPlaceChange={(value) => handleFilterChange("place", value)}
-        onSalaryChange={(value) => handleFilterChange("salary", value)}
+        onSalaryMinChange={(value) => handleFilterChange("salaryMin", value)}
+        onSalaryMaxChange={(value) => handleFilterChange("salaryMax", value)}
         onReset={handleResetFilters}
       />
 
@@ -190,8 +190,8 @@ export default function Home() {
 
       {/* Posts Grid */}
       {isLoading && posts.length === 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
             <div key={i} className="rounded-xl border bg-card p-5">
               <Skeleton className="h-6 w-24 mb-4" />
               <Skeleton className="h-40 w-full mb-4 rounded-lg" />
@@ -206,19 +206,17 @@ export default function Home() {
         <EmptyState activeTab={activeTab} />
       ) : (
         <>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>
 
-          {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            isLoading={isLoading}
+          {/* Load More */}
+          <LoadMore
+            hasMore={hasMore}
+            isLoading={isLoadingMore}
+            onLoadMore={handleLoadMore}
           />
         </>
       )}

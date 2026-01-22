@@ -123,12 +123,16 @@ export async function createPost(post: {
     // ========================================================================
     // VALIDATION PASSED: Create the post
     // ========================================================================
+    // Force photo_url = NULL for employer posts (security: prevent client manipulation)
+    const postData = {
+      ...post,
+      photo_url: post.post_type === "employer" ? null : post.photo_url || null,
+      status: postStatus, // 'approved' for admins, 'pending' for regular users
+    };
+
     const { data, error } = await supabase
       .from("posts")
-      .insert({
-        ...post,
-        status: postStatus, // 'approved' for admins, 'pending' for regular users
-      })
+      .insert(postData)
       .select()
       .single();
 

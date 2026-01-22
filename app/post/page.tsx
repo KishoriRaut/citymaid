@@ -41,15 +41,24 @@ export default function PostPage() {
     photo: null as File | null,
   });
 
+  // Clear photo when switching to employer
+  const handlePostTypeChange = (newType: "employer" | "employee") => {
+    setFormData({
+      ...formData,
+      post_type: newType,
+      photo: newType === "employer" ? null : formData.photo, // Clear photo for employer
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
     try {
-      // Upload photo if provided
+      // Upload photo only for employee posts
       let photoUrl: string | null = null;
-      if (formData.photo) {
+      if (formData.post_type === "employee" && formData.photo) {
         const { url, error: uploadError } = await uploadPhoto(formData.photo);
         if (uploadError) {
           setError(uploadError);
@@ -58,6 +67,7 @@ export default function PostPage() {
         }
         photoUrl = url;
       }
+      // Employer posts: photo_url will be set to NULL on server-side
 
       // Determine work value
       const work = formData.work === "Other" ? formData.workOther : formData.work;
@@ -107,7 +117,7 @@ export default function PostPage() {
             <div className="flex gap-4">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, post_type: "employer" })}
+                onClick={() => handlePostTypeChange("employer")}
                 className={`flex-1 px-4 py-3 rounded-md border-2 transition-colors ${
                   formData.post_type === "employer"
                     ? "border-primary bg-primary text-primary-foreground"
@@ -118,7 +128,7 @@ export default function PostPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, post_type: "employee" })}
+                onClick={() => handlePostTypeChange("employee")}
                 className={`flex-1 px-4 py-3 rounded-md border-2 transition-colors ${
                   formData.post_type === "employee"
                     ? "border-primary bg-primary text-primary-foreground"
@@ -225,24 +235,26 @@ export default function PostPage() {
             />
           </div>
 
-          {/* Photo Upload */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Photo (Optional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0] || null;
-                setFormData({ ...formData, photo: file });
-              }}
-              className="w-full px-3 py-2 border rounded-md bg-background"
-            />
-            {formData.photo && (
-              <p className="mt-2 text-sm text-muted-foreground">
-                Selected: {formData.photo.name}
-              </p>
-            )}
-          </div>
+          {/* Photo Upload - Only for Employee Posts */}
+          {formData.post_type === "employee" && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Photo (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setFormData({ ...formData, photo: file });
+                }}
+                className="w-full px-3 py-2 border rounded-md bg-background"
+              />
+              {formData.photo && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Selected: {formData.photo.name}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (

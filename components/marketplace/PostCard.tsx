@@ -16,7 +16,7 @@ export function PostCard({ post }: PostCardProps) {
   const isHiring = post.post_type === "employer";
 
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col">
+    <div className="rounded-xl border bg-card p-5 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col transform hover:-translate-y-1">
       {/* Header: Badge and Time */}
       <div className="flex items-start justify-between mb-4">
         <span
@@ -31,16 +31,53 @@ export function PostCard({ post }: PostCardProps) {
         <span className="text-xs text-muted-foreground font-medium">{post.time}</span>
       </div>
 
-      {/* Photo */}
-      {post.photo_url && (
-        <div className="relative h-40 w-full mb-4 rounded-lg overflow-hidden bg-muted">
+      {/* Photo or Placeholder */}
+      <div className="relative h-40 w-full mb-4 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+        {isHiring ? (
+          // Employer posts: Always show briefcase icon (never show photos)
+          <div className="flex flex-col items-center justify-center text-muted-foreground">
+            <svg
+              className="w-12 h-12 opacity-50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            <p className="text-xs mt-2 opacity-75">No photo</p>
+          </div>
+        ) : post.photo_url ? (
+          // Employee posts: Show photo if available
           <img
             src={post.photo_url}
             alt={post.work}
             className="w-full h-full object-cover"
           />
-        </div>
-      )}
+        ) : (
+          // Employee posts: Show user icon if no photo
+          <div className="flex flex-col items-center justify-center text-muted-foreground">
+            <svg
+              className="w-12 h-12 opacity-50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            <p className="text-xs mt-2 opacity-75">No photo available</p>
+          </div>
+        )}
+      </div>
 
       {/* Title */}
       <h3 className="font-bold text-lg mb-4 text-foreground line-clamp-2">{post.work}</h3>
