@@ -25,8 +25,7 @@ export default function Home() {
     work: "All",
     time: "All",
     place: "",
-    salaryMin: "",
-    salaryMax: "",
+    salary: "",
   });
   
   const [hasMore, setHasMore] = useState(true);
@@ -79,18 +78,11 @@ export default function Home() {
         );
       }
       
-      // Salary range filter (extract numbers from salary strings)
-      if (filters.salaryMin || filters.salaryMax) {
-        filteredPosts = filteredPosts.filter((p) => {
-          const salaryStr = p.salary.toLowerCase();
-          const salaryNum = parseInt(salaryStr.replace(/[^0-9]/g, "")) || 0;
-          const minNum = parseInt(filters.salaryMin.replace(/[^0-9]/g, "")) || 0;
-          const maxNum = parseInt(filters.salaryMax.replace(/[^0-9]/g, "")) || Infinity;
-          
-          if (filters.salaryMin && salaryNum < minNum) return false;
-          if (filters.salaryMax && salaryNum > maxNum) return false;
-          return true;
-        });
+      // Salary filter (search within salary text)
+      if (filters.salary) {
+        filteredPosts = filteredPosts.filter((p) =>
+          p.salary.toLowerCase().includes(filters.salary.toLowerCase())
+        );
       }
 
       // Store all filtered posts
@@ -131,8 +123,7 @@ export default function Home() {
       work: "All",
       time: "All",
       place: "",
-      salaryMin: "",
-      salaryMax: "",
+      salary: "",
     });
   };
 
@@ -140,7 +131,7 @@ export default function Home() {
   useEffect(() => {
     loadPosts(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, filters.work, filters.time, filters.place, filters.salaryMin, filters.salaryMax]);
+  }, [activeTab, filters.work, filters.time, filters.place, filters.salary]);
 
   const handleTabChange = (tab: "all" | "employer" | "employee") => {
     setActiveTab(tab);
@@ -170,13 +161,11 @@ export default function Home() {
         workFilter={filters.work}
         timeFilter={filters.time}
         placeFilter={filters.place}
-        salaryMin={filters.salaryMin}
-        salaryMax={filters.salaryMax}
+        salaryFilter={filters.salary}
         onWorkChange={(value) => handleFilterChange("work", value)}
         onTimeChange={(value) => handleFilterChange("time", value)}
         onPlaceChange={(value) => handleFilterChange("place", value)}
-        onSalaryMinChange={(value) => handleFilterChange("salaryMin", value)}
-        onSalaryMaxChange={(value) => handleFilterChange("salaryMax", value)}
+        onSalaryChange={(value) => handleFilterChange("salary", value)}
         onReset={handleResetFilters}
       />
 
