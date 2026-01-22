@@ -260,7 +260,7 @@ function PostCard({
                   : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
               }`}
             >
-              {post.post_type === "employer" ? "Hiring" : "Looking for Work"}
+              {post.post_type === "employer" ? "Hire Staff" : "Find a Job"}
             </span>
             <span
               className={`px-2 py-1 text-xs font-medium rounded ${
@@ -286,8 +286,8 @@ function PostCard({
                     onChange={(e) => setFormData({ ...formData, post_type: e.target.value as "employer" | "employee" })}
                     className="w-full px-3 py-2 border rounded-md bg-background text-sm"
                   >
-                    <option value="employer">Hiring</option>
-                    <option value="employee">Looking for Work</option>
+                    <option value="employer">Hire Staff</option>
+                    <option value="employee">Find a Job</option>
                   </select>
                 </div>
                 <div>

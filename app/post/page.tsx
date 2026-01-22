@@ -91,15 +91,19 @@ export default function PostPage() {
     }
   };
 
+  const pageTitle = formData.post_type === "employer" 
+    ? "Post a Job Requirement" 
+    : "Create Your Work Profile";
+
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6">Create a Post</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6">{pageTitle}</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Role Toggle */}
           <div>
-            <label className="block text-sm font-medium mb-2">I am</label>
+            <label className="block text-sm font-medium mb-2">I want to</label>
             <div className="flex gap-4">
               <button
                 type="button"
@@ -110,7 +114,7 @@ export default function PostPage() {
                     : "border-input bg-background hover:bg-accent"
                 }`}
               >
-                I am hiring
+                Hire Staff
               </button>
               <button
                 type="button"
@@ -121,9 +125,10 @@ export default function PostPage() {
                     : "border-input bg-background hover:bg-accent"
                 }`}
               >
-                I am looking for work
+                Find a Job
               </button>
             </div>
+            <p className="mt-2 text-sm text-muted-foreground">Select your purpose to continue</p>
           </div>
 
           {/* Work Dropdown */}

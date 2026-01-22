@@ -28,7 +28,7 @@ export function PostCard({ post }: PostCardProps) {
               : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
           }`}
         >
-          {isHiring ? "HIRING" : "LOOKING FOR WORK"}
+          {isHiring ? "HIRE STAFF" : "FIND A JOB"}
         </span>
         <span className="text-xs text-muted-foreground font-medium">{post.time}</span>
       </div>

@@ -26,7 +26,7 @@ export function Tabs({ activeTab, onTabChange }: TabsProps) {
             : "bg-muted text-muted-foreground hover:bg-muted/80"
         }`}
       >
-        Hiring
+        Hire Staff
       </button>
       <button
         onClick={() => onTabChange("employee")}
@@ -36,7 +36,7 @@ export function Tabs({ activeTab, onTabChange }: TabsProps) {
             : "bg-muted text-muted-foreground hover:bg-muted/80"
         }`}
       >
-        Looking for Work
+        Find a Job
       </button>
     </div>
   );
