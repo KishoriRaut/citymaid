@@ -4,18 +4,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { getAllWorkTypes } from "@/lib/work-types";
+import { getAllTimeOptions } from "@/lib/work-time";
 
 const WORK_OPTIONS = ["All Work Types", ...getAllWorkTypes()];
-
-const TIME_OPTIONS = [
-  "All Times",
-  "Morning",
-  "Day (9–5)",
-  "Evening",
-  "Night",
-  "Full Time",
-  "Part Time",
-];
+const TIME_OPTIONS = ["All Times", ...getAllTimeOptions()];
 
 interface FilterBarProps {
   workFilter: string;

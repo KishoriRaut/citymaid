@@ -7,15 +7,7 @@ import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
 import { uploadPhoto } from "@/lib/storage";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
-
-const TIME_OPTIONS = [
-  "Morning",
-  "Day (9–5)",
-  "Evening",
-  "Night",
-  "Full Time",
-  "Part Time",
-];
+import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
 
 export default function PostPage() {
   const router = useRouter();
@@ -27,6 +19,7 @@ export default function PostPage() {
     work: "",
     workOther: "",
     time: "",
+    timeOther: "",
     place: "",
     salary: "",
     contact: "",
@@ -61,11 +54,12 @@ export default function PostPage() {
       }
       // Employer posts: photo_url will be set to NULL on server-side
 
-      // Determine work value
+      // Determine work and time values
       const work = formData.work === "Other" ? formData.workOther : formData.work;
+      const time = formData.time === "Other" ? formData.timeOther : formData.time;
 
       // Validate required fields
-      if (!work || !formData.time || !formData.place || !formData.salary || !formData.contact) {
+      if (!work || !time || !formData.place || !formData.salary || !formData.contact) {
         setError("Please fill in all required fields");
         setIsSubmitting(false);
         return;
@@ -75,7 +69,7 @@ export default function PostPage() {
       const { post, error: createError } = await createPost({
         post_type: formData.post_type,
         work,
-        time: formData.time,
+        time,
         place: formData.place,
         salary: formData.salary,
         contact: formData.contact,
@@ -178,12 +172,26 @@ export default function PostPage() {
               required
             >
               <option value="">Select time</option>
-              {TIME_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
+              {getGroupedTimeOptions().map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.types.map((timeOption) => (
+                    <option key={timeOption} value={timeOption}>
+                      {timeOption}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
+            {isOtherTimeOption(formData.time) && (
+              <input
+                type="text"
+                placeholder="Specify schedule"
+                value={formData.timeOther}
+                onChange={(e) => setFormData({ ...formData, timeOther: e.target.value })}
+                className="w-full mt-2 px-3 py-2 border rounded-md bg-background"
+                required
+              />
+            )}
           </div>
 
           {/* Place */}
