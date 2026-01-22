@@ -115,6 +115,7 @@ export async function getPublicPosts(filters?: {
 }
 
 // Create a new post (public)
+// Includes spam prevention and duplicate detection
 export async function createPost(post: {
   post_type: "employer" | "employee";
   work: string;
@@ -125,6 +126,77 @@ export async function createPost(post: {
   photo_url?: string | null;
 }) {
   try {
+    // ========================================================================
+    // VALIDATION 1: Check for duplicate posts
+    // ========================================================================
+    // Prevent posting the same post (same contact + type + work + place)
+    // Only check posts that are still active (pending, approved, hidden)
+    // Deleted posts won't be found, allowing reposting after deletion
+    const { data: duplicateCheck, error: duplicateError } = await supabase
+      .from("posts")
+      .select("id, status")
+      .eq("contact", post.contact)
+      .eq("post_type", post.post_type)
+      .eq("work", post.work)
+      .eq("place", post.place)
+      .in("status", ["pending", "approved", "hidden"]);
+
+    if (duplicateError) {
+      console.error("Error checking for duplicates:", duplicateError);
+      // Continue with creation if check fails (don't block on validation error)
+    } else if (duplicateCheck && duplicateCheck.length > 0) {
+      return {
+        post: null,
+        error: "A similar post already exists.",
+      };
+    }
+
+    // ========================================================================
+    // VALIDATION 2: Check active post limits per contact
+    // ========================================================================
+    // Active posts = status IN ('pending', 'approved')
+    // Rules:
+    // - Max 2 active posts per post_type per contact
+    // - Max 4 total active posts per contact
+
+    // Count active posts for this contact and post_type
+    const { count: activePostsByType, error: countError1 } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true })
+      .eq("contact", post.contact)
+      .eq("post_type", post.post_type)
+      .in("status", ["pending", "approved"]);
+
+    if (countError1) {
+      console.error("Error counting posts by type:", countError1);
+      // Continue with creation if check fails
+    } else if (activePostsByType !== null && activePostsByType >= 2) {
+      return {
+        post: null,
+        error: "You already have active posts. Please delete or wait for approval.",
+      };
+    }
+
+    // Count total active posts for this contact
+    const { count: totalActivePosts, error: countError2 } = await supabase
+      .from("posts")
+      .select("*", { count: "exact", head: true })
+      .eq("contact", post.contact)
+      .in("status", ["pending", "approved"]);
+
+    if (countError2) {
+      console.error("Error counting total posts:", countError2);
+      // Continue with creation if check fails
+    } else if (totalActivePosts !== null && totalActivePosts >= 4) {
+      return {
+        post: null,
+        error: "You already have active posts. Please delete or wait for approval.",
+      };
+    }
+
+    // ========================================================================
+    // VALIDATION PASSED: Create the post
+    // ========================================================================
     const { data, error } = await supabase
       .from("posts")
       .insert({
