@@ -9,6 +9,7 @@ import { maskContact } from "@/lib/utils";
 import { createPayment } from "@/lib/payments";
 import type { Post } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CONTACT_UNLOCK_PRICE, getContactUnlockPriceFormatted } from "@/lib/pricing";
 
 const PAYMENT_METHODS = [
   { value: "qr", label: "QR Code" },
@@ -34,6 +35,7 @@ export default function UnlockPage() {
 
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [qrCodeError, setQrCodeError] = useState(false);
 
   useEffect(() => {
     // Get or create visitor ID
@@ -88,6 +90,7 @@ export default function UnlockPage() {
         visitor_id: visitorId,
         method: formData.method,
         reference_id: formData.reference_id || undefined,
+        amount: CONTACT_UNLOCK_PRICE,
       });
 
       if (paymentError || !payment) {
@@ -150,7 +153,11 @@ export default function UnlockPage() {
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">Unlock Contact</h1>
-        <p className="text-muted-foreground mb-8 text-sm sm:text-base">Complete payment to view contact information</p>
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">
+          You are paying {getContactUnlockPriceFormatted()} to unlock one verified contact number.
+          <br />
+          This fee helps keep the platform safe for workers.
+        </p>
 
         {/* Post Summary */}
         <div className="rounded-xl border border-border/50 bg-card p-6 mb-8 shadow-sm">
@@ -335,7 +342,7 @@ export default function UnlockPage() {
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
               <h2 className="text-lg font-semibold mb-1 text-foreground">Payment Information</h2>
               <p className="text-sm text-muted-foreground mb-6">
-                Amount: <span className="font-semibold text-foreground">Rs. 3,000</span>
+                Amount: <span className="font-semibold text-foreground">{getContactUnlockPriceFormatted()}</span>
               </p>
 
               {/* Payment Method */}
@@ -355,6 +362,95 @@ export default function UnlockPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Payment Details Based on Method */}
+              <div className="mb-5 p-4 rounded-lg bg-muted/30 border border-border/50">
+                {formData.method === "qr" && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-3">Scan QR Code to Pay</h3>
+                    <div className="flex justify-center">
+                      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl rounded-lg border-2 border-dashed border-border bg-background flex items-center justify-center overflow-hidden p-4 sm:p-6">
+                        {/* QR Code Image - Add your QR code image to public/qr-code.png */}
+                        {qrCodeError ? (
+                          <div className="text-center p-6 w-full">
+                            <svg
+                              className="w-16 h-16 mx-auto text-muted-foreground mb-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                              />
+                            </svg>
+                            <p className="text-sm text-muted-foreground">QR Code image not found</p>
+                            <p className="text-xs text-muted-foreground mt-1">Add qr-code.png to public folder</p>
+                          </div>
+                        ) : (
+                          <img
+                            src="/qr-code.png"
+                            alt={`Payment QR Code - Scan to pay ${getContactUnlockPriceFormatted()}`}
+                            className="w-full min-w-[280px] sm:min-w-[320px] md:min-w-[400px] max-w-[500px] aspect-square object-contain"
+                            onError={() => setQrCodeError(true)}
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-center text-muted-foreground mt-3 leading-relaxed">
+                      Scan this QR code with your mobile banking app or eSewa to pay {getContactUnlockPriceFormatted()}
+                    </p>
+                  </div>
+                )}
+
+                {formData.method === "esewa" && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-foreground mb-2">eSewa Payment Details</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-muted-foreground min-w-[100px]">eSewa ID:</span>
+                        <span className="font-semibold text-foreground">+9779841317273</span>
+                      </div>
+                      <div className="pt-2 border-t border-border/50">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Send {getContactUnlockPriceFormatted()} to the eSewa ID above. After payment, enter the transaction ID below.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {formData.method === "bank" && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-foreground mb-2">Bank Transfer Details</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <span className="font-medium text-muted-foreground min-w-[120px]">A/C Holder:</span>
+                        <span className="font-semibold text-foreground">CITY MAID SERVICES (PVT).LTD</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-muted-foreground min-w-[120px]">Account Number:</span>
+                        <span className="font-semibold text-foreground font-mono">005010010001200</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-muted-foreground min-w-[120px]">Bank Name:</span>
+                        <span className="font-semibold text-foreground">Sanima Bank Limited</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-muted-foreground min-w-[120px]">Branch:</span>
+                        <span className="font-semibold text-foreground">KUMARIPATI BRANCH</span>
+                      </div>
+                      <div className="pt-2 border-t border-border/50">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Transfer {getContactUnlockPriceFormatted()} to the account above. After transfer, enter the transaction reference below.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Reference ID */}

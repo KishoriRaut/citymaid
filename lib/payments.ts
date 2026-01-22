@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "./supabase";
+import { CONTACT_UNLOCK_PRICE } from "./pricing";
 
 export interface Payment {
   id: string;
@@ -27,7 +28,7 @@ export async function createPayment(payment: {
       .insert({
         ...payment,
         status: "pending",
-        amount: payment.amount || 3000,
+        amount: payment.amount || CONTACT_UNLOCK_PRICE,
       })
       .select()
       .single();

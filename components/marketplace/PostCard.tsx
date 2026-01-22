@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { maskContact, formatSalary } from "@/lib/utils";
+import { getContactUnlockPriceFormatted } from "@/lib/pricing";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -167,11 +168,11 @@ export function PostCard({ post }: PostCardProps) {
         <div className="mt-auto space-y-2.5 pt-2">
           <Link href={`${appConfig.routes.unlock}/${post.id}`} className="block">
             <Button className="w-full font-medium shadow-sm hover:shadow transition-shadow duration-200" size="lg">
-              🔓 Unlock Contact
+              🔓 Unlock Contact — {getContactUnlockPriceFormatted()}
             </Button>
           </Link>
           <p className="text-xs text-center text-muted-foreground leading-relaxed">
-            Pay once to contact directly. Contact is protected to prevent spam.
+            Small verification fee to protect workers from spam and misuse.
           </p>
         </div>
       )}

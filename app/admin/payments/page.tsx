@@ -167,7 +167,7 @@ function PaymentCard({
 
           <div className="text-sm text-muted-foreground space-y-1 mb-4">
             <p>
-              <span className="font-medium">Amount:</span> Rs. {payment.amount.toLocaleString()}
+              <span className="font-medium">Amount:</span> NRs. {payment.amount.toLocaleString()}
             </p>
             <p>
               <span className="font-medium">Method:</span> {payment.method.toUpperCase()}

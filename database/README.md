@@ -81,7 +81,7 @@ VALUES (
   - `id` - UUID (auto-generated)
   - `post_id` - References posts(id) with CASCADE delete
   - `visitor_id` - Visitor identifier
-  - `amount` - Payment amount (default: 3000)
+  - `amount` - Payment amount (default: 399)
   - `method` - 'qr', 'esewa', or 'bank'
   - `reference_id` - Payment reference
   - `status` - 'pending', 'approved', or 'rejected' (default: 'pending')

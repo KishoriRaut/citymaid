@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
     visitor_id TEXT,
-    amount INTEGER DEFAULT 3000,
+    amount INTEGER DEFAULT 399,
     method TEXT NOT NULL CHECK (method IN ('qr', 'esewa', 'bank')),
     reference_id TEXT,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
