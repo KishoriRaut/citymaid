@@ -172,6 +172,24 @@ function PaymentCard({
             <p>
               <span className="font-medium">Method:</span> {payment.method.toUpperCase()}
             </p>
+            {payment.customer_name && (
+              <p>
+                <span className="font-medium">Customer Name:</span> {payment.customer_name}
+              </p>
+            )}
+            {payment.receipt_url && (
+              <p>
+                <span className="font-medium">Receipt:</span>{" "}
+                <a
+                  href={payment.receipt_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  View Receipt
+                </a>
+              </p>
+            )}
             {payment.reference_id && (
               <p>
                 <span className="font-medium">Reference ID:</span> {payment.reference_id}

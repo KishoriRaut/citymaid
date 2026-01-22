@@ -10,6 +10,7 @@ import { createPayment } from "@/lib/payments";
 import type { Post } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CONTACT_UNLOCK_PRICE, getContactUnlockPriceFormatted } from "@/lib/pricing";
+import { uploadPaymentReceipt, validateReceiptFile } from "@/lib/storage";
 
 const PAYMENT_METHODS = [
   { value: "qr", label: "QR Code" },
@@ -31,11 +32,15 @@ export default function UnlockPage() {
   const [formData, setFormData] = useState({
     method: "esewa" as "qr" | "esewa" | "bank",
     reference_id: "",
+    customer_name: "",
+    receipt_file: null as File | null,
   });
 
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
   const [qrCodeError, setQrCodeError] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     // Get or create visitor ID
@@ -73,38 +78,91 @@ export default function UnlockPage() {
     }
   }, [postId]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setFormData({ ...formData, receipt_file: null });
+      setFileError(null);
+      return;
+    }
+
+    // Validate file
+    const validation = validateReceiptFile(file);
+    if (!validation.valid) {
+      setFileError(validation.error || "Invalid file");
+      setFormData({ ...formData, receipt_file: null });
+      return;
+    }
+
+    setFileError(null);
+    setFormData({ ...formData, receipt_file: file });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setFileError(null);
     setIsSubmitting(true);
+    setIsUploading(true);
 
     try {
       if (!visitorId) {
         setError("Visitor ID not found");
         setIsSubmitting(false);
+        setIsUploading(false);
         return;
       }
 
+      // Validate required fields
+      if (!formData.customer_name.trim()) {
+        setError("Please enter your name as shown on your payment");
+        setIsSubmitting(false);
+        setIsUploading(false);
+        return;
+      }
+
+      if (!formData.receipt_file) {
+        setError("Please upload your payment receipt");
+        setIsSubmitting(false);
+        setIsUploading(false);
+        return;
+      }
+
+      // Upload receipt file
+      const { url: receiptUrl, error: uploadError } = await uploadPaymentReceipt(formData.receipt_file);
+      if (uploadError || !receiptUrl) {
+        setError(uploadError || "Failed to upload receipt. Please try again.");
+        setIsSubmitting(false);
+        setIsUploading(false);
+        return;
+      }
+
+      // Create payment with all data
       const { payment, error: paymentError } = await createPayment({
         post_id: postId,
         visitor_id: visitorId,
         method: formData.method,
         reference_id: formData.reference_id || undefined,
+        customer_name: formData.customer_name.trim(),
+        receipt_url: receiptUrl,
         amount: CONTACT_UNLOCK_PRICE,
       });
 
       if (paymentError || !payment) {
         setError(paymentError || "Failed to submit payment");
         setIsSubmitting(false);
+        setIsUploading(false);
         return;
       }
 
       setSuccess(true);
       setIsSubmitting(false);
+      setIsUploading(false);
     } catch (err) {
       console.error("Error submitting payment:", err);
       setError("An unexpected error occurred");
       setIsSubmitting(false);
+      setIsUploading(false);
     }
   };
 
@@ -339,6 +397,13 @@ export default function UnlockPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Instructions */}
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 mb-6">
+              <p className="text-sm text-foreground leading-relaxed">
+                Enter your name as shown on your payment and attach your payment receipt. This ensures safe and fast verification.
+              </p>
+            </div>
+
             <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
               <h2 className="text-lg font-semibold mb-1 text-foreground">Payment Information</h2>
               <p className="text-sm text-muted-foreground mb-6">
@@ -453,21 +518,63 @@ export default function UnlockPage() {
                 )}
               </div>
 
-              {/* Reference ID */}
-              <div>
+              {/* Customer Name */}
+              <div className="mb-5">
                 <label className="block text-sm font-semibold mb-2.5 text-foreground">
-                  Reference ID / Transaction ID
+                  Your Name (as on payment) <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.customer_name}
+                  onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                  placeholder="e.g., Ram Bahadur Shrestha"
+                  className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                  required
+                />
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                  Enter the exact name shown on your bank, mobile banking, or wallet app to help us verify your payment.
+                </p>
+              </div>
+
+              {/* Payment Receipt Upload */}
+              <div className="mb-5">
+                <label className="block text-sm font-semibold mb-2.5 text-foreground">
+                  Upload Payment Receipt <span className="text-destructive">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                  onChange={handleFileChange}
+                  className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                  required
+                />
+                {formData.receipt_file && (
+                  <p className="mt-2 text-xs text-foreground">
+                    Selected: <span className="font-medium">{formData.receipt_file.name}</span> ({(formData.receipt_file.size / 1024).toFixed(1)} KB)
+                  </p>
+                )}
+                {fileError && (
+                  <p className="mt-2 text-xs text-destructive">{fileError}</p>
+                )}
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                  Attach the screenshot or PDF of your payment confirmation. Max file size: 5MB. Accepted formats: JPEG, PNG, WebP, PDF.
+                </p>
+              </div>
+
+              {/* Reference ID (Optional, de-emphasized) */}
+              <div>
+                <label className="block text-sm font-medium mb-2.5 text-muted-foreground">
+                  Transaction ID / Reference (Optional)
                 </label>
                 <input
                   type="text"
                   value={formData.reference_id}
                   onChange={(e) => setFormData({ ...formData, reference_id: e.target.value })}
-                  placeholder="Enter your payment reference"
+                  placeholder="Enter transaction ID if available"
                   className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                  required
                 />
                 <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                  Enter the transaction ID or reference number from your payment
+                  Optional: Enter the transaction ID or reference number from your payment confirmation
                 </p>
               </div>
             </div>
@@ -489,8 +596,8 @@ export default function UnlockPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
-                {isSubmitting ? "Submitting..." : "Submit Payment"}
+              <Button type="submit" disabled={isSubmitting || isUploading} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
+                {isUploading ? "Uploading receipt..." : isSubmitting ? "Submitting..." : "Submit Payment"}
               </Button>
             </div>
           </form>

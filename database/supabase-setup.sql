@@ -124,6 +124,8 @@ CREATE TABLE IF NOT EXISTS public.payments (
     amount INTEGER DEFAULT 399,
     method TEXT NOT NULL CHECK (method IN ('qr', 'esewa', 'bank')),
     reference_id TEXT,
+    customer_name TEXT,
+    receipt_url TEXT,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -5,6 +5,8 @@ This directory contains the production-ready SQL schema for the CityMaid marketp
 ## Files
 
 - `supabase-setup.sql` - Complete database schema with RLS policies, tables, and security functions
+- `storage-payment-receipts.sql` - Storage bucket setup for payment receipts (separate from post-photos)
+- `storage-policies.sql` - Storage policies for post-photos bucket
 
 ## Quick Start
 
@@ -83,9 +85,47 @@ VALUES (
   - `visitor_id` - Visitor identifier
   - `amount` - Payment amount (default: 399)
   - `method` - 'qr', 'esewa', or 'bank'
-  - `reference_id` - Payment reference
+  - `reference_id` - Payment reference (optional)
+  - `customer_name` - Name as shown on payment (for verification)
+  - `receipt_url` - URL to uploaded payment receipt file
   - `status` - 'pending', 'approved', or 'rejected' (default: 'pending')
   - `created_at` - Timestamp
+
+## Storage Buckets
+
+### Bucket Setup
+
+The application uses **two separate storage buckets** for better organization and security:
+
+1. **`post-photos`** - Stores staff/employee profile photos
+   - Public bucket (for displaying photos on the marketplace)
+   - File size limit: 5MB
+   - Allowed types: JPEG, PNG, WebP, GIF
+   - Setup: See `storage-policies.sql`
+
+2. **`payment-receipts`** - Stores payment receipt files (images and PDFs)
+   - Public bucket (for admin to view receipts)
+   - File size limit: 5MB
+   - Allowed types: JPEG, PNG, WebP, PDF
+   - Setup: See `storage-payment-receipts.sql`
+
+### Why Separate Buckets?
+
+- **Organization**: Easier to manage and find files
+- **Security**: Different access policies can be applied
+- **Performance**: Better for monitoring and cleanup
+- **Compliance**: Payment receipts may need different retention policies
+
+### Setting Up Storage Buckets
+
+**Manual Setup (Recommended):**
+1. Go to Supabase Dashboard > Storage
+2. Create each bucket with the settings above
+3. Run the corresponding SQL file to set up policies
+
+**Or use SQL:**
+- Run `storage-policies.sql` for post-photos bucket
+- Run `storage-payment-receipts.sql` for payment-receipts bucket
 
 ## Security & RLS Policies
 

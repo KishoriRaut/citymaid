@@ -10,6 +10,8 @@ export interface Payment {
   amount: number;
   method: "qr" | "esewa" | "bank";
   reference_id: string | null;
+  customer_name: string | null;
+  receipt_url: string | null;
   status: "pending" | "approved" | "rejected";
   created_at: string;
 }
@@ -20,6 +22,8 @@ export async function createPayment(payment: {
   visitor_id?: string;
   method: "qr" | "esewa" | "bank";
   reference_id?: string;
+  customer_name?: string;
+  receipt_url?: string;
   amount?: number;
 }) {
   try {
@@ -63,6 +67,8 @@ export async function getAllPayments(filters?: {
         amount,
         method,
         reference_id,
+        customer_name,
+        receipt_url,
         status,
         created_at,
         posts (
