@@ -141,9 +141,31 @@ export async function findUserByEmail(
         return { user: null, error: "User not found" };
       }
       if (process.env.NODE_ENV === "development") {
-        console.error("Database error:", error);
+        console.error("Database error in findUserByEmail:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          fullError: error
+        });
       }
-      return { user: null, error: "Database error" };
+      
+      // Provide more specific error messages
+      if (error.code === "42P01" || error.message?.includes("relation") || error.message?.includes("does not exist")) {
+        return { 
+          user: null, 
+          error: "Database table 'users' does not exist. Please run the SQL schema from database/supabase-setup.sql in your Supabase SQL Editor." 
+        };
+      }
+      
+      if (error.code === "42501" || error.message?.includes("permission denied") || error.message?.includes("row-level security")) {
+        return { 
+          user: null, 
+          error: "Database permission error. Check RLS policies. The service_role key should bypass RLS, but verify the 'users' table exists and policies are set correctly." 
+        };
+      }
+      
+      return { user: null, error: `Database error: ${error.message || error.code || "Unknown error"}` };
     }
 
     return { user: data as User, error: null };
@@ -161,6 +183,18 @@ export async function verifyUser(
   password: string
 ): Promise<{ user: User | null; error: string | null; errorType?: "email" | "password" }> {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Supabase not configured in verifyUser");
+      }
+      return { 
+        user: null, 
+        error: "Database is not configured. Please check your .env.local file and restart the dev server.",
+        errorType: "email"
+      };
+    }
+
     const { user, error: findError } = await findUserByEmail(email);
 
     if (findError || !user) {
@@ -168,6 +202,12 @@ export async function verifyUser(
       if (findError === "User not found") {
         return { user: null, error: "No account found with this email address", errorType: "email" };
       }
+      
+      // Log database errors in development
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error finding user:", findError);
+      }
+      
       return { user: null, error: findError || "Invalid email or password", errorType: "email" };
     }
 
@@ -175,6 +215,9 @@ export async function verifyUser(
     const isValid = await verifyPassword(password, user.password);
 
     if (!isValid) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Password verification failed for user:", email);
+      }
       return { user: null, error: "Incorrect password", errorType: "password" };
     }
 

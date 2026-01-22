@@ -38,20 +38,31 @@ export function isLoggedIn(): boolean {
 
 /**
  * Clear user session
+ * Also clears the cookie
  */
 export function clearSession(): void {
   if (typeof window === "undefined") {
     return;
   }
   localStorage.removeItem("user");
+  
+  // Clear cookie
+  document.cookie = "user_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }
 
 /**
  * Set user session
+ * Also sets a cookie for server-side middleware validation
  */
 export function setSession(user: User): void {
   if (typeof window === "undefined") {
     return;
   }
   localStorage.setItem("user", JSON.stringify(user));
+  
+  // Set cookie for server-side middleware validation
+  // Cookie expires in 7 days
+  const expires = new Date();
+  expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
+  document.cookie = `user_session=${JSON.stringify(user)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
 }

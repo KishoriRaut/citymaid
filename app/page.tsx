@@ -12,13 +12,6 @@ export default function Home() {
         <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl px-4">
           {appConfig.brand.tagline}
         </p>
-        <div className="pt-2 sm:pt-4">
-          <Link href={appConfig.routes.signup}>
-            <Button size="lg" className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 min-h-[48px] sm:min-h-0 w-full sm:w-auto max-w-xs">
-              Get Started
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   );

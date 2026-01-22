@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { isValidEmail, isValidPassword } from "@/lib/validation";
-import { useAuthRedirect } from "@/lib/hooks";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 
@@ -16,9 +15,6 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Redirect if already logged in
-  useAuthRedirect("/dashboard");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,7 +81,8 @@ export default function SignUpPage() {
       setPassword("");
       setConfirmPassword("");
 
-      // Redirect immediately to login page after successful signup
+      // Redirect to login page after successful signup
+      // Note: Public signup is disabled - this is admin-only
       router.push("/login");
     } catch (err) {
       const errorMessage = handleAPIError(err);
@@ -229,10 +226,12 @@ export default function SignUpPage() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
-            <Link href="/login" className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
-              Sign in
-            </Link>
+            <span className="text-muted-foreground">Admin accounts are created by administrators only.</span>
+            <div className="mt-2">
+              <Link href="/login" className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
+                Sign in
+              </Link>
+            </div>
           </div>
         </div>
       </div>

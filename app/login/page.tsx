@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setSession, type User } from "@/lib/session";
 import { isValidEmail } from "@/lib/validation";
-import { useAuthRedirect } from "@/lib/hooks";
 import { Spinner } from "@/components/ui/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 
@@ -18,9 +17,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-
-  // Redirect if already logged in
-  useAuthRedirect("/dashboard");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,8 +93,8 @@ export default function LoginPage() {
       setEmail("");
       setPassword("");
 
-      // Redirect immediately to dashboard after successful login
-      router.push("/dashboard");
+      // Redirect immediately to admin dashboard after successful login
+      router.push("/admin");
     } catch (err) {
       const errorMessage = handleAPIError(err);
       setError(errorMessage);
@@ -264,10 +260,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don&apos;t have an account? </span>
-            <Link href="/signup" className="font-medium text-primary hover:underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm">
-              Sign up
-            </Link>
+            <span className="text-muted-foreground">Admin access only</span>
           </div>
         </div>
       </div>

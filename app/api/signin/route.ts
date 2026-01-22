@@ -27,6 +27,16 @@ export async function POST(request: NextRequest) {
     const { user, error, errorType } = await verifyUser(email, password);
 
     if (error || !user) {
+      // Log detailed error in development
+      if (process.env.NODE_ENV === "development") {
+        console.error("Signin verification failed:", {
+          email,
+          error,
+          errorType,
+          hasUser: !!user
+        });
+      }
+      
       return NextResponse.json(
         { 
           error: error || "Invalid credentials",

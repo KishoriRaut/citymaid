@@ -33,7 +33,7 @@ export const appConfig = {
     home: "/",
     login: "/login",
     signup: "/signup",
-    dashboard: "/dashboard",
-    profile: "/profile",
+    admin: "/admin",
+    adminProfile: "/admin/profile",
   },
 } as const;

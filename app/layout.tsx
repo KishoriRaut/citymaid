@@ -35,12 +35,7 @@ export default function RootLayout({
                     href={appConfig.routes.login}
                     className="text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 px-2 py-1.5 sm:px-0 sm:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                   >
-                    Sign in
-                  </Link>
-                  <Link href={appConfig.routes.signup}>
-                    <Button size="sm" className="text-xs sm:text-sm min-h-[36px] sm:min-h-0 px-3 sm:px-4">
-                      Sign up
-                    </Button>
+                    Admin
                   </Link>
                 </div>
               </nav>
