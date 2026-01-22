@@ -13,8 +13,13 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const [imageError, setImageError] = useState(false);
-  const contactVisible = post.contact !== null;
-  const maskedContact = post.contact ? maskContact(post.contact) : "****";
+  // Contact is visible (unlocked) if it doesn't contain asterisks (masked contacts have asterisks)
+  // SQL function returns: full contact if paid, masked contact if not paid
+  const contactVisible = post.contact !== null && !post.contact.includes("*");
+  // If contact is already masked from SQL, use it as-is; otherwise mask it client-side as fallback
+  const maskedContact = post.contact 
+    ? (post.contact.includes("*") ? post.contact : maskContact(post.contact))
+    : "****";
   const isHiring = post.post_type === "employer";
 
   return (
