@@ -2,6 +2,8 @@
 
 import { supabase } from "./supabase";
 import type { Post } from "./types";
+import { getServerSession } from "./auth-server";
+import { findUserByEmail } from "./db";
 
 // Create a new post (public)
 // Includes spam prevention and duplicate detection
@@ -90,13 +92,42 @@ export async function createPost(post: {
     }
 
     // ========================================================================
+    // DETECT ADMIN USER: Auto-approve posts created by admins
+    // ========================================================================
+    // Check if the user creating the post is an admin
+    // Admins are users in the public.users table
+    // If admin: status = 'approved' (appears immediately on homepage)
+    // If regular user: status = 'pending' (requires manual approval)
+    let postStatus: "pending" | "approved" = "pending";
+    
+    try {
+      const session = await getServerSession();
+      if (session?.email) {
+        // Check if this email exists in the users table (admin check)
+        // All users in public.users table are admins
+        const { user: adminUser } = await findUserByEmail(session.email);
+        if (adminUser) {
+          // User is an admin - auto-approve the post
+          // Admin posts bypass manual approval and appear immediately
+          postStatus = "approved";
+        }
+      }
+    } catch (error) {
+      // If admin check fails, default to pending (safe fallback)
+      // This ensures regular users always get pending status
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error checking admin status:", error);
+      }
+    }
+
+    // ========================================================================
     // VALIDATION PASSED: Create the post
     // ========================================================================
     const { data, error } = await supabase
       .from("posts")
       .insert({
         ...post,
-        status: "pending",
+        status: postStatus, // 'approved' for admins, 'pending' for regular users
       })
       .select()
       .single();

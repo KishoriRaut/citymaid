@@ -2,16 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, clearSession, type User } from "@/lib/session";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
+import { getCurrentUser, type User } from "@/lib/session";
+import { getAllPosts } from "@/lib/posts";
+import { getAllPayments } from "@/lib/payments";
 import { appConfig } from "@/lib/config";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import { MetricCard } from "@/components/admin/MetricCard";
+import { QuickActionCard } from "@/components/admin/QuickActionCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [metrics, setMetrics] = useState({
+    totalPosts: 0,
+    pendingPayments: 0,
+    approvedPosts: 0,
+    hiddenPosts: 0,
+  });
+  const [metricsLoading, setMetricsLoading] = useState(true);
 
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -21,34 +31,62 @@ export default function AdminDashboardPage() {
     }
     setUser(currentUser);
     setIsLoading(false);
+    loadMetrics();
   }, [router]);
 
-  const handleLogout = () => {
-    clearSession();
-    router.push(appConfig.routes.login);
+  const loadMetrics = async () => {
+    try {
+      setMetricsLoading(true);
+      
+      // Fetch all posts
+      const { posts, error: postsError } = await getAllPosts();
+      if (postsError) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error loading posts metrics:", postsError);
+        }
+      } else {
+        const totalPosts = posts.length;
+        const approvedPosts = posts.filter((p) => p.status === "approved").length;
+        const hiddenPosts = posts.filter((p) => p.status === "hidden").length;
+
+        setMetrics((prev) => ({
+          ...prev,
+          totalPosts,
+          approvedPosts,
+          hiddenPosts,
+        }));
+      }
+
+      // Fetch all payments
+      const { payments, error: paymentsError } = await getAllPayments();
+      if (paymentsError) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error loading payments metrics:", paymentsError);
+        }
+      } else {
+        const pendingPayments = payments.filter((p) => p.status === "pending").length;
+        setMetrics((prev) => ({
+          ...prev,
+          pendingPayments,
+        }));
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading metrics:", error);
+      }
+    } finally {
+      setMetricsLoading(false);
+    }
   };
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
-      <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
-            <div className="space-y-2">
-              <Skeleton className="h-8 sm:h-10 w-48" />
-              <Skeleton className="h-5 sm:h-6 w-64" />
-            </div>
-            <Skeleton className="h-10 w-full sm:w-20" />
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-lg border bg-card p-6 shadow-sm">
-                <Skeleton className="h-6 w-32 mb-4" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-              </div>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Skeleton className="h-16 w-full mb-8" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32" />
             ))}
           </div>
         </div>
@@ -56,81 +94,131 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (!user) {
-    return null; // Will redirect
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-sm sm:text-base text-muted-foreground break-words">Welcome back, {user.email}</p>
-          </div>
-          <Button onClick={handleLogout} variant="outline" className="w-full sm:w-auto">
-            Logout
-          </Button>
+    <div className="min-h-screen bg-background">
+      <AdminHeader user={user} />
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back, {user.email}</p>
         </div>
 
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
-            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-2">Account Information</h2>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="break-words">
-                <span className="font-medium text-foreground">Email:</span> {user.email}
-              </p>
-              <p className="break-all">
-                <span className="font-medium text-foreground">User ID:</span> <span className="text-xs sm:text-sm">{user.id}</span>
-              </p>
-              <p>
-                <span className="font-medium text-foreground">Member since:</span>{" "}
-                {new Date(user.created_at).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
+        {/* Metrics Section */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <MetricCard
+            title="Total Posts"
+            value={metrics.totalPosts}
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            }
+            loading={metricsLoading}
+          />
+          <MetricCard
+            title="Pending Payments"
+            value={metrics.pendingPayments}
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            status="pending"
+            loading={metricsLoading}
+          />
+          <MetricCard
+            title="Approved Posts"
+            value={metrics.approvedPosts}
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            status="approved"
+            loading={metricsLoading}
+          />
+          <MetricCard
+            title="Hidden Posts"
+            value={metrics.hiddenPosts}
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              </svg>
+            }
+            status="hidden"
+            loading={metricsLoading}
+          />
+        </div>
 
-          <div className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
-            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-2">Quick Actions</h2>
-            <div className="space-y-2">
-              <Link href={appConfig.routes.adminProfile} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0">
-                  View Profile
-                </Button>
-              </Link>
-              <Link href={appConfig.routes.adminPosts} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0">
-                  Manage Posts
-                </Button>
-              </Link>
-              <Link href={appConfig.routes.adminPayments} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0">
-                  Manage Payments
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm sm:col-span-2 lg:col-span-1 transition-shadow duration-200 hover:shadow-md">
-            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-2">Marketplace</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Manage posts and payments for the CityMaid marketplace.
-            </p>
-            <div className="space-y-2">
-              <Link href={appConfig.routes.adminPosts}>
-                <Button variant="outline" size="sm" className="w-full">
-                  Posts Management
-                </Button>
-              </Link>
-              <Link href={appConfig.routes.adminPayments}>
-                <Button variant="outline" size="sm" className="w-full">
-                  Payments Management
-                </Button>
-              </Link>
-            </div>
+        {/* Quick Actions Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <QuickActionCard
+              title="View Profile"
+              description="Manage your account settings and information"
+              href={appConfig.routes.adminProfile}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              }
+            />
+            <QuickActionCard
+              title="Manage Posts"
+              description="Approve, hide, or delete marketplace posts"
+              href={appConfig.routes.adminPosts}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              }
+            />
+            <QuickActionCard
+              title="Manage Payments"
+              description="Review and approve payment requests"
+              href={appConfig.routes.adminPayments}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+              badge={metrics.pendingPayments > 0 ? metrics.pendingPayments : undefined}
+            />
           </div>
         </div>
-      </div>
+
+        {/* Management Section */}
+        <div>
+          <h2 className="text-xl font-semibold text-foreground mb-4">Management</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <QuickActionCard
+              title="Posts Management"
+              description="View and manage all marketplace posts. Approve pending posts, hide or delete as needed."
+              href={appConfig.routes.adminPosts}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              }
+            />
+            <QuickActionCard
+              title="Payments Management"
+              description="Review payment requests and unlock contacts for verified payments."
+              href={appConfig.routes.adminPayments}
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+              badge={metrics.pendingPayments > 0 ? metrics.pendingPayments : undefined}
+            />
+          </div>
+        </div>
+      </main>
+
     </div>
   );
 }
