@@ -138,7 +138,11 @@ export default function UnlockPage() {
     return null;
   }
 
-  const maskedContact = maskContact(post.contact);
+  // Contact is already masked from SQL if payment not approved
+  // If it contains asterisks, it's already masked; otherwise mask it client-side as fallback
+  const maskedContact = post.contact 
+    ? (post.contact.includes("*") ? post.contact : maskContact(post.contact))
+    : "****";
 
   const isHiring = post.post_type === "employer";
 

@@ -160,20 +160,46 @@ export async function createPost(post: {
 // Get post by ID (admin only - includes contact)
 export async function getPostById(postId: string) {
   try {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("id", postId)
-      .single();
+    // Use SQL function to get post with masked contact (if payment not approved)
+    const { data: rpcData, error: rpcError } = await supabase.rpc("get_post_with_contact_visibility", {
+      post_uuid: postId,
+    });
 
-    if (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching post:", error);
+    if (rpcError) {
+      // Fallback to direct query if function doesn't exist
+      if (rpcError.code === "42883" || rpcError.message?.includes("does not exist")) {
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", postId)
+          .single();
+
+        if (error) {
+          if (process.env.NODE_ENV === "development") {
+            console.error("Error fetching post:", error);
+          }
+          return { post: null, error: error.message };
+        }
+
+        return { post: data as Post, error: null };
       }
-      return { post: null, error: error.message };
+
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching post via RPC:", rpcError);
+      }
+      return { post: null, error: rpcError.message };
     }
 
-    return { post: data as Post, error: null };
+    // RPC function returns array, get first result
+    const postData = Array.isArray(rpcData) && rpcData.length > 0 ? rpcData[0] : null;
+    
+    if (!postData) {
+      return { post: null, error: "Post not found" };
+    }
+
+    // Remove contact_visible field and return as Post type
+    const { contact_visible, ...post } = postData;
+    return { post: post as Post, error: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error in getPostById:", error);
