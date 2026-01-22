@@ -6,15 +6,7 @@ import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
 import { uploadPhoto } from "@/lib/storage";
-
-const WORK_OPTIONS = [
-  "Cooking",
-  "Cleaning",
-  "Cooking + Cleaning",
-  "Babysitting",
-  "Elder Care",
-  "Other",
-];
+import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
 
 const TIME_OPTIONS = [
   "Morning",
@@ -152,13 +144,17 @@ export default function PostPage() {
               required
             >
               <option value="">Select work type</option>
-              {WORK_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
+              {getGroupedWorkTypes().map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.types.map((workType) => (
+                    <option key={workType} value={workType}>
+                      {workType}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
-            {formData.work === "Other" && (
+            {isOtherWorkType(formData.work) && (
               <input
                 type="text"
                 placeholder="Specify work type"

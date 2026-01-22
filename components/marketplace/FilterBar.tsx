@@ -3,16 +3,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
+import { getAllWorkTypes } from "@/lib/work-types";
 
-const WORK_OPTIONS = [
-  "All Work Types",
-  "Cooking",
-  "Cleaning",
-  "Cooking + Cleaning",
-  "Babysitting",
-  "Elder Care",
-  "Other",
-];
+const WORK_OPTIONS = ["All Work Types", ...getAllWorkTypes()];
 
 const TIME_OPTIONS = [
   "All Times",
