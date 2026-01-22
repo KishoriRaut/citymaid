@@ -164,7 +164,7 @@ export default function Home() {
       {/* Clean Header */}
       <div className="mb-8 text-center sm:text-left">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2">CityMaid Marketplace</h1>
-        <p className="text-muted-foreground text-lg">Find work or hire help in your city</p>
+        <p className="text-muted-foreground text-lg">Hire trusted local workers or find jobs near you — fast and safe.</p>
       </div>
 
       {/* Primary Tabs */}
@@ -193,7 +193,7 @@ export default function Home() {
 
       {/* Posts Grid */}
       {isLoading && posts.length === 0 ? (
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
             <div key={i} className="rounded-xl border bg-card p-5">
               <Skeleton className="h-6 w-24 mb-4" />
@@ -209,7 +209,7 @@ export default function Home() {
         <EmptyState activeTab={activeTab} />
       ) : (
         <>
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}

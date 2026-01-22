@@ -114,7 +114,7 @@ export default function PostPage() {
                     : "border-input bg-background hover:bg-accent"
                 }`}
               >
-                Hire Staff
+                Hire a Worker
               </button>
               <button
                 type="button"

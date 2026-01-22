@@ -56,3 +56,40 @@ export function maskContact(contact: string): string {
   
   return `${start}${masked}${end}`;
 }
+
+// Format salary for display (UI only, does not change stored values)
+// Examples: "9000" → "Rs. 9,000 / month", "negotiable" → "Negotiable"
+export function formatSalary(salary: string | null | undefined): string {
+  if (!salary) return "Not specified";
+  
+  const salaryLower = salary.toLowerCase().trim();
+  
+  // Check for common negotiable variations
+  if (salaryLower.includes("negotiable") || salaryLower.includes("negotiate") || salaryLower === "n/a" || salaryLower === "na") {
+    return "Negotiable";
+  }
+  
+  // Extract numbers from salary string
+  const numbers = salary.replace(/\D/g, "");
+  if (!numbers) return salary; // Return original if no numbers found
+  
+  const numValue = parseInt(numbers, 10);
+  if (isNaN(numValue)) return salary; // Return original if not a valid number
+  
+  // Format with commas
+  const formatted = numValue.toLocaleString("en-US");
+  
+  // Determine period (check for common keywords)
+  let period = "/ month";
+  if (salaryLower.includes("day") || salaryLower.includes("daily")) {
+    period = "/ day";
+  } else if (salaryLower.includes("week") || salaryLower.includes("weekly")) {
+    period = "/ week";
+  } else if (salaryLower.includes("year") || salaryLower.includes("yearly") || salaryLower.includes("annual")) {
+    period = "/ year";
+  } else if (salaryLower.includes("hour") || salaryLower.includes("hourly")) {
+    period = "/ hour";
+  }
+  
+  return `Rs. ${formatted}${period}`;
+}

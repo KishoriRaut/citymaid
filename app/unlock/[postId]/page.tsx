@@ -162,7 +162,7 @@ export default function UnlockPage() {
                   : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
               }`}
             >
-              {isHiring ? "HIRE STAFF" : "FIND A JOB"}
+              {isHiring ? "HIRE A WORKER" : "FIND A JOB"}
             </span>
           </div>
 

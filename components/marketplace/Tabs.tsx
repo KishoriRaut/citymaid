@@ -26,7 +26,7 @@ export function Tabs({ activeTab, onTabChange }: TabsProps) {
             : "bg-muted text-muted-foreground hover:bg-muted/80"
         }`}
       >
-        Hire Staff
+        Hire a Worker
       </button>
       <button
         onClick={() => onTabChange("employee")}
