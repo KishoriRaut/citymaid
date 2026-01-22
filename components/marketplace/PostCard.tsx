@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
@@ -11,6 +12,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const [imageError, setImageError] = useState(false);
   const contactVisible = post.contact !== null;
   const maskedContact = post.contact ? maskContact(post.contact) : "****";
   const isHiring = post.post_type === "employer";
@@ -32,7 +34,7 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Photo or Placeholder */}
-      <div className="relative h-40 w-full mb-4 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+      <div className="relative w-full mb-4 rounded-lg overflow-hidden bg-muted aspect-[4/3] flex items-center justify-center">
         {isHiring ? (
           // Employer posts: Always show briefcase icon (never show photos)
           <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -51,12 +53,14 @@ export function PostCard({ post }: PostCardProps) {
             </svg>
             <p className="text-xs mt-2 opacity-75">No photo</p>
           </div>
-        ) : post.photo_url ? (
+        ) : post.photo_url && !imageError ? (
           // Employee posts: Show photo if available
           <img
             src={post.photo_url}
             alt={post.work}
             className="w-full h-full object-cover"
+            loading="lazy"
+            onError={() => setImageError(true)}
           />
         ) : (
           // Employee posts: Show user icon if no photo

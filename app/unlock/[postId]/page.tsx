@@ -8,6 +8,7 @@ import { getPostById } from "@/lib/posts";
 import { maskContact } from "@/lib/utils";
 import { createPayment } from "@/lib/payments";
 import type { Post } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PAYMENT_METHODS = [
   { value: "qr", label: "QR Code" },
@@ -32,6 +33,7 @@ export default function UnlockPage() {
   });
 
   const [visitorId, setVisitorId] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     // Get or create visitor ID
@@ -107,7 +109,13 @@ export default function UnlockPage() {
     return (
       <div className="container mx-auto px-4 py-8 sm:py-12">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center">Loading...</div>
+          <Skeleton className="h-8 w-48 mb-6" />
+          <div className="rounded-lg border bg-card p-6 mb-6">
+            <Skeleton className="h-64 w-full mb-4 rounded-lg" />
+            <Skeleton className="h-6 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-full mb-1" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
         </div>
       </div>
     );
@@ -132,51 +140,173 @@ export default function UnlockPage() {
 
   const maskedContact = maskContact(post.contact);
 
+  const isHiring = post.post_type === "employer";
+
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6">Unlock Contact</h1>
 
         {/* Post Summary */}
-        <div className="rounded-lg border bg-card p-6 mb-6">
+        <div className="rounded-xl border bg-card p-6 mb-6 shadow-sm">
+          {/* Badge */}
           <div className="mb-4">
             <span
-              className={`inline-block px-2 py-1 text-xs font-medium rounded ${
-                post.post_type === "employer"
-                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                  : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+              className={`inline-block px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
+                isHiring
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                  : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
               }`}
             >
-              {post.post_type === "employer" ? "Hiring" : "Looking for Work"}
+              {isHiring ? "HIRING" : "LOOKING FOR WORK"}
             </span>
           </div>
 
-          {post.photo_url && (
-            <div className="relative h-64 w-full mb-4 rounded-md overflow-hidden bg-muted">
+          {/* Photo Section - Enhanced */}
+          <div className="relative w-full mb-6 rounded-lg overflow-hidden bg-muted aspect-[16/9] flex items-center justify-center shadow-md">
+            {isHiring ? (
+              // Employer posts: Always show briefcase icon
+              <div className="flex flex-col items-center justify-center text-muted-foreground">
+                <svg
+                  className="w-16 h-16 opacity-50"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                <p className="text-sm mt-3 opacity-75 font-medium">No photo</p>
+              </div>
+            ) : post.photo_url && !imageError ? (
+              // Employee posts: Show photo if available
               <img
                 src={post.photo_url}
                 alt={post.work}
                 className="w-full h-full object-cover"
+                loading="eager"
+                onError={() => setImageError(true)}
               />
-            </div>
-          )}
+            ) : (
+              // Employee posts: Show user icon if no photo or error
+              <div className="flex flex-col items-center justify-center text-muted-foreground">
+                <svg
+                  className="w-16 h-16 opacity-50"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                <p className="text-sm mt-3 opacity-75 font-medium">No photo available</p>
+              </div>
+            )}
+          </div>
 
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold">{post.work}</h2>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>
-                <span className="font-medium">Time:</span> {post.time}
-              </p>
-              <p>
-                <span className="font-medium">Place:</span> {post.place}
-              </p>
-              <p>
-                <span className="font-medium">Salary:</span> {post.salary}
-              </p>
-              <p>
-                <span className="font-medium">Contact:</span>{" "}
-                <span className="font-mono">{maskedContact}</span>
-              </p>
+          {/* Post Details */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-foreground">{post.work}</h2>
+            
+            <div className="grid gap-3 sm:grid-cols-2">
+              {/* Time */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <svg
+                  className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Time</p>
+                  <p className="text-sm font-semibold text-foreground">{post.time}</p>
+                </div>
+              </div>
+
+              {/* Place */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <svg
+                  className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</p>
+                  <p className="text-sm font-semibold text-foreground">{post.place}</p>
+                </div>
+              </div>
+
+              {/* Salary */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <svg
+                  className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Salary</p>
+                  <p className="text-sm font-semibold text-foreground">{post.salary}</p>
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border-2 border-dashed">
+                <svg
+                  className="w-5 h-5 text-muted-foreground mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Contact</p>
+                  <p className="text-base font-mono font-semibold text-foreground">{maskedContact}</p>
+                  <p className="text-xs text-muted-foreground mt-1">🔒 Locked - Unlock after payment</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
