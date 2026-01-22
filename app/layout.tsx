@@ -32,6 +32,12 @@ export default function RootLayout({
                 </Link>
                 <div className="flex items-center gap-2 sm:gap-4">
                   <Link
+                    href={appConfig.routes.post}
+                    className="text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 px-2 py-1.5 sm:px-0 sm:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+                  >
+                    Create Post
+                  </Link>
+                  <Link
                     href={appConfig.routes.login}
                     className="text-xs sm:text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 px-2 py-1.5 sm:px-0 sm:py-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
                   >

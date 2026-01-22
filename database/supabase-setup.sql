@@ -200,9 +200,9 @@ BEGIN
         -- This ensures contacts are never exposed unless payment is approved
         CASE 
             WHEN EXISTS (
-                SELECT 1 FROM public.payments 
-                WHERE post_id = p.id 
-                AND status = 'approved'
+                SELECT 1 FROM public.payments pay
+                WHERE pay.post_id = p.id 
+                AND pay.status = 'approved'
             ) THEN p.contact
             ELSE NULL
         END AS contact,
@@ -257,9 +257,9 @@ BEGIN
         p.status,
         p.created_at,
         EXISTS (
-            SELECT 1 FROM public.payments 
-            WHERE post_id = p.id 
-            AND status = 'approved'
+            SELECT 1 FROM public.payments pay
+            WHERE pay.post_id = p.id 
+            AND pay.status = 'approved'
         ) AS contact_visible
     FROM public.posts p
     WHERE p.id = post_uuid;
@@ -269,6 +269,66 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Grant execute permission (admin should use service_role key which bypasses RLS)
 -- For public use, use get_public_posts() instead
 GRANT EXECUTE ON FUNCTION public.get_post_with_contact_visibility(UUID) TO service_role;
+
+-- ============================================================================
+-- STORAGE: Photo Upload Bucket
+-- ============================================================================
+
+-- IMPORTANT: Storage buckets must be created via Supabase Dashboard
+-- The SQL INSERT below may not work due to permissions
+-- 
+-- MANUAL SETUP REQUIRED:
+-- 1. Go to Supabase Dashboard > Storage
+-- 2. Click "New bucket"
+-- 3. Name: "post-photos"
+-- 4. Public bucket: YES (check the box)
+-- 5. Click "Create bucket"
+--
+-- OR try the SQL below (may require superuser permissions):
+
+-- Attempt to create bucket (may fail if you don't have permissions)
+-- If this fails, create it manually via Dashboard > Storage
+DO $$
+BEGIN
+  -- Check if bucket already exists
+  IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'post-photos') THEN
+    -- Try to create the bucket
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES ('post-photos', 'post-photos', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+    ON CONFLICT (id) DO NOTHING;
+  END IF;
+EXCEPTION
+  WHEN insufficient_privilege THEN
+    RAISE NOTICE 'Cannot create bucket via SQL. Please create "post-photos" bucket manually in Dashboard > Storage.';
+  WHEN OTHERS THEN
+    RAISE NOTICE 'Error creating bucket: %. Please create "post-photos" bucket manually in Dashboard > Storage.', SQLERRM;
+END $$;
+
+-- Drop existing policies if they exist (for idempotency)
+DROP POLICY IF EXISTS "Public can upload photos" ON storage.objects;
+DROP POLICY IF EXISTS "Public can read photos" ON storage.objects;
+DROP POLICY IF EXISTS "Public can update own photos" ON storage.objects;
+DROP POLICY IF EXISTS "Public can delete own photos" ON storage.objects;
+
+-- Policy: Allow public to upload photos
+CREATE POLICY "Public can upload photos" ON storage.objects
+  FOR INSERT
+  WITH CHECK (bucket_id = 'post-photos');
+
+-- Policy: Allow public to read photos
+CREATE POLICY "Public can read photos" ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'post-photos');
+
+-- Policy: Allow public to update their own photos (optional)
+CREATE POLICY "Public can update own photos" ON storage.objects
+  FOR UPDATE
+  USING (bucket_id = 'post-photos');
+
+-- Policy: Allow public to delete their own photos (optional)
+CREATE POLICY "Public can delete own photos" ON storage.objects
+  FOR DELETE
+  USING (bucket_id = 'post-photos');
 
 -- ============================================================================
 -- VERIFICATION QUERIES (Optional - for testing)

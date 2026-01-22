@@ -35,5 +35,9 @@ export const appConfig = {
     signup: "/signup",
     admin: "/admin",
     adminProfile: "/admin/profile",
+    post: "/post",
+    unlock: "/unlock",
+    adminPosts: "/admin/posts",
+    adminPayments: "/admin/payments",
   },
 } as const;

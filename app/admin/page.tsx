@@ -98,17 +98,36 @@ export default function AdminDashboardPage() {
                   View Profile
                 </Button>
               </Link>
-              <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0" disabled>
-                Settings
-              </Button>
+              <Link href={appConfig.routes.adminPosts} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
+                <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0">
+                  Manage Posts
+                </Button>
+              </Link>
+              <Link href={appConfig.routes.adminPayments} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
+                <Button variant="outline" className="w-full justify-start min-h-[44px] sm:min-h-0">
+                  Manage Payments
+                </Button>
+              </Link>
             </div>
           </div>
 
           <div className="rounded-lg border bg-card p-4 sm:p-6 shadow-sm sm:col-span-2 lg:col-span-1 transition-shadow duration-200 hover:shadow-md">
-            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-2">Recent Activity</h2>
-            <p className="text-sm text-muted-foreground">
-              Your recent activity will appear here.
+            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-2">Marketplace</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage posts and payments for the CityMaid marketplace.
             </p>
+            <div className="space-y-2">
+              <Link href={appConfig.routes.adminPosts}>
+                <Button variant="outline" size="sm" className="w-full">
+                  Posts Management
+                </Button>
+              </Link>
+              <Link href={appConfig.routes.adminPayments}>
+                <Button variant="outline" size="sm" className="w-full">
+                  Payments Management
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
