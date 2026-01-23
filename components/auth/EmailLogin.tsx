@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabaseClient } from "@/lib/supabase-client";
-import { clearSupabaseStorage } from "@/lib/auth-cleanup";
+import { clearSupabaseStorage, setupAuthListener, cleanupAuthListener, getCurrentSession } from "@/lib/auth-utils";
 
 interface EmailLoginProps {
   redirectTo?: string;
@@ -21,8 +21,8 @@ export default function EmailLogin({ redirectTo = "/dashboard", onSuccess }: Ema
     // Clear any existing storage to prevent multiple client issues
     clearSupabaseStorage();
 
-    // Listen to auth state changes
-    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+    // Listen to auth state changes using centralized listener
+    const subscription = setupAuthListener(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
@@ -38,15 +38,17 @@ export default function EmailLogin({ redirectTo = "/dashboard", onSuccess }: Ema
       }
     );
 
-    // Check for existing session
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session using centralized utility
+    getCurrentSession().then(({ session }) => {
       if (session?.user) {
         setUser(session.user);
         setSuccess(`Already signed in as ${session.user.email}`);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cleanupAuthListener();
+    };
   }, [onSuccess]);
 
   const handleSendMagicLink = async () => {
