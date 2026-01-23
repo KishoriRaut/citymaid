@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
-import { getCurrentUserClient } from "@/lib/email-auth";
+import { getCurrentSessionClient } from "@/lib/email-auth";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/marketplace/Tabs";
@@ -38,9 +38,9 @@ export default function Home() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Get current authenticated user (email auth)
-        const currentUser = await getCurrentUserClient();
-        const userId = currentUser?.id;
+        // Get current authenticated session (email auth)
+        const currentSession = await getCurrentSessionClient();
+        const userId = currentSession?.user?.id;
 
         let initialPosts: PostWithMaskedContact[] = [];
         let totalCount = 0;
@@ -85,9 +85,9 @@ export default function Home() {
     }
 
     try {
-      // Get current authenticated user (email auth)
-      const currentUser = await getCurrentUserClient();
-      const currentUserId = currentUser?.id;
+      // Get current authenticated session (email auth)
+      const currentSession = await getCurrentSessionClient();
+      const currentUserId = currentSession?.user?.id;
 
       // Fetch all posts (use large limit to get all for filtering)
       const result = await getPublicPostsClient({

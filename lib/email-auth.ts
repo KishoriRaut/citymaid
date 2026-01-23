@@ -64,6 +64,11 @@ export async function getCurrentUser() {
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
     
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
+    
     if (error) {
       console.error("Error getting current user:", error);
       return null;
@@ -71,6 +76,10 @@ export async function getCurrentUser() {
 
     return user;
   } catch (error) {
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error instanceof Error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
     console.error("Error in getCurrentUser:", error);
     return null;
   }
@@ -81,6 +90,11 @@ export async function getCurrentUserClient() {
   try {
     const { data: { user }, error } = await supabaseClient.auth.getUser();
     
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
+    
     if (error) {
       console.error("Error getting current user:", error);
       return null;
@@ -88,6 +102,10 @@ export async function getCurrentUserClient() {
 
     return user;
   } catch (error) {
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error instanceof Error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
     console.error("Error in getCurrentUserClient:", error);
     return null;
   }
@@ -102,6 +120,11 @@ export async function getCurrentSession() {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
     
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
+    
     if (error) {
       console.error("Error getting current session:", error);
       return null;
@@ -109,6 +132,10 @@ export async function getCurrentSession() {
 
     return session;
   } catch (error) {
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error instanceof Error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
     console.error("Error in getCurrentSession:", error);
     return null;
   }
@@ -119,6 +146,11 @@ export async function getCurrentSessionClient() {
   try {
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
+    
     if (error) {
       console.error("Error getting current session:", error);
       return null;
@@ -126,6 +158,10 @@ export async function getCurrentSessionClient() {
 
     return session;
   } catch (error) {
+    // Silently handle AuthSessionMissingError - this is expected for anonymous users
+    if (error instanceof Error && error.name === "AuthSessionMissingError") {
+      return null;
+    }
     console.error("Error in getCurrentSessionClient:", error);
     return null;
   }

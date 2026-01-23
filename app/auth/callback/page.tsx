@@ -17,12 +17,17 @@ export default function AuthCallback() {
         // Wait a moment for Supabase to process the magic link
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Get the current session
+        // Get the current session (use getSession instead of getUser for anonymous users)
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         
         if (sessionError) {
-          console.error("Session error:", sessionError);
-          setError("Authentication failed. Please try again.");
+          // Silently handle AuthSessionMissingError - this can happen if magic link expires
+          if (sessionError.name === "AuthSessionMissingError") {
+            setError("Authentication failed. The link may have expired. Please request a new login link.");
+          } else {
+            console.error("Session error:", sessionError);
+            setError("Authentication failed. Please try again.");
+          }
           return;
         }
 

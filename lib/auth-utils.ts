@@ -65,6 +65,12 @@ export function isAdminUser(email: string | null | undefined): boolean {
 // Get current session (wrapper for consistency)
 export async function getCurrentSession() {
   const { data: { session }, error } = await supabaseClient.auth.getSession();
+  
+  // Silently handle AuthSessionMissingError - this is expected for anonymous users
+  if (error && error.name === "AuthSessionMissingError") {
+    return { session: null, error };
+  }
+  
   return { session, error };
 }
 
