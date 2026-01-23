@@ -3,7 +3,8 @@ const otpRequests = new Map<string, { timestamp: number; count: number }>();
 
 export function checkOTPRateLimit(phone: string): { allowed: boolean; error?: string } {
   const now = Date.now();
-  const key = phone.replace(/[\s\-\(\)]/g, '');
+  // Remove all non-digits including + sign for consistent key generation
+  const key = phone.replace(/[^0-9]/g, '');
   const lastRequest = otpRequests.get(key);
 
   if (lastRequest) {

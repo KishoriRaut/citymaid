@@ -41,7 +41,7 @@ export default function OTPLogin({ onSuccess, redirectTo }: OTPLoginProps) {
 
   const handleSendOTP = async () => {
     if (!phone || phone.length < 10) {
-      setError("Please enter a valid phone number");
+      setError("Please enter a valid phone number with country code");
       return;
     }
 
@@ -123,9 +123,41 @@ export default function OTPLogin({ onSuccess, redirectTo }: OTPLoginProps) {
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    const formattedValue = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-    setPhone(formattedValue);
+    let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+    
+    // Allow country code (+9779841234567) or local format
+    if (value.startsWith('977')) {
+      // Nepal format: +977 984-1234567
+      if (value.length <= 3) {
+        setPhone(`+${value}`);
+      } else if (value.length <= 6) {
+        setPhone(`+${value.slice(0, 3)} ${value.slice(3)}`);
+      } else if (value.length <= 10) {
+        setPhone(`+${value.slice(0, 3)} ${value.slice(3, 6)}-${value.slice(6)}`);
+      } else {
+        setPhone(`+${value.slice(0, 3)} ${value.slice(3, 6)}-${value.slice(6, 10)}${value.slice(10) ? value.slice(10) : ''}`);
+      }
+    } else if (value.startsWith('1')) {
+      // US format: +1 (984) 123-4567
+      if (value.length <= 1) {
+        setPhone(`+${value}`);
+      } else if (value.length <= 4) {
+        setPhone(`+${value.slice(0, 1)} (${value.slice(1)}`);
+      } else if (value.length <= 7) {
+        setPhone(`+${value.slice(0, 1)} (${value.slice(1, 4)}) ${value.slice(4)}`);
+      } else {
+        setPhone(`+${value.slice(0, 1)} (${value.slice(1, 4)}) ${value.slice(4, 7)}-${value.slice(7, 11)}`);
+      }
+    } else {
+      // Default format for other countries or local numbers
+      if (value.length <= 3) {
+        setPhone(value);
+      } else if (value.length <= 6) {
+        setPhone(`${value.slice(0, 3)}-${value.slice(3)}`);
+      } else {
+        setPhone(`${value.slice(0, 3)}-${value.slice(3, 6)}-${value.slice(6, 10)}`);
+      }
+    }
   };
 
   const handleOTPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,12 +207,15 @@ export default function OTPLogin({ onSuccess, redirectTo }: OTPLoginProps) {
                 <input
                   id="phone"
                   type="tel"
-                  placeholder="(984) 123-4567"
+                  placeholder="+977 984-1234567 or +1 (984) 123-4567"
                   value={phone}
                   onChange={handlePhoneChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg"
-                  maxLength={14}
+                  maxLength={20}
                 />
+                <p className="text-xs text-gray-500 mt-1 text-center">
+                  Include country code (e.g., +977 for Nepal, +1 for US)
+                </p>
               </div>
 
               <Button 

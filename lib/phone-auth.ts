@@ -6,12 +6,14 @@ import { supabaseClient } from "./supabase-client";
 // Server-side phone authentication
 export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Format phone number (remove spaces, dashes, etc.)
-    const formattedPhone = phone.replace(/[\s\-\(\)]/g, '');
+    // Format phone number - remove all non-digits for Supabase
+    const formattedPhone = phone.replace(/[^0-9]/g, '');
     
-    // Send OTP using Supabase Auth
+    // Send OTP using Supabase Auth with country code
     const { data, error } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
+      phone: formattedPhone.startsWith('977') || formattedPhone.startsWith('1') 
+        ? `+${formattedPhone}` 
+        : formattedPhone,
       options: {
         shouldCreateUser: true,
       },
@@ -31,9 +33,14 @@ export async function sendPhoneOTP(phone: string): Promise<{ success: boolean; e
 
 export async function verifyPhoneOTP(phone: string, token: string): Promise<{ success: boolean; error?: string; user?: any }> {
   try {
-    // Verify OTP using Supabase Auth
+    // Format phone number - remove all non-digits for Supabase
+    const formattedPhone = phone.replace(/[^0-9]/g, '');
+    
+    // Verify OTP using Supabase Auth with country code
     const { data, error } = await supabase.auth.verifyOtp({
-      phone,
+      phone: formattedPhone.startsWith('977') || formattedPhone.startsWith('1') 
+        ? `+${formattedPhone}` 
+        : formattedPhone,
       token,
       type: 'sms',
     });
@@ -97,8 +104,8 @@ export async function logoutPhoneUser(): Promise<{ success: boolean; error?: str
 // Client-side phone authentication
 export async function sendPhoneOTPClient(phone: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Format phone number
-    const formattedPhone = phone.replace(/[\s\-\(\)]/g, '');
+    // Format phone number - remove all non-digits for Supabase
+    const formattedPhone = phone.replace(/[^0-9]/g, '');
     
     // Import and check rate limit
     const { checkOTPRateLimit } = await import("./rate-limit");
@@ -107,9 +114,11 @@ export async function sendPhoneOTPClient(phone: string): Promise<{ success: bool
       return { success: false, error: rateLimit.error };
     }
     
-    // Send OTP
+    // Send OTP with country code
     const { data, error } = await supabaseClient.auth.signInWithOtp({
-      phone: formattedPhone,
+      phone: formattedPhone.startsWith('977') || formattedPhone.startsWith('1') 
+        ? `+${formattedPhone}` 
+        : formattedPhone,
       options: {
         shouldCreateUser: true,
       },
@@ -127,8 +136,13 @@ export async function sendPhoneOTPClient(phone: string): Promise<{ success: bool
 
 export async function verifyPhoneOTPClient(phone: string, token: string): Promise<{ success: boolean; error?: string; user?: any }> {
   try {
+    // Format phone number - remove all non-digits for Supabase
+    const formattedPhone = phone.replace(/[^0-9]/g, '');
+    
     const { data, error } = await supabaseClient.auth.verifyOtp({
-      phone,
+      phone: formattedPhone.startsWith('977') || formattedPhone.startsWith('1') 
+        ? `+${formattedPhone}` 
+        : formattedPhone,
       token,
       type: 'sms',
     });
