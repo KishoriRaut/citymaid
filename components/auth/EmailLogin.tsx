@@ -1,43 +1,55 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { supabaseClient } from "@/lib/supabase-client";
-import { getStoredRedirect, clearStoredRedirect, getPaymentUrl } from "@/lib/redirect-utils";
+import { clearSupabaseStorage } from "@/lib/auth-cleanup";
 
 interface EmailLoginProps {
   redirectTo?: string;
   onSuccess?: (user: any) => void;
 }
 
-export default function EmailLogin({ redirectTo, onSuccess }: EmailLoginProps) {
+export default function EmailLogin({ redirectTo = "/dashboard", onSuccess }: EmailLoginProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [user, setUser] = useState<any>(null);
 
-  // Get redirect URL from query params or stored redirect
-  const getRedirectUrl = () => {
-    // First check URL parameter
-    const urlRedirect = searchParams?.get('redirect');
-    if (urlRedirect) {
-      return decodeURIComponent(urlRedirect);
-    }
-    
-    // Then check stored redirect (for post unlock flow)
-    const storedRedirect = getStoredRedirect();
-    if (storedRedirect) {
-      return getPaymentUrl(storedRedirect.postId);
-    }
-    
-    // Finally use the prop or default
-    return redirectTo || "/admin";
-  };
+  // Clear storage on mount and listen to auth state changes
+  useEffect(() => {
+    // Clear any existing storage to prevent multiple client issues
+    clearSupabaseStorage();
 
-  const handleSendLoginLink = async () => {
+    // Listen to auth state changes
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          setUser(session.user);
+          setSuccess(`Successfully signed in as ${session.user.email}`);
+          setError("");
+          onSuccess?.(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setSuccess("");
+        }
+      }
+    );
+
+    // Check for existing session
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        setSuccess(`Already signed in as ${session.user.email}`);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [onSuccess]);
+
+  const handleSendMagicLink = async () => {
     if (!email || !email.includes("@")) {
       setError("Please enter a valid email address");
       return;
@@ -51,50 +63,82 @@ export default function EmailLogin({ redirectTo, onSuccess }: EmailLoginProps) {
       const { data, error } = await supabaseClient.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(getRedirectUrl())}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
         },
       });
 
       if (error) {
-        // Provide specific guidance for common email configuration issues
-        let errorMessage = error.message;
+        console.error('OTP Error:', error);
         
-        if (error.message?.includes("Email provider is not enabled") || 
-            error.message?.includes("Email provider is not configured")) {
-          errorMessage = "Email authentication is not configured. Please contact the administrator to set up the email provider in Supabase.";
-        } else if (error.message?.includes("Invalid email")) {
-          errorMessage = "Please enter a valid email address.";
+        // Provide specific error messages
+        if (error.message?.includes('Email provider is not enabled')) {
+          setError('Email authentication is not configured. Please enable the email provider in your Supabase dashboard.');
         } else if (error.status === 500) {
-          errorMessage = "Server error. The email provider may not be configured. Please try again or contact support.";
+          setError('Server error. Please ensure the email provider is enabled in Supabase dashboard.');
+        } else {
+          setError(error.message);
         }
-        
-        setError(errorMessage);
       } else {
-        setSuccess("Login link sent! Please check your email and click the link to continue.");
-        
-        // Store email for potential resend functionality
-        if (typeof window !== "undefined") {
-          localStorage.setItem("citymaid_login_email", email);
-        }
+        setSuccess(`Magic link sent to ${email}! Check your inbox (and spam folder).`);
+        console.log('Magic link sent successfully');
       }
-    } catch (error) {
-      setError("An error occurred. Please try again.");
+    } catch (err) {
+      console.error('Unexpected error:', err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResendLink = async () => {
-    setSuccess("");
-    await handleSendLoginLink();
+  const handleSignOut = async () => {
+    try {
+      await supabaseClient.auth.signOut();
+      clearSupabaseStorage();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
+  // If user is already signed in
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="mb-6">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back!</h2>
+            <p className="text-gray-600">Signed in as {user.email}</p>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.href = redirectTo}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Continue to Dashboard
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Login to Unlock Contact</h1>
-          <p className="text-gray-600">Sign in to access worker contact information</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
+          <p className="text-gray-600">Enter your email to receive a magic link</p>
         </div>
 
         {error && (
@@ -103,93 +147,50 @@ export default function EmailLogin({ redirectTo, onSuccess }: EmailLoginProps) {
           </div>
         )}
 
-        {success ? (
-          <div className="text-center">
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mx-auto mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-sm text-green-800 mb-4">{success}</p>
-              <p className="text-xs text-gray-600 mb-4">
-                Check your inbox (and spam folder) for the login link from CityMaid.
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <Button 
-                onClick={handleResendLink} 
-                disabled={loading}
-                variant="outline"
-                className="w-full"
-              >
-                {loading ? "Sending..." : "Resend Login Link"}
-              </Button>
-              
-              <Button 
-                onClick={() => {
-                  setEmail("");
-                  setSuccess("");
-                  setError("");
-                }}
-                variant="ghost"
-                className="w-full"
-              >
-                Try Different Email
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                onKeyPress={(e) => e.key === "Enter" && handleSendLoginLink()}
-              />
-            </div>
-
-            <div className="text-xs text-gray-500 bg-blue-50 p-3 rounded-md">
-              <p className="font-medium mb-1">🔐 Secure Login Process:</p>
-              <ul className="space-y-1">
-                <li>• We'll email you a secure login link</li>
-                <li>• No password required</li>
-                <li>• Link expires in 24 hours</li>
-                <li>• Click the link to access your account</li>
-              </ul>
-            </div>
-
-            <Button 
-              onClick={handleSendLoginLink} 
-              disabled={loading || !email}
-              className="w-full"
-              size="lg"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Sending Login Link...
-                </>
-              ) : (
-                "Send Login Link"
-              )}
-            </Button>
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-green-800">{success}</p>
           </div>
         )}
 
+        <div className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onKeyPress={(e) => e.key === "Enter" && handleSendMagicLink()}
+            />
+          </div>
+
+          <button
+            onClick={handleSendMagicLink}
+            disabled={loading || !email}
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending Magic Link...
+              </span>
+            ) : (
+              "Send Magic Link"
+            )}
+          </button>
+        </div>
+
         <div className="mt-6 text-center text-xs text-gray-500">
-          <p>By logging in, you agree to our Terms of Service and Privacy Policy.</p>
+          <p>We'll email you a magic link for instant access.</p>
+          <p className="mt-1">No password required.</p>
         </div>
       </div>
     </div>

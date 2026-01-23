@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Email Provider</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Email Provider Test</h1>
+    
+    <div>
+        <input type="email" id="email" placeholder="Enter your email" style="width: 300px; padding: 8px;">
+        <button onclick="testEmailProvider()" style="padding: 8px 16px;">Test Email Provider</button>
+    </div>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border-radius: 4px;"></div>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://jjnibbkhubafesjqjohm.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbmliYmtodWJhZmVzanFqb2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNTE5NTUsImV4cCI6MjA4NDYyNzk1NX0.Koz-ntS74jByLLdkDo74lgH3EygPdJiey_fw17t9Ra8';
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        async function testEmailProvider() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div style="color: red;">Please enter an email address</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div style="color: blue;">Testing email provider...</div>';
+
+            try {
+                console.log('Testing email provider with:', email);
+                
+                const { data, error } = await supabase.auth.signInWithOtp({
+                    email: email,
+                    options: {
+                        emailRedirectTo: 'http://localhost:3000/auth/callback'
+                    }
+                });
+
+                console.log('Response:', { data, error });
+
+                if (error) {
+                    console.error('Error details:', {
+                        message: error.message,
+                        status: error.status,
+                        code: error.code
+                    });
+                    
+                    let errorMessage = error.message;
+                    let troubleshooting = '';
+                    
+                    if (error.status === 400) {
+                        errorMessage = 'Bad Request - Check email format or configuration';
+                        troubleshooting = 'Verify email format and redirect URL configuration';
+                    } else if (error.status === 401) {
+                        errorMessage = 'Unauthorized - API key issue';
+                        troubleshooting = 'Check your anon key in Supabase dashboard';
+                    } else if (error.status === 403) {
+                        errorMessage = 'Forbidden - Permissions issue';
+                        troubleshooting = 'Check RLS policies and user permissions';
+                    } else if (error.status === 500) {
+                        errorMessage = 'Server Error - Email provider configuration issue';
+                        troubleshooting = 'Check: 1) Email provider enabled 2) Redirect URLs 3) Site URL 4) SMTP settings';
+                    } else if (error.message?.includes('Email provider is not enabled')) {
+                        errorMessage = 'Email provider is not enabled in Supabase dashboard';
+                        troubleshooting = 'Go to Authentication → Settings → Email and enable it';
+                    } else if (error.message?.includes('Invalid email')) {
+                        errorMessage = 'Invalid email address format';
+                        troubleshooting = 'Enter a valid email address';
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div style="color: red; background: #ffe6e6; padding: 10px; border-radius: 4px;">
+                            <strong>Error:</strong> ${errorMessage}<br>
+                            <small>Status: ${error.status} | Code: ${error.code || 'N/A'}</small><br>
+                            <strong>Troubleshooting:</strong> ${troubleshooting}
+                        </div>
+                        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+                            <strong>Full Error Details:</strong><br>
+                            <pre style="font-size: 12px; overflow-x: auto;">${JSON.stringify(error, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="color: green; background: #e6ffe6; padding: 10px; border-radius: 4px;">
+                            ✅ Email provider working! Magic link sent to ${email}
+                        </div>
+                        <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+                            <strong>Response Data:</strong><br>
+                            <pre style="font-size: 12px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                resultDiv.innerHTML = `
+                    <div style="color: red; background: #ffe6e6; padding: 10px; border-radius: 4px;">
+                        ❌ Unexpected error: ${err.message}
+                    </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+                        <strong>Full Error:</strong><br>
+                        <pre style="font-size: 12px; overflow-x: auto;">${err.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

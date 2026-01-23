@@ -1,5 +1,5 @@
-import EmailLogin from "@/components/auth/EmailLogin";
+import SimpleEmailLogin from "@/components/auth/SimpleEmailLogin";
 
 export default function LoginPage() {
-  return <EmailLogin redirectTo="/admin" />;
+  return <SimpleEmailLogin />;
 }

@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabaseClient } from "@/lib/supabase-client";
-import { getStoredRedirect, clearStoredRedirect } from "@/lib/redirect-utils";
 
 export default function AuthCallback() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +14,10 @@ export default function AuthCallback() {
       try {
         setLoading(true);
         
-        // Get the current session after Supabase processes the magic link
+        // Wait a moment for Supabase to process the magic link
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Get the current session
         const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
         
         if (sessionError) {
@@ -26,23 +27,20 @@ export default function AuthCallback() {
         }
 
         if (!session?.user) {
-          // If no session, wait a bit and try again (magic link processing might take time)
-          setTimeout(async () => {
-            const { data: { session: retrySession }, error: retryError } = await supabaseClient.auth.getSession();
-            
-            if (retryError || !retrySession?.user) {
-              setError("Authentication failed. The link may have expired. Please request a new login link.");
-              return;
-            }
-            
-            // Successful authentication
-            await handleSuccessfulAuth();
-          }, 2000);
-          return;
+          // Try one more time after a delay
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const { data: { session: retrySession }, error: retryError } = await supabaseClient.auth.getSession();
+          
+          if (retryError || !retrySession?.user) {
+            setError("Authentication failed. The link may have expired. Please request a new login link.");
+            return;
+          }
         }
 
-        // Successful authentication
-        await handleSuccessfulAuth();
+        // Successful authentication - redirect to dashboard
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1000);
         
       } catch (error) {
         console.error("Auth callback error:", error);
@@ -52,30 +50,8 @@ export default function AuthCallback() {
       }
     };
 
-    const handleSuccessfulAuth = async () => {
-      // Get redirect URL from query params
-      const urlRedirect = searchParams?.get('redirect');
-      let finalRedirect = "/admin"; // Default redirect
-
-      if (urlRedirect) {
-        finalRedirect = decodeURIComponent(urlRedirect);
-      } else {
-        // Check for stored redirect (post unlock flow)
-        const storedRedirect = getStoredRedirect();
-        if (storedRedirect) {
-          finalRedirect = `/unlock/${storedRedirect.postId}`;
-          clearStoredRedirect(); // Clear stored redirect after use
-        }
-      }
-
-      // Redirect to the appropriate page
-      setTimeout(() => {
-        router.push(finalRedirect);
-      }, 1000);
-    };
-
     handleAuthCallback();
-  }, [router, searchParams]);
+  }, [router]);
 
   if (loading) {
     return (
@@ -128,7 +104,7 @@ export default function AuthCallback() {
           </svg>
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Successful!</h2>
-        <p className="text-gray-600">Redirecting you to your destination...</p>
+        <p className="text-gray-600">Redirecting you to your dashboard...</p>
       </div>
     </div>
   );

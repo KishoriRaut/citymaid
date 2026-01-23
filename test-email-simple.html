@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supabase Email Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Email Authentication Test</h1>
+    
+    <div>
+        <input type="email" id="email" placeholder="Enter your email" style="width: 300px; padding: 8px;">
+        <button onclick="sendMagicLink()" style="padding: 8px 16px;">Send Magic Link</button>
+    </div>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border-radius: 4px;"></div>
+
+    <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://jjnibbkhubafesjqjohm.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqbmliYmtodWJhZmVzanFqb2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwNTE5NTUsImV4cCI6MjA4NDYyNzk1NX0.Koz-ntS74jByLLdkDo74lgH3EygPdJiey_fw17t9Ra8';
+        
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        async function sendMagicLink() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div style="color: red;">Please enter an email address</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div style="color: blue;">Sending magic link...</div>';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithOtp({
+                    email: email,
+                    options: {
+                        emailRedirectTo: 'http://localhost:3001/auth/callback'
+                    }
+                });
+
+                if (error) {
+                    console.error('Error:', error);
+                    
+                    let errorMessage = error.message;
+                    if (error.message?.includes('Email provider is not enabled')) {
+                        errorMessage = '❌ Email provider not enabled in Supabase dashboard. Go to Authentication → Settings → Email and enable it.';
+                    } else if (error.status === 500) {
+                        errorMessage = '❌ Server error. Email provider likely not configured. Check Supabase dashboard settings.';
+                    }
+                    
+                    resultDiv.innerHTML = `<div style="color: red; background: #ffe6e6; padding: 10px; border-radius: 4px;">
+                        <strong>Error:</strong> ${errorMessage}<br>
+                        <small>Status: ${error.status}</small>
+                    </div>`;
+                } else {
+                    resultDiv.innerHTML = `<div style="color: green; background: #e6ffe6; padding: 10px; border-radius: 4px;">
+                        ✅ Magic link sent successfully! Check your email inbox (and spam folder).
+                    </div>`;
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                resultDiv.innerHTML = `<div style="color: red; background: #ffe6e6; padding: 10px; border-radius: 4px;">
+                    ❌ Unexpected error: ${err.message}
+                </div>`;
+            }
+        }
+    </script>
+</body>
+</html>
