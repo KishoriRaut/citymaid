@@ -138,7 +138,7 @@ export async function checkPaymentApproved(postId: string, visitorId?: string): 
   try {
     const { data, error } = await supabase
       .from("payments")
-      .select("id")
+      .select("id, visitor_id")
       .eq("post_id", postId)
       .eq("status", "approved")
       .limit(1);
