@@ -9,7 +9,8 @@
 CREATE TABLE IF NOT EXISTS public.contact_unlocks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     post_id UUID NOT NULL REFERENCES public.posts(id) ON DELETE CASCADE,
-    viewer_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    viewer_user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- For authenticated users
+    visitor_id TEXT, -- For anonymous users (random visitor IDs)
     payment_verified BOOLEAN DEFAULT false,
     payment_method TEXT, -- 'khalti', 'esewa', 'stripe', etc.
     payment_amount DECIMAL(10, 2),
@@ -17,8 +18,8 @@ CREATE TABLE IF NOT EXISTS public.contact_unlocks (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     
-    -- Ensure one unlock per user per post
-    UNIQUE(post_id, viewer_user_id)
+    -- Ensure one unlock per user per post (either authenticated user or visitor)
+    EXCLUDE USING gist (post_id WITH =, viewer_user_id WITH =, visitor_id WITH =)
 );
 
 -- 2. Add indexes (IF NOT EXISTS handles multiple runs)
@@ -30,6 +31,10 @@ BEGIN
     
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'contact_unlocks' AND indexname = 'idx_contact_unlocks_viewer_user_id') THEN
         CREATE INDEX idx_contact_unlocks_viewer_user_id ON public.contact_unlocks(viewer_user_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'contact_unlocks' AND indexname = 'idx_contact_unlocks_visitor_id') THEN
+        CREATE INDEX idx_contact_unlocks_visitor_id ON public.contact_unlocks(visitor_id);
     END IF;
     
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE tablename = 'contact_unlocks' AND indexname = 'idx_contact_unlocks_payment_verified') THEN
@@ -77,14 +82,13 @@ END $$;
 -- 5. Create or replace functions (safe for multiple runs)
 CREATE OR REPLACE FUNCTION public.can_view_contact(
     post_id_param UUID,
-    viewer_user_id_param UUID DEFAULT NULL
+    viewer_user_id_param UUID DEFAULT NULL,
+    visitor_id_param TEXT DEFAULT NULL
 )
 RETURNS BOOLEAN AS $$
 DECLARE
-    is_post_owner BOOLEAN := FALSE;
     is_admin BOOLEAN := FALSE;
     has_unlock BOOLEAN := FALSE;
-    post_owner_id UUID;
 BEGIN
     -- Check if viewer is admin
     SELECT EXISTS(
@@ -97,22 +101,25 @@ BEGIN
         RETURN TRUE;
     END IF;
     
-    -- If no viewer_user_id, return false
-    IF viewer_user_id_param IS NULL THEN
-        RETURN FALSE;
+    -- Check if user has paid for this contact (authenticated user)
+    IF viewer_user_id_param IS NOT NULL THEN
+        SELECT EXISTS(
+            SELECT 1 FROM public.contact_unlocks
+            WHERE post_id = post_id_param
+            AND viewer_user_id = viewer_user_id_param
+            AND payment_verified = true
+        ) INTO has_unlock;
     END IF;
     
-    -- Get post owner (assuming posts has a user_id field, if not, we'll need to adjust)
-    -- For now, we'll check if the contact matches (less secure but works for current schema)
-    -- In a perfect world, posts would have a created_by field
-    
-    -- Check if user has paid for this contact
-    SELECT EXISTS(
-        SELECT 1 FROM public.contact_unlocks
-        WHERE post_id = post_id_param
-        AND viewer_user_id = viewer_user_id_param
-        AND payment_verified = true
-    ) INTO has_unlock;
+    -- Check if visitor has paid for this contact (anonymous user)
+    IF NOT has_unlock AND visitor_id_param IS NOT NULL THEN
+        SELECT EXISTS(
+            SELECT 1 FROM public.contact_unlocks
+            WHERE post_id = post_id_param
+            AND visitor_id = visitor_id_param
+            AND payment_verified = true
+        ) INTO has_unlock;
+    END IF;
     
     RETURN has_unlock;
 END;
@@ -132,7 +139,8 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 
 -- 7. Create or replace updated view for public posts with masked contacts
 CREATE OR REPLACE FUNCTION public.get_public_posts_with_masked_contacts(
-    viewer_user_id_param UUID DEFAULT NULL
+    viewer_user_id_param UUID DEFAULT NULL,
+    visitor_id_param TEXT DEFAULT NULL
 )
 RETURNS TABLE (
     id UUID,
@@ -158,13 +166,13 @@ BEGIN
         p.salary,
         -- Show full contact only if user can view it, otherwise mask it
         CASE 
-            WHEN public.can_view_contact(p.id, viewer_user_id_param) THEN p.contact
+            WHEN public.can_view_contact(p.id, viewer_user_id_param, visitor_id_param) THEN p.contact
             ELSE public.mask_phone_number(p.contact)
         END AS contact,
         p.photo_url,
         p.status,
         p.created_at,
-        public.can_view_contact(p.id, viewer_user_id_param) AS can_view_contact
+        public.can_view_contact(p.id, viewer_user_id_param, visitor_id_param) AS can_view_contact
     FROM public.posts p
     WHERE p.status = 'approved'
         AND p.created_at >= now() - interval '30 days'

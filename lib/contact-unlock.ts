@@ -75,35 +75,56 @@ export async function getContactDisplay(
 // Create contact unlock record after payment
 export async function createContactUnlock(
   postId: string,
-  viewerUserId: string,
+  userId: string,
   paymentMethod: string,
   paymentAmount: number,
-  transactionId?: string
+  transactionId?: string,
+  isVisitorId: boolean = false // Flag to indicate if userId is a visitor_id
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Check if unlock already exists
-    const { data: existingUnlock } = await supabase
-      .from("contact_unlocks")
-      .select("*")
-      .eq("post_id", postId)
-      .eq("viewer_user_id", viewerUserId)
-      .single();
+    const existingQuery = isVisitorId
+      ? supabase
+          .from("contact_unlocks")
+          .select("*")
+          .eq("post_id", postId)
+          .eq("visitor_id", userId)
+          .single()
+      : supabase
+          .from("contact_unlocks")
+          .select("*")
+          .eq("post_id", postId)
+          .eq("viewer_user_id", userId)
+          .single();
+
+    const { data: existingUnlock } = await existingQuery;
 
     if (existingUnlock) {
       return { success: true }; // Already unlocked
     }
 
     // Create new unlock record
+    const insertData = isVisitorId
+      ? {
+          post_id: postId,
+          visitor_id: userId,
+          payment_verified: true,
+          payment_method: paymentMethod,
+          payment_amount: paymentAmount,
+          transaction_id: transactionId,
+        }
+      : {
+          post_id: postId,
+          viewer_user_id: userId,
+          payment_verified: true,
+          payment_method: paymentMethod,
+          payment_amount: paymentAmount,
+          transaction_id: transactionId,
+        };
+
     const { error } = await supabase
       .from("contact_unlocks")
-      .insert({
-        post_id: postId,
-        viewer_user_id: viewerUserId,
-        payment_verified: true,
-        payment_method: paymentMethod,
-        payment_amount: paymentAmount,
-        transaction_id: transactionId,
-      });
+      .insert(insertData);
 
     if (error) {
       console.error("Error creating contact unlock:", error);

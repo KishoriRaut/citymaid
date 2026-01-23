@@ -162,6 +162,7 @@ export async function updatePaymentStatus(
     if (status === "approved" && paymentData?.post_id) {
       // Try to get user_id from visitor_id first (for anonymous users)
       let userId = paymentData.visitor_id;
+      let isVisitorId = false;
       
       // If no visitor_id, try to find authenticated user by other means
       if (!userId) {
@@ -169,6 +170,9 @@ export async function updatePaymentStatus(
         // This could be enhanced based on your authentication system
         const session = await getServerSession();
         userId = session?.id;
+        isVisitorId = false;
+      } else {
+        isVisitorId = true; // This is a visitor_id, not a user_id
       }
       
       if (userId) {
@@ -177,7 +181,8 @@ export async function updatePaymentStatus(
           userId,
           paymentData.method,
           paymentData.amount,
-          paymentData.reference_id
+          paymentData.reference_id,
+          isVisitorId
         );
         
         if (!unlockResult.success) {

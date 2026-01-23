@@ -17,6 +17,7 @@ export default function Home() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [visitorId, setVisitorId] = useState<string | null>(null);
   
   // Primary tab: "employer" is default
   const [activeTab, setActiveTab] = useState<"employer" | "employee">("employer");
@@ -32,15 +33,27 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const POSTS_PER_LOAD = 12; // Load 10-15 posts at a time
 
-  // Get current user session on mount
+  // Get current user session and visitor ID on mount
   useEffect(() => {
     const getUserSession = async () => {
       try {
+        // Get authenticated user
         const user = getCurrentUser();
         setCurrentUserId(user?.id || null);
+        
+        // Get visitor ID
+        if (typeof window !== "undefined") {
+          let vid = localStorage.getItem("citymaid_visitor_id");
+          if (!vid) {
+            vid = `visitor_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+            localStorage.setItem("citymaid_visitor_id", vid);
+          }
+          setVisitorId(vid);
+        }
       } catch (error) {
         console.error("Error getting user session:", error);
         setCurrentUserId(null);
+        setVisitorId(null);
       }
     };
     getUserSession();
@@ -63,6 +76,7 @@ export default function Home() {
         limit: 1000, // Large limit to fetch all, then filter client-side
         offset: 0,
         viewer_user_id: currentUserId || undefined, // Pass current user ID for contact visibility
+        visitor_id: visitorId || undefined, // Pass visitor ID for contact visibility
       });
 
       if (fetchError) {

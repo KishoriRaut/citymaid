@@ -10,12 +10,16 @@ export async function getPublicPostsClient(filters?: {
   limit?: number;
   offset?: number;
   viewer_user_id?: string; // Add viewer user ID for contact visibility
+  visitor_id?: string; // Add visitor ID for contact visibility
 }) {
   try {
     // Try new function with contact masking based on user access
     const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
       "get_public_posts_with_masked_contacts",
-      { viewer_user_id_param: filters?.viewer_user_id || null }
+      { 
+        viewer_user_id_param: filters?.viewer_user_id || null,
+        visitor_id_param: filters?.visitor_id || null
+      }
     );
 
     // If new function doesn't exist, fall back to existing function
