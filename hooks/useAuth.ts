@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCurrentPhoneUserClient } from "@/lib/phone-auth";
+import { supabaseClient } from "@/lib/supabase-client";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -23,22 +23,24 @@ export function useAuth() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const userSession = await getCurrentPhoneUserClient();
+        // Get current session (works for both email and phone auth)
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
         
-        if (userSession?.user) {
-          // Check if user is admin
+        if (session?.user) {
+          // Check if user is admin based on email
           const adminEmails = [
             "admin@citymaid.com",
             "kishoriraut@example.com",
           ];
-          const isAdminUser = adminEmails.includes(userSession.user.email) || 
-                              userSession.user.email.endsWith("@citymaid.com");
+          const userEmail = session.user.email || '';
+          const isAdminUser = adminEmails.includes(userEmail) || 
+                              userEmail.endsWith("@citymaid.com");
 
           setAuthState({
             isAuthenticated: true,
             isAdmin: isAdminUser,
-            user: userSession.user,
-            profile: userSession.profile,
+            user: session.user,
+            profile: session.user, // For email auth, user profile is in user object
             isLoading: false,
           });
         } else {
@@ -63,6 +65,40 @@ export function useAuth() {
     };
 
     checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          // Check if user is admin based on email
+          const adminEmails = [
+            "admin@citymaid.com",
+            "kishoriraut@example.com",
+          ];
+          const userEmail = session.user.email || '';
+          const isAdminUser = adminEmails.includes(userEmail) || 
+                              userEmail.endsWith("@citymaid.com");
+
+          setAuthState({
+            isAuthenticated: true,
+            isAdmin: isAdminUser,
+            user: session.user,
+            profile: session.user,
+            isLoading: false,
+          });
+        } else {
+          setAuthState({
+            isAuthenticated: false,
+            isAdmin: false,
+            user: null,
+            profile: null,
+            isLoading: false,
+          });
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return authState;

@@ -1,5 +1,5 @@
-import OTPLogin from "@/components/auth/OTPLogin";
+import EmailLogin from "@/components/auth/EmailLogin";
 
 export default function LoginPage() {
-  return <OTPLogin redirectTo="/admin" />;
+  return <EmailLogin redirectTo="/admin" />;
 }

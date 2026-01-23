@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
-import { getCurrentPhoneUserClient } from "@/lib/phone-auth";
+import { getCurrentUserClient } from "@/lib/email-auth";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/marketplace/Tabs";
@@ -36,30 +36,45 @@ export default function Home() {
 
   // Get current user session and visitor ID on mount
   useEffect(() => {
-    const getUserSession = async () => {
+    const fetchInitialData = async () => {
       try {
-        // Get authenticated user via phone auth
-        const userSession = await getCurrentPhoneUserClient();
-        setCurrentUserId(userSession?.user?.id || null);
-        
-        // Get visitor ID (for anonymous users)
-        if (typeof window !== "undefined") {
-          let vid = localStorage.getItem("citymaid_visitor_id");
-          if (!vid) {
-            vid = `visitor_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-            localStorage.setItem("citymaid_visitor_id", vid);
-          }
-          setVisitorId(vid);
+        // Get current authenticated user (email auth)
+        const currentUser = await getCurrentUserClient();
+        const userId = currentUser?.id;
+
+        let initialPosts: PostWithMaskedContact[] = [];
+        let totalCount = 0;
+
+        if (activeTab === "all") {
+          const result = await getPublicPostsClient({
+            limit: POSTS_PER_LOAD,
+            offset: 0,
+            viewer_user_id: userId,
+          });
+          initialPosts = result.posts;
+          totalCount = result.totalCount;
+        } else {
+          const result = await getPublicPostsClient({
+            limit: POSTS_PER_LOAD,
+            offset: 0,
+            post_type: activeTab as "employer" | "employee",
+            viewer_user_id: userId,
+          });
+          initialPosts = result.posts;
+          totalCount = result.totalCount;
         }
+
+        setPosts(initialPosts);
+        setHasMore(totalCount > POSTS_PER_LOAD);
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error getting user session:", error);
-        setCurrentUserId(null);
-        setVisitorId(null);
+        console.error("Error fetching initial data:", error);
+        setIsLoading(false);
       }
     };
-    getUserSession();
-  }, []);
 
+    fetchInitialData();
+  }, [activeTab]);
 
   const loadPosts = async (append = false) => {
     if (append) {

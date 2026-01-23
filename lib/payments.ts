@@ -30,15 +30,16 @@ export async function createPayment(paymentData: {
   receipt_url?: string;
 }): Promise<{ payment: Payment | null; error?: string }> {
   try {
-    // Get current authenticated user (phone auth)
-    const userSession = await getCurrentPhoneUser();
+    // Get current authenticated user (email auth)
+    const { getCurrentUser } = await import("./email-auth");
+    const currentUser = await getCurrentUser();
     
-    if (!userSession || !userSession.user) {
+    if (!currentUser) {
       return { payment: null, error: "User not authenticated" };
     }
 
     // Use authenticated user's ID, fallback to provided visitor_id for compatibility
-    const userId = userSession.user.id;
+    const userId = currentUser.id;
     const visitorIdToUse = paymentData.visitor_id || userId;
 
     const { data, error } = await supabase
