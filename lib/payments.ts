@@ -37,11 +37,20 @@ export async function createPayment(paymentData: {
       return { payment: null, error: "User not authenticated" };
     }
 
+    // Use authenticated user's ID, fallback to provided visitor_id for compatibility
+    const userId = userSession.user.id;
+    const visitorIdToUse = paymentData.visitor_id || userId;
+
     const { data, error } = await supabase
       .from("payments")
       .insert({
-        ...paymentData,
-        visitor_id: userSession.user.id,
+        post_id: paymentData.post_id,
+        visitor_id: visitorIdToUse, // Use authenticated user ID
+        amount: paymentData.amount,
+        method: paymentData.method as "qr" | "esewa" | "bank",
+        reference_id: paymentData.reference_id || null,
+        customer_name: paymentData.customer_name || null,
+        receipt_url: paymentData.receipt_url || null,
         status: "pending",
         created_at: new Date().toISOString(),
       })
@@ -53,12 +62,11 @@ export async function createPayment(paymentData: {
       return { payment: null, error: error.message };
     }
 
-    // If user is authenticated, create contact unlock record
-    const session = await getServerSession();
-    if (session?.id && paymentData.post_id) {
+    // Create contact unlock record for authenticated user
+    if (userId && paymentData.post_id) {
       const unlockResult = await createContactUnlock(
         paymentData.post_id,
-        session.id,
+        userId,
         paymentData.method,
         paymentData.amount || CONTACT_UNLOCK_PRICE,
         paymentData.reference_id || undefined

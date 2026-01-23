@@ -10,6 +10,8 @@ import type { Post } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CONTACT_UNLOCK_PRICE, getContactUnlockPriceFormatted } from "@/lib/pricing";
 import { uploadPaymentReceipt, validateReceiptFile } from "@/lib/storage";
+import { useAuth } from "@/hooks/useAuth";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 const PAYMENT_METHODS = [
   { value: "qr", label: "QR Code" },
@@ -21,6 +23,9 @@ export default function UnlockPage() {
   const params = useParams();
   const router = useRouter();
   const postId = params.postId as string;
+  
+  // Authentication state
+  const { isAuthenticated, isAdmin, user, isLoading: authLoading } = useAuth();
 
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,47 +40,60 @@ export default function UnlockPage() {
     receipt_file: null as File | null,
   });
 
-  const [visitorId, setVisitorId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
   const [qrCodeError, setQrCodeError] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Authentication guard: Redirect to login if not authenticated
   useEffect(() => {
-    // Get or create visitor ID
-    if (typeof window !== "undefined") {
-      let vid = localStorage.getItem("citymaid_visitor_id");
-      if (!vid) {
-        vid = `visitor_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        localStorage.setItem("citymaid_visitor_id", vid);
+    if (!authLoading) {
+      if (!isAuthenticated) {
+        // Store the current post ID for redirect after login
+        storeRedirectForPost(postId);
+        
+        // Redirect to OTP login page
+        const loginUrl = getLoginUrl(`/unlock/${postId}`);
+        router.push(loginUrl);
+        return;
       }
-      setVisitorId(vid);
     }
+  }, [isAuthenticated, authLoading, postId, router]);
 
-    // Load post
-    const loadPost = async () => {
+  // If still checking auth or redirecting, show loading
+  if (authLoading || (!isAuthenticated && !authLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    // Fetch post data
+    const fetchPost = async () => {
       try {
-        // For public access, we need to get post via API route
         const response = await fetch(`/api/posts/${postId}`);
         if (!response.ok) {
-          setError("Post not found");
-          setIsLoading(false);
-          return;
+          throw new Error('Post not found');
         }
-        const data = await response.json();
-        setPost(data.post);
-        setIsLoading(false);
-      } catch (err) {
-        console.error("Error loading post:", err);
-        setError("Failed to load post");
+        const postData = await response.json();
+        setPost(postData);
+      } catch (error) {
+        console.error('Error fetching post:', error);
+        setError('Post not found');
+      } finally {
         setIsLoading(false);
       }
     };
 
-    if (postId) {
-      loadPost();
+    if (isAuthenticated) {
+      fetchPost();
     }
-  }, [postId]);
+  }, [postId, isAuthenticated]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -105,8 +123,9 @@ export default function UnlockPage() {
     setIsUploading(true);
 
     try {
-      if (!visitorId) {
-        setError("Visitor ID not found");
+      // Ensure user is authenticated (double-check)
+      if (!isAuthenticated || !user) {
+        setError("User not authenticated. Please log in again.");
         setIsSubmitting(false);
         setIsUploading(false);
         return;
@@ -136,10 +155,10 @@ export default function UnlockPage() {
         return;
       }
 
-      // Create payment with all data
+      // Create payment with authenticated user ID
       const { payment, error: paymentError } = await createPayment({
         post_id: postId,
-        visitor_id: visitorId,
+        visitor_id: user.id, // Use authenticated user ID instead of visitor ID
         method: formData.method,
         reference_id: formData.reference_id || undefined,
         customer_name: formData.customer_name.trim(),
