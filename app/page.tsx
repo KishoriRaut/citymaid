@@ -21,7 +21,7 @@ export default function Home() {
   const [visitorId, setVisitorId] = useState<string | null>(null);
   
   // Primary tab: "employer" is default
-  const [activeTab, setActiveTab] = useState<"employer" | "employee">("employer");
+  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employer");
   
   // Filters
   const [filters, setFilters] = useState({
@@ -52,7 +52,7 @@ export default function Home() {
             viewer_user_id: userId,
           });
           initialPosts = result.posts;
-          totalCount = result.totalCount;
+          totalCount = result.total || 0;
         } else {
           const result = await getPublicPostsClient({
             limit: POSTS_PER_LOAD,
@@ -61,7 +61,7 @@ export default function Home() {
             viewer_user_id: userId,
           });
           initialPosts = result.posts;
-          totalCount = result.totalCount;
+          totalCount = result.total || 0;
         }
 
         setPosts(initialPosts);
@@ -85,78 +85,71 @@ export default function Home() {
     }
 
     try {
+      // Get current authenticated user (email auth)
+      const currentUser = await getCurrentUserClient();
+      const currentUserId = currentUser?.id;
+
       // Fetch all posts (use large limit to get all for filtering)
-      const { posts: fetchedPosts, error: fetchError } = await getPublicPostsClient({
-        post_type: activeTab,
+      const result = await getPublicPostsClient({
+        post_type: activeTab === "all" ? undefined : activeTab,
         work: filters.work === "All" ? undefined : filters.work,
         limit: 1000, // Large limit to fetch all, then filter client-side
         offset: 0,
         viewer_user_id: currentUserId || undefined, // Pass current user ID for contact visibility
-        visitor_id: visitorId || undefined, // Pass visitor ID for contact visibility
       });
 
-      if (fetchError) {
-        setError(fetchError);
+      if (result.error) {
+        setError(result.error);
         setIsLoading(false);
         setIsLoadingMore(false);
         return;
       }
 
       // Apply client-side filters
-      let filteredPosts = fetchedPosts;
+      let fetchedPosts = result.posts;
       
-      // Filter by post_type (already filtered by API, but ensure consistency)
-      filteredPosts = filteredPosts.filter((p) => p.post_type === activeTab);
+      // Filter by post_type if not "all"
+      if (activeTab !== "all") {
+        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) => p.post_type === activeTab);
+      }
       
       if (filters.time !== "All") {
-        filteredPosts = filteredPosts.filter((p) => 
+        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) => 
           p.time.toLowerCase().includes(filters.time.toLowerCase())
         );
       }
       
       if (filters.place) {
-        filteredPosts = filteredPosts.filter((p) =>
+        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) =>
           p.place.toLowerCase().includes(filters.place.toLowerCase())
         );
       }
       
       // Salary filter (search within salary text)
       if (filters.salary) {
-        filteredPosts = filteredPosts.filter((p) =>
+        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) =>
           p.salary.toLowerCase().includes(filters.salary.toLowerCase())
         );
       }
 
-      // Store all filtered posts
-      
-      // Debug logging (development only)
-      if (process.env.NODE_ENV === "development") {
-        console.log("Total filtered posts:", filteredPosts.length);
-        console.log("Posts per load:", POSTS_PER_LOAD);
-      }
-      
-      // Apply Load More pattern
+      // Apply pagination
+      const startIndex = append ? posts.length : 0;
+      const endIndex = startIndex + POSTS_PER_LOAD;
+      const paginatedPosts = fetchedPosts.slice(startIndex, endIndex);
+
       if (append) {
-        // Append more posts
-        const currentCount = posts.length;
-        const newPosts = filteredPosts.slice(currentCount, currentCount + POSTS_PER_LOAD);
-        setPosts([...posts, ...newPosts]);
-        setHasMore(currentCount + newPosts.length < filteredPosts.length);
-        
-        if (process.env.NODE_ENV === "development") {
-          console.log("Appending posts. Current:", currentCount, "New:", newPosts.length, "Total after:", posts.length + newPosts.length);
-        }
+        setPosts([...posts, ...paginatedPosts]);
       } else {
         // Initial load - show first batch
-        const initialPosts = filteredPosts.slice(0, POSTS_PER_LOAD);
+        const initialPosts = fetchedPosts.slice(0, POSTS_PER_LOAD);
         setPosts(initialPosts);
-        setHasMore(filteredPosts.length > POSTS_PER_LOAD);
+        setHasMore(fetchedPosts.length > POSTS_PER_LOAD);
         
         if (process.env.NODE_ENV === "development") {
-          console.log("Initial load. Showing:", initialPosts.length, "out of", filteredPosts.length, "total posts");
+          console.log("Initial load. Showing:", initialPosts.length, "out of", fetchedPosts.length, "total posts");
         }
       }
-      
+
       setIsLoading(false);
       setIsLoadingMore(false);
     } catch (err) {
