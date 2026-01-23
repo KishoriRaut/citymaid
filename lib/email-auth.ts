@@ -9,50 +9,30 @@ if (typeof window === "undefined") {
   supabase = serverSupabase.supabase;
 }
 
-// Server-side email authentication
+// Server-side email authentication (DISABLED - OTP authentication has been disabled)
 export async function sendEmailMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
   if (!supabase) {
     return { success: false, error: "Server-side authentication not available" };
   }
   
-  try {
-    const { data, error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      console.error("Error sending magic link:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error("Error in sendEmailMagicLink:", error);
-    return { success: false, error: "Failed to send magic link" };
+  // Hard guard - prevent any OTP calls
+  if (process.env.NODE_ENV === 'development') {
+    throw new Error('OTP authentication has been disabled. sendEmailMagicLink() should not be called.');
   }
+  
+  // In production, return disabled response
+  return { success: false, error: "OTP authentication disabled" };
 }
 
-// Client-side email authentication
+// Client-side email authentication (DISABLED - OTP authentication has been disabled)
 export async function sendEmailMagicLinkClient(email: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      return { success: false, error: error.message };
-    }
-
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: "Failed to send magic link" };
+  // Hard guard - prevent any OTP calls
+  if (process.env.NODE_ENV === 'development') {
+    throw new Error('OTP authentication has been disabled. sendEmailMagicLinkClient() should not be called.');
   }
+  
+  // In production, return disabled response
+  return { success: false, error: "OTP authentication disabled" };
 }
 
 // Get current authenticated user (server-side)

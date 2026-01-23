@@ -74,12 +74,16 @@ export async function getCurrentSession() {
   return { session, error };
 }
 
-// Sign in with OTP (wrapper for consistency)
+// Sign in with OTP (DISABLED - OTP authentication has been disabled)
 export async function signInWithOTP(email: string, redirectTo?: string) {
-  return await supabaseClient.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: redirectTo || `${window.location.origin}/auth/callback`,
-    },
-  });
+  // Hard guard - prevent any OTP calls
+  if (process.env.NODE_ENV === 'development') {
+    throw new Error('OTP authentication has been disabled. signInWithOTP() should not be called.');
+  }
+  
+  // In production, return a mock response to prevent crashes
+  return {
+    data: null,
+    error: { name: 'AuthDisabled', message: 'OTP authentication disabled' }
+  };
 }
