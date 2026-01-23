@@ -53,7 +53,7 @@ CREATE POLICY "Admins full access to contact_unlocks" ON public.contact_unlocks
     FOR ALL USING (
         EXISTS (
             SELECT 1 FROM public.users 
-            WHERE users.email = auth.jwt()->->>'email'
+            WHERE users.email = auth.email()
         )
     );
 
@@ -72,7 +72,7 @@ BEGIN
     -- Check if viewer is admin
     SELECT EXISTS(
         SELECT 1 FROM public.users 
-        WHERE users.email = COALESCE(auth.jwt()->->>'email', '')
+        WHERE users.email = COALESCE(auth.email(), '')
     ) INTO is_admin;
     
     -- If admin, return true
