@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabaseClient } from "@/lib/supabase-client";
+import { clearSupabaseStorage, signInWithOTP, getCurrentSession } from "@/lib/auth-utils";
 
 export default function SimpleEmailLogin() {
   const [email, setEmail] = useState("");
@@ -9,20 +9,9 @@ export default function SimpleEmailLogin() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  // Clear browser storage on mount to avoid multiple instances
+  // Clear browser storage on mount using centralized utility
   useEffect(() => {
-    // Clear Supabase storage
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('supabase.auth.')) {
-        localStorage.removeItem(key);
-      }
-    });
-    Object.keys(sessionStorage).forEach(key => {
-      if (key.startsWith('supabase.auth.')) {
-        sessionStorage.removeItem(key);
-      }
-    });
-    console.log('✅ Cleared Supabase browser storage');
+    clearSupabaseStorage();
   }, []);
 
   const handleSendOTP = async () => {
@@ -37,12 +26,7 @@ export default function SimpleEmailLogin() {
     setIsError(false);
 
     try {
-      const { data, error } = await supabaseClient.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: "http://localhost:3000/auth/callback",
-        },
-      });
+      const { data, error } = await signInWithOTP(email);
 
       if (error) {
         console.error("OTP Error:", error);

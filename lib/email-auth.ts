@@ -1,9 +1,20 @@
 // Email authentication utilities (replaces phone-auth.ts)
-import { supabase } from "./supabase";
 import { supabaseClient } from "./supabase-client";
+
+// Server-side Supabase client (only import on server)
+let supabase: any = null;
+if (typeof window === "undefined") {
+  // Only import server-side client on server
+  const serverSupabase = require("./supabase");
+  supabase = serverSupabase.supabase;
+}
 
 // Server-side email authentication
 export async function sendEmailMagicLink(email: string): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) {
+    return { success: false, error: "Server-side authentication not available" };
+  }
+  
   try {
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
@@ -46,6 +57,10 @@ export async function sendEmailMagicLinkClient(email: string): Promise<{ success
 
 // Get current authenticated user (server-side)
 export async function getCurrentUser() {
+  if (!supabase) {
+    return null;
+  }
+  
   try {
     const { data: { user }, error } = await supabase.auth.getUser();
     
@@ -80,6 +95,10 @@ export async function getCurrentUserClient() {
 
 // Get current session (server-side)
 export async function getCurrentSession() {
+  if (!supabase) {
+    return null;
+  }
+  
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
     
@@ -114,6 +133,10 @@ export async function getCurrentSessionClient() {
 
 // Sign out user (server-side)
 export async function signOutUser(): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) {
+    return { success: false, error: "Server-side authentication not available" };
+  }
+  
   try {
     const { error } = await supabase.auth.signOut();
     
