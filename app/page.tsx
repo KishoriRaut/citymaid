@@ -17,8 +17,8 @@ export default function Home() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Primary tab: "All" is default
-  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("all");
+  // Primary tab: "employer" is default
+  const [activeTab, setActiveTab] = useState<"employer" | "employee">("employer");
   
   // Filters
   const [filters, setFilters] = useState({
@@ -45,7 +45,7 @@ export default function Home() {
     try {
       // Fetch all posts (use large limit to get all for filtering)
       const { posts: fetchedPosts, total, error: fetchError } = await getPublicPostsClient({
-        post_type: activeTab === "all" ? undefined : activeTab,
+        post_type: activeTab,
         work: filters.work === "All" ? undefined : filters.work,
         limit: 1000, // Large limit to fetch all, then filter client-side
         offset: 0,
@@ -61,10 +61,8 @@ export default function Home() {
       // Apply client-side filters
       let filteredPosts = fetchedPosts;
       
-      // Filter by post_type if not "all"
-      if (activeTab !== "all") {
-        filteredPosts = filteredPosts.filter((p) => p.post_type === activeTab);
-      }
+      // Filter by post_type (already filtered by API, but ensure consistency)
+      filteredPosts = filteredPosts.filter((p) => p.post_type === activeTab);
       
       if (filters.time !== "All") {
         filteredPosts = filteredPosts.filter((p) => 
@@ -147,7 +145,7 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, filters.work, filters.time, filters.place, filters.salary]);
 
-  const handleTabChange = (tab: "all" | "employer" | "employee") => {
+  const handleTabChange = (tab: "employer" | "employee") => {
     setActiveTab(tab);
     setPosts([]);
     setHasMore(true);

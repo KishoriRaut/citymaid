@@ -5,12 +5,11 @@ import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 
 interface EmptyStateProps {
-  activeTab: "all" | "employer" | "employee";
+  activeTab: "employer" | "employee";
 }
 
 export function EmptyState({ activeTab }: EmptyStateProps) {
   const isHiring = activeTab === "employer";
-  const isAll = activeTab === "all";
 
   return (
     <div className="py-16 px-4">
@@ -34,24 +33,20 @@ export function EmptyState({ activeTab }: EmptyStateProps) {
         </div>
 
         <h2 className="text-2xl font-bold mb-3">
-          {isAll
-            ? "No posts yet"
-            : isHiring
+          {isHiring
             ? "No job listings yet"
             : "No job seekers yet"}
         </h2>
 
         <p className="text-muted-foreground mb-6 text-lg">
-          {isAll
-            ? "Be the first to create a post and connect with others."
-            : isHiring
+          {isHiring
             ? "Be the first to post a job and find help fast."
             : "Create your profile and get contacted by employers."}
         </p>
 
         <Link href={appConfig.routes.post}>
           <Button size="lg" className="px-8">
-            {isAll ? "➕ Create Post" : isHiring ? "➕ Post a Job" : "➕ Find a Job"}
+            {isHiring ? "➕ Post a Job" : "➕ Find a Job"}
           </Button>
         </Link>
       </div>

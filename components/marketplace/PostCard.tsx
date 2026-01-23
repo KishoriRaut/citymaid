@@ -38,53 +38,38 @@ export function PostCard({ post }: PostCardProps) {
         </span>
       </div>
 
-      {/* Photo or Placeholder */}
-      <div className="relative w-full mb-4 rounded-lg overflow-hidden bg-muted aspect-[4/3] flex items-center justify-center">
-        {isHiring ? (
-          // Employer posts: Always show briefcase icon (never show photos)
-          <div className="flex items-center justify-center text-muted-foreground">
-            <svg
-              className="w-12 h-12 opacity-40"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        ) : post.photo_url && !imageError ? (
-          // Employee posts: Show photo if available
-          <img
-            src={post.photo_url}
-            alt={post.work}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          // Employee posts: Show user icon if no photo
-          <div className="flex items-center justify-center text-muted-foreground">
-            <svg
-              className="w-12 h-12 opacity-40"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </div>
-        )}
-      </div>
+      {/* Photo or Placeholder - Only for Employee Posts */}
+      {!isHiring && (
+        <div className="relative w-full mb-4 rounded-lg overflow-hidden bg-muted aspect-[4/3] flex items-center justify-center">
+          {post.photo_url && !imageError ? (
+            // Employee posts: Show photo if available
+            <img
+              src={post.photo_url}
+              alt={post.work}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            // Employee posts: Show user icon if no photo
+            <div className="flex items-center justify-center text-muted-foreground">
+              <svg
+                className="w-12 h-12 opacity-40"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Work Type (Bold) */}
       <h3 className="font-semibold text-lg mb-3 text-foreground line-clamp-2 leading-snug">{post.work}</h3>
