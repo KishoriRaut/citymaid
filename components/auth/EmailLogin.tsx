@@ -56,7 +56,19 @@ export default function EmailLogin({ redirectTo, onSuccess }: EmailLoginProps) {
       });
 
       if (error) {
-        setError(error.message);
+        // Provide specific guidance for common email configuration issues
+        let errorMessage = error.message;
+        
+        if (error.message?.includes("Email provider is not enabled") || 
+            error.message?.includes("Email provider is not configured")) {
+          errorMessage = "Email authentication is not configured. Please contact the administrator to set up the email provider in Supabase.";
+        } else if (error.message?.includes("Invalid email")) {
+          errorMessage = "Please enter a valid email address.";
+        } else if (error.status === 500) {
+          errorMessage = "Server error. The email provider may not be configured. Please try again or contact support.";
+        }
+        
+        setError(errorMessage);
       } else {
         setSuccess("Login link sent! Please check your email and click the link to continue.");
         
