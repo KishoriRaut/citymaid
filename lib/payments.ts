@@ -160,19 +160,20 @@ export async function updatePaymentStatus(
 
     // If payment is approved, create contact unlock record
     if (status === "approved" && paymentData?.post_id) {
-      // Try to get user_id from visitor_id first (for anonymous users)
+      // For emergency fix, only support authenticated users
+      // Skip visitor_id payments until we run the full migration
       let userId = paymentData.visitor_id;
       let isVisitorId = false;
       
-      // If no visitor_id, try to find authenticated user by other means
+      // If no visitor_id, try to find authenticated user
       if (!userId) {
-        // For authenticated users, we might need to look up their user_id
-        // This could be enhanced based on your authentication system
         const session = await getServerSession();
         userId = session?.id;
         isVisitorId = false;
       } else {
-        isVisitorId = true; // This is a visitor_id, not a user_id
+        // This is a visitor_id payment - not supported in emergency mode
+        console.warn("Visitor ID payment detected - not supported in emergency mode");
+        userId = null;
       }
       
       if (userId) {
