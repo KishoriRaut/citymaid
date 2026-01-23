@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { getPostById } from "@/lib/posts";
 import { maskContact } from "@/lib/utils";
 import { createPayment } from "@/lib/payments";
 import type { Post } from "@/lib/types";

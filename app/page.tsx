@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { appConfig } from "@/lib/config";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,8 +30,6 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const POSTS_PER_LOAD = 12; // Load 10-15 posts at a time
 
-  // Store all fetched posts for client-side filtering
-  const [allPosts, setAllPosts] = useState<PostWithMaskedContact[]>([]);
 
   const loadPosts = async (append = false) => {
     if (append) {
@@ -44,7 +41,7 @@ export default function Home() {
 
     try {
       // Fetch all posts (use large limit to get all for filtering)
-      const { posts: fetchedPosts, total, error: fetchError } = await getPublicPostsClient({
+      const { posts: fetchedPosts, error: fetchError } = await getPublicPostsClient({
         post_type: activeTab,
         work: filters.work === "All" ? undefined : filters.work,
         limit: 1000, // Large limit to fetch all, then filter client-side
@@ -84,7 +81,6 @@ export default function Home() {
       }
 
       // Store all filtered posts
-      setAllPosts(filteredPosts);
       
       // Debug logging (development only)
       if (process.env.NODE_ENV === "development") {

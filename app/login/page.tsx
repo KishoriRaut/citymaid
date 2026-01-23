@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { setSession, type User } from "@/lib/session";

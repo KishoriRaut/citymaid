@@ -197,7 +197,7 @@ export async function getPostById(postId: string) {
       return { post: null, error: "Post not found" };
     }
 
-    // Remove contact_visible field and return as Post type
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contact_visible, ...post } = postData;
     return { post: post as Post, error: null };
   } catch (error) {
@@ -284,7 +284,7 @@ export async function updatePost(
 ) {
   try {
     // Prepare update data
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (updates.post_type !== undefined) updateData.post_type = updates.post_type;
     if (updates.work !== undefined) updateData.work = updates.work;
