@@ -69,7 +69,7 @@ export function getAllTimeOptions(): string[] {
 export function getGroupedTimeOptions(): Array<{ label: string; types: string[] }> {
   return Object.values(TIME_CATEGORIES).map((category) => ({
     label: category.label,
-    types: category.types,
+    types: [...category.types],
   }));
 }
 
