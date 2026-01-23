@@ -133,6 +133,19 @@ export async function updatePaymentStatus(
   status: "pending" | "approved" | "rejected"
 ) {
   try {
+    // First get the payment details to create unlock record if approved
+    const { data: paymentData, error: fetchError } = await supabase
+      .from("payments")
+      .select("post_id, visitor_id, method, amount, reference_id")
+      .eq("id", paymentId)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching payment details:", fetchError);
+      return { payment: null, error: fetchError.message };
+    }
+
+    // Update payment status
     const { data, error } = await supabase
       .from("payments")
       .update({ status })
@@ -143,6 +156,35 @@ export async function updatePaymentStatus(
     if (error) {
       console.error("Error updating payment:", error);
       return { payment: null, error: error.message };
+    }
+
+    // If payment is approved, create contact unlock record
+    if (status === "approved" && paymentData?.post_id) {
+      // Try to get user_id from visitor_id first (for anonymous users)
+      let userId = paymentData.visitor_id;
+      
+      // If no visitor_id, try to find authenticated user by other means
+      if (!userId) {
+        // For authenticated users, we might need to look up their user_id
+        // This could be enhanced based on your authentication system
+        const session = await getServerSession();
+        userId = session?.id;
+      }
+      
+      if (userId) {
+        const unlockResult = await createContactUnlock(
+          paymentData.post_id,
+          userId,
+          paymentData.method,
+          paymentData.amount,
+          paymentData.reference_id
+        );
+        
+        if (!unlockResult.success) {
+          console.error("Error creating contact unlock:", unlockResult.error);
+          // Don't fail the payment update if unlock creation fails, just log it
+        }
+      }
     }
 
     return { payment: data as Payment, error: null };
