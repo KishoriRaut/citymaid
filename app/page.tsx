@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
+import { getCurrentPhoneUserClient } from "@/lib/phone-auth";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs } from "@/components/marketplace/Tabs";
@@ -37,11 +38,11 @@ export default function Home() {
   useEffect(() => {
     const getUserSession = async () => {
       try {
-        // Get authenticated user
-        const user = getCurrentUser();
-        setCurrentUserId(user?.id || null);
+        // Get authenticated user via phone auth
+        const userSession = await getCurrentPhoneUserClient();
+        setCurrentUserId(userSession?.user?.id || null);
         
-        // Get visitor ID
+        // Get visitor ID (for anonymous users)
         if (typeof window !== "undefined") {
           let vid = localStorage.getItem("citymaid_visitor_id");
           if (!vid) {

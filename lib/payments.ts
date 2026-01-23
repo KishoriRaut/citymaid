@@ -4,6 +4,7 @@ import { supabase } from "./supabase";
 import { CONTACT_UNLOCK_PRICE } from "./pricing";
 import { createContactUnlock } from "./contact-unlock";
 import { getServerSession } from "./auth-server";
+import { getCurrentPhoneUser } from "./phone-auth";
 
 export interface Payment {
   id: string;
@@ -19,22 +20,30 @@ export interface Payment {
 }
 
 // Create payment (public)
-export async function createPayment(payment: {
+export async function createPayment(paymentData: {
   post_id: string;
   visitor_id?: string;
-  method: "qr" | "esewa" | "bank";
+  amount: number;
+  method: string;
   reference_id?: string;
   customer_name?: string;
   receipt_url?: string;
-  amount?: number;
-}) {
+}): Promise<{ payment: Payment | null; error?: string }> {
   try {
+    // Get current authenticated user (phone auth)
+    const userSession = await getCurrentPhoneUser();
+    
+    if (!userSession || !userSession.user) {
+      return { payment: null, error: "User not authenticated" };
+    }
+
     const { data, error } = await supabase
       .from("payments")
       .insert({
-        ...payment,
+        ...paymentData,
+        visitor_id: userSession.user.id,
         status: "pending",
-        amount: payment.amount || CONTACT_UNLOCK_PRICE,
+        created_at: new Date().toISOString(),
       })
       .select()
       .single();
@@ -46,13 +55,13 @@ export async function createPayment(payment: {
 
     // If user is authenticated, create contact unlock record
     const session = await getServerSession();
-    if (session?.id && payment.post_id) {
+    if (session?.id && paymentData.post_id) {
       const unlockResult = await createContactUnlock(
-        payment.post_id,
+        paymentData.post_id,
         session.id,
-        payment.method,
-        payment.amount || CONTACT_UNLOCK_PRICE,
-        payment.reference_id
+        paymentData.method,
+        paymentData.amount || CONTACT_UNLOCK_PRICE,
+        paymentData.reference_id || undefined
       );
       
       if (!unlockResult.success) {
@@ -127,73 +136,52 @@ export async function getAllPayments(filters?: {
   }
 }
 
-// Update payment status (admin only)
+// Update payment status (admin only) - now uses atomic function
 export async function updatePaymentStatus(
   paymentId: string,
   status: "pending" | "approved" | "rejected"
 ) {
   try {
-    // First get the payment details to create unlock record if approved
-    const { data: paymentData, error: fetchError } = await supabase
-      .from("payments")
-      .select("post_id, visitor_id, method, amount, reference_id")
-      .eq("id", paymentId)
-      .single();
+    if (status === "approved") {
+      // Use atomic function for payment approval + unlock creation
+      const { data, error } = await supabase
+        .rpc("approve_payment_and_unlock", { payment_id_param: paymentId })
+        .single();
 
-    if (fetchError) {
-      console.error("Error fetching payment details:", fetchError);
-      return { payment: null, error: fetchError.message };
-    }
-
-    // Update payment status
-    const { data, error } = await supabase
-      .from("payments")
-      .update({ status })
-      .eq("id", paymentId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating payment:", error);
-      return { payment: null, error: error.message };
-    }
-
-    // If payment is approved, create contact unlock record
-    if (status === "approved" && paymentData?.post_id) {
-      // For emergency fix, only support authenticated users
-      // Skip visitor_id payments until we run the full migration
-      let userId = paymentData.visitor_id;
-      let isVisitorId = false;
-      
-      // If no visitor_id, try to find authenticated user
-      if (!userId) {
-        const session = await getServerSession();
-        userId = session?.id;
-        isVisitorId = false;
-      } else {
-        // This is a visitor_id payment - not supported in emergency mode
-        console.warn("Visitor ID payment detected - not supported in emergency mode");
-        userId = null;
+      if (error) {
+        console.error("Error in atomic payment approval:", error);
+        return { payment: null, error: error.message };
       }
-      
-      if (userId) {
-        const unlockResult = await createContactUnlock(
-          paymentData.post_id,
-          userId,
-          paymentData.method,
-          paymentData.amount,
-          paymentData.reference_id,
-          isVisitorId
-        );
-        
-        if (!unlockResult.success) {
-          console.error("Error creating contact unlock:", unlockResult.error);
-          // Don't fail the payment update if unlock creation fails, just log it
-        }
-      }
-    }
 
-    return { payment: data as Payment, error: null };
+      // Get the updated payment record
+      const { data: paymentData, error: fetchError } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("id", paymentId)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching updated payment:", fetchError);
+        return { payment: null, error: fetchError.message };
+      }
+
+      return { payment: paymentData as Payment, error: null };
+    } else {
+      // For rejected payments, use simple update
+      const { data, error } = await supabase
+        .from("payments")
+        .update({ status })
+        .eq("id", paymentId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating payment:", error);
+        return { payment: null, error: error.message };
+      }
+
+      return { payment: data as Payment, error: null };
+    }
   } catch (error) {
     console.error("Error in updatePaymentStatus:", error);
     return { payment: null, error: "Failed to update payment" };
