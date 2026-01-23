@@ -94,45 +94,14 @@ export async function logoutPhoneUser(): Promise<{ success: boolean; error?: str
   }
 }
 
-// Rate limiting for OTP requests (simple implementation)
-const otpRequests = new Map<string, { timestamp: number; count: number }>();
-
-export function checkOTPRateLimit(phone: string): { allowed: boolean; error?: string } {
-  const now = Date.now();
-  const key = phone.replace(/[\s\-\(\)]/g, '');
-  const lastRequest = otpRequests.get(key);
-
-  if (lastRequest) {
-    const timeSinceLastRequest = now - lastRequest.timestamp;
-    
-    // Allow 1 OTP per 60 seconds
-    if (timeSinceLastRequest < 60000) {
-      return { allowed: false, error: "Please wait 60 seconds before requesting another OTP" };
-    }
-  }
-
-  // Update rate limit tracker
-  otpRequests.set(key, { timestamp: now, count: 1 });
-  
-  // Clean up old entries (older than 5 minutes)
-  const keysToDelete: string[] = [];
-  for (const [key, value] of otpRequests.entries()) {
-    if (now - value.timestamp > 300000) {
-      keysToDelete.push(key);
-    }
-  }
-  keysToDelete.forEach(key => otpRequests.delete(key));
-
-  return { allowed: true };
-}
-
 // Client-side phone authentication
 export async function sendPhoneOTPClient(phone: string): Promise<{ success: boolean; error?: string }> {
   try {
     // Format phone number
     const formattedPhone = phone.replace(/[\s\-\(\)]/g, '');
     
-    // Check rate limit
+    // Import and check rate limit
+    const { checkOTPRateLimit } = await import("./rate-limit");
     const rateLimit = checkOTPRateLimit(formattedPhone);
     if (!rateLimit.allowed) {
       return { success: false, error: rateLimit.error };
