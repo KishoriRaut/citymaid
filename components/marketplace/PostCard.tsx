@@ -7,6 +7,7 @@ import { appConfig } from "@/lib/config";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { getContactUnlockPriceFormatted } from "@/lib/pricing";
+import UnlockContactButton from "./UnlockContactButton";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -147,11 +148,13 @@ export function PostCard({ post }: PostCardProps) {
       {/* CTA Button */}
       {!contactVisible && (
         <div className="mt-auto space-y-2.5 pt-2">
-          <Link href={`${appConfig.routes.unlock}/${post.id}`} className="block">
-            <Button className="w-full font-medium shadow-sm hover:shadow transition-shadow duration-200" size="lg">
-              🔓 Unlock Contact — {getContactUnlockPriceFormatted()}
-            </Button>
-          </Link>
+          <UnlockContactButton 
+            postId={post.id}
+            canViewContact={contactVisible}
+            className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
+          >
+            🔓 Unlock Contact — {getContactUnlockPriceFormatted()}
+          </UnlockContactButton>
           <p className="text-xs text-center text-muted-foreground leading-relaxed">
             Small verification fee to protect workers from spam and misuse.
           </p>

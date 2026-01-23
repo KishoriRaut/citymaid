@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { sendPhoneOTPClient, verifyPhoneOTPClient, getCurrentPhoneUserClient } from "@/lib/phone-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getStoredRedirect, clearStoredRedirect, getPaymentUrl } from "@/lib/redirect-utils";
 
 interface OTPLoginProps {
   onSuccess?: (user: any) => void;
@@ -18,6 +19,25 @@ export default function OTPLogin({ onSuccess, redirectTo }: OTPLoginProps) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Get redirect URL from query params or stored redirect
+  const getRedirectUrl = () => {
+    // First check URL parameter
+    const urlRedirect = searchParams?.get('redirect');
+    if (urlRedirect) {
+      return decodeURIComponent(urlRedirect);
+    }
+    
+    // Then check stored redirect (for post unlock flow)
+    const storedRedirect = getStoredRedirect();
+    if (storedRedirect) {
+      return getPaymentUrl(storedRedirect.postId);
+    }
+    
+    // Finally use the prop or default
+    return redirectTo || "/admin";
+  };
 
   const handleSendOTP = async () => {
     if (!phone || phone.length < 10) {
@@ -65,11 +85,14 @@ export default function OTPLogin({ onSuccess, redirectTo }: OTPLoginProps) {
           onSuccess(result.user);
         }
         
-        if (redirectTo) {
-          setTimeout(() => {
-            router.push(redirectTo);
-          }, 1500);
-        }
+        // Clear stored redirect after successful login
+        clearStoredRedirect();
+        
+        // Redirect to appropriate URL
+        const redirectUrl = getRedirectUrl();
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 1500);
       } else {
         setError(result.error || "Invalid OTP. Please try again.");
       }
