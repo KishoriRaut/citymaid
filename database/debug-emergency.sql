@@ -48,12 +48,12 @@ LIMIT 10;
 -- 5. Test the can_view_contact function with sample data
 -- You'll need to replace these with actual IDs from your database
 DO $$
+DECLARE
+    sample_post_id UUID;
+    sample_user_id UUID;
+    sample_result BOOLEAN;
 BEGIN
     -- Get a sample post and user for testing
-    DECLARE sample_post_id UUID;
-    DECLARE sample_user_id UUID;
-    
-    -- Get first approved post
     SELECT id INTO sample_post_id 
     FROM public.posts 
     WHERE status = 'approved' 
@@ -65,10 +65,12 @@ BEGIN
     LIMIT 1;
     
     IF sample_post_id IS NOT NULL AND sample_user_id IS NOT NULL THEN
+        sample_result := public.can_view_contact(sample_post_id, sample_user_id);
         RAISE NOTICE 'Testing can_view_contact with post_id: %, user_id: %', sample_post_id, sample_user_id;
-        RAISE NOTICE 'Result: %', public.can_view_contact(sample_post_id, sample_user_id);
+        RAISE NOTICE 'Result: %', sample_result;
     ELSE
         RAISE NOTICE 'No sample data found for testing';
+        RAISE NOTICE 'sample_post_id: %, sample_user_id: %', sample_post_id, sample_user_id;
     END IF;
 END $$;
 
