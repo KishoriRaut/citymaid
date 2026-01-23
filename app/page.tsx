@@ -9,12 +9,14 @@ import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
 import { LoadMore } from "@/components/marketplace/LoadMore";
+import { getCurrentUser } from "@/lib/session";
 
 export default function Home() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Primary tab: "employer" is default
   const [activeTab, setActiveTab] = useState<"employer" | "employee">("employer");
@@ -29,6 +31,20 @@ export default function Home() {
   
   const [hasMore, setHasMore] = useState(true);
   const POSTS_PER_LOAD = 12; // Load 10-15 posts at a time
+
+  // Get current user session on mount
+  useEffect(() => {
+    const getUserSession = async () => {
+      try {
+        const user = getCurrentUser();
+        setCurrentUserId(user?.id || null);
+      } catch (error) {
+        console.error("Error getting user session:", error);
+        setCurrentUserId(null);
+      }
+    };
+    getUserSession();
+  }, []);
 
 
   const loadPosts = async (append = false) => {
@@ -46,6 +62,7 @@ export default function Home() {
         work: filters.work === "All" ? undefined : filters.work,
         limit: 1000, // Large limit to fetch all, then filter client-side
         offset: 0,
+        viewer_user_id: currentUserId || undefined, // Pass current user ID for contact visibility
       });
 
       if (fetchError) {

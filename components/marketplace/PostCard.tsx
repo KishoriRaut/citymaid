@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import type { PostWithMaskedContact } from "@/lib/types";
-import { maskContact, formatSalary } from "@/lib/utils";
+import { formatSalary } from "@/lib/utils";
 import { getContactUnlockPriceFormatted } from "@/lib/pricing";
 
 interface PostCardProps {
@@ -14,13 +14,9 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const [imageError, setImageError] = useState(false);
-  // Contact is visible (unlocked) if it doesn't contain asterisks (masked contacts have asterisks)
-  // SQL function returns: full contact if paid, masked contact if not paid
-  const contactVisible = post.contact !== null && !post.contact.includes("*");
-  // If contact is already masked from SQL, use it as-is; otherwise mask it client-side as fallback
-  const maskedContact = post.contact 
-    ? (post.contact.includes("*") ? post.contact : maskContact(post.contact))
-    : "****";
+  
+  // Use the new can_view_contact flag from the database
+  const contactVisible = post.can_view_contact && post.contact !== null;
   const isHiring = post.post_type === "employer";
 
   return (
@@ -143,7 +139,7 @@ export function PostCard({ post }: PostCardProps) {
           {contactVisible ? (
             <span className="text-foreground font-medium">{post.contact}</span>
           ) : (
-            <span className="font-mono text-muted-foreground">{maskedContact}</span>
+            <span className="font-mono text-muted-foreground">{post.contact || "****"}</span>
           )}
         </div>
       </div>

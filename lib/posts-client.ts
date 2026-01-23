@@ -9,9 +9,14 @@ export async function getPublicPostsClient(filters?: {
   work?: string;
   limit?: number;
   offset?: number;
+  viewer_user_id?: string; // Add viewer user ID for contact visibility
 }) {
   try {
-    const { data: rpcData, error: rpcError } = await supabaseClient.rpc("get_public_posts");
+    // Use new function with contact masking based on user access
+    const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
+      "get_public_posts_with_masked_contacts",
+      { viewer_user_id_param: filters?.viewer_user_id || null }
+    );
 
     if (rpcError) {
       if (process.env.NODE_ENV === "development") {
@@ -38,6 +43,7 @@ export async function getPublicPostsClient(filters?: {
         const fallbackPosts = (directData || []).map((p) => ({
           ...p,
           contact: null,
+          can_view_contact: false, // Add this field for consistency
         })) as PostWithMaskedContact[];
 
         let posts = fallbackPosts;

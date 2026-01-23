@@ -2,6 +2,8 @@
 
 import { supabase } from "./supabase";
 import { CONTACT_UNLOCK_PRICE } from "./pricing";
+import { createContactUnlock } from "./contact-unlock";
+import { getServerSession } from "./auth-server";
 
 export interface Payment {
   id: string;
@@ -40,6 +42,23 @@ export async function createPayment(payment: {
     if (error) {
       console.error("Error creating payment:", error);
       return { payment: null, error: error.message };
+    }
+
+    // If user is authenticated, create contact unlock record
+    const session = await getServerSession();
+    if (session?.id && payment.post_id) {
+      const unlockResult = await createContactUnlock(
+        payment.post_id,
+        session.id,
+        payment.method,
+        payment.amount || CONTACT_UNLOCK_PRICE,
+        payment.reference_id
+      );
+      
+      if (!unlockResult.success) {
+        console.error("Error creating contact unlock:", unlockResult.error);
+        // Don't fail the payment if unlock creation fails, just log it
+      }
     }
 
     return { payment: data as Payment, error: null };

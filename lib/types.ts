@@ -15,4 +15,5 @@ export interface Post {
 
 export interface PostWithMaskedContact extends Omit<Post, "contact"> {
   contact: string | null; // null if payment not approved, otherwise the actual contact
+  can_view_contact: boolean; // Flag indicating if user can view full contact
 }
