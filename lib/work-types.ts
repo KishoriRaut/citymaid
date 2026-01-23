@@ -106,7 +106,7 @@ export function getAllWorkTypes(): string[] {
 export function getGroupedWorkTypes(): Array<{ label: string; types: string[] }> {
   return Object.values(WORK_CATEGORIES).map((category) => ({
     label: category.label,
-    types: category.types,
+    types: [...category.types],
   }));
 }
 
