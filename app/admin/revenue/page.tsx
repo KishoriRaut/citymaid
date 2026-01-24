@@ -93,7 +93,7 @@ export default function RevenueDashboardPage() {
           work: payment.posts?.work || "Unknown",
           amount: payment.amount,
           status: payment.status,
-          visitorId: payment.visitor_id,
+          visitorId: payment.visitor_id || null,
           customerName: payment.customer_name,
           receiptUrl: payment.receipt_url,
           createdAt: payment.created_at,

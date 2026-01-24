@@ -13,7 +13,7 @@ async function getUserFromSession(request?: Request) {
       cookieHeader = request.headers.get("cookie") || "";
     } else {
       // Try to get cookies from headers if available in server context
-      const headers = (globalThis as any).headers;
+      const headers = (globalThis as { headers?: { get: (name: string) => string | null } }).headers;
       if (headers) {
         cookieHeader = headers.get("cookie") || "";
       }

@@ -2,7 +2,6 @@
 
 import { supabase } from "./supabase";
 import { createContactUnlock } from "./contact-unlock";
-import { getServerSession } from "./auth-server";
 
 // Hardcoded contact unlock price (replaces deleted pricing.ts)
 const CONTACT_UNLOCK_PRICE = 50;
@@ -10,7 +9,7 @@ const CONTACT_UNLOCK_PRICE = 50;
 export interface Payment {
   id: string;
   post_id: string;
-  visitor_id: string | null;
+  visitor_id: string | null | undefined;
   amount: number;
   method: "qr" | "esewa" | "bank";
   reference_id: string | null;
@@ -47,7 +46,7 @@ export async function createPayment(paymentData: {
       .from("payments")
       .insert({
         post_id: paymentData.post_id,
-        visitor_id: visitorIdToUse, // Use authenticated user ID
+        visitor_id: visitorIdToUse || undefined, // Use authenticated user ID
         amount: paymentData.amount,
         method: paymentData.method as "qr" | "esewa" | "bank",
         reference_id: paymentData.reference_id || null,
@@ -62,6 +61,11 @@ export async function createPayment(paymentData: {
     if (error) {
       console.error("Error creating payment:", error);
       return { payment: null, error: error.message };
+    }
+
+    if (!data) {
+      console.error("No data returned from payment creation");
+      return { payment: null, error: "Failed to create payment" };
     }
 
     // Create contact unlock record for authenticated user
@@ -80,7 +84,21 @@ export async function createPayment(paymentData: {
       }
     }
 
-    return { payment: data as Payment, error: null };
+    return { 
+      payment: {
+        id: data.id,
+        post_id: data.post_id,
+        visitor_id: data.visitor_id || undefined,
+        amount: data.amount,
+        method: data.method as "qr" | "esewa" | "bank",
+        reference_id: data.reference_id,
+        customer_name: data.customer_name,
+        receipt_url: data.receipt_url,
+        status: data.status as "pending" | "approved" | "rejected",
+        created_at: data.created_at
+      }, 
+      error: undefined 
+    };
   } catch (error) {
     console.error("Error in createPayment:", error);
     return { payment: null, error: "Failed to create payment" };
@@ -154,7 +172,7 @@ export async function updatePaymentStatus(
   try {
     if (status === "approved") {
       // Use atomic function for payment approval + unlock creation
-      const { data, error } = await supabase
+      const { error } = await supabase
         .rpc("approve_payment_and_unlock", { payment_id_param: paymentId })
         .single();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/shared/button";
 import { Skeleton } from "@/components/shared/skeleton";
 import { getAllPosts, updatePostStatus, deletePost, updatePost } from "@/lib/posts";
@@ -15,11 +15,7 @@ export default function AdminPostsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "hidden">("all");
 
-  useEffect(() => {
-    loadPosts();
-  }, [filter]);
-
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -41,7 +37,11 @@ export default function AdminPostsPage() {
       setError("Failed to load posts");
       setIsLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    loadPosts();
+  }, [filter, loadPosts]);
 
   const handleStatusChange = async (postId: string, newStatus: "approved" | "hidden") => {
     try {

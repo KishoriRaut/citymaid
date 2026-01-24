@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/shared/button";
 import { Skeleton } from "@/components/shared/skeleton";
 import { getAllPayments, updatePaymentStatus, type Payment } from "@/lib/payments";
@@ -22,11 +22,7 @@ export default function AdminPaymentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
 
-  useEffect(() => {
-    loadPayments();
-  }, [filter]);
-
-  const loadPayments = async () => {
+  const loadPayments = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -48,7 +44,11 @@ export default function AdminPaymentsPage() {
       setError("Failed to load payments");
       setIsLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    loadPayments();
+  }, [filter, loadPayments]);
 
   const handleStatusChange = async (
     paymentId: string,

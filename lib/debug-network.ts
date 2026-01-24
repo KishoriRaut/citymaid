@@ -19,7 +19,7 @@ export function setupNetworkDebugging() {
           ? JSON.parse(options.body) 
           : options.body;
         console.log('📤 Request body:', body);
-      } catch (e) {
+      } catch {
         console.log('📤 Request body (raw):', options.body);
       }
     }
@@ -42,11 +42,11 @@ export function setupNetworkDebugging() {
         try {
           const jsonData = JSON.parse(responseText);
           console.log('📥 Response JSON:', jsonData);
-        } catch (e) {
+        } catch {
           // Not JSON, keep as text
         }
-      } catch (e) {
-        console.log('📥 Could not read response body:', (e as Error).message);
+      } catch {
+        console.log('📥 Could not read response body:', 'Unknown error');
       }
 
       return response;

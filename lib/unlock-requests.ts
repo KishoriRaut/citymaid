@@ -199,7 +199,7 @@ export async function approveUnlockRequest(
     }
 
     // Create contact unlock record
-    const unlockResult = await createContactUnlock(
+    await createContactUnlock(
       request.post_id,
       request.visitor_id,
       'payment_proof',
@@ -216,8 +216,7 @@ export async function approveUnlockRequest(
 
 // Reject request (admin only)
 export async function rejectUnlockRequest(
-  requestId: string,
-  reason?: string
+  requestId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/shared/button";
-import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
+import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest } from "@/lib/unlock-requests";
 
 interface UnlockRequest {
   id: string;
@@ -24,11 +24,7 @@ export default function UnlockRequestsPage() {
   const [processing, setProcessing] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'paid'>('paid');
 
-  useEffect(() => {
-    loadRequests();
-  }, [filter]);
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
       const { requests: data, error } = await getAllUnlockRequests(
@@ -45,7 +41,11 @@ export default function UnlockRequestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    loadRequests();
+  }, [filter, loadRequests]);
 
   const handleApprove = async (requestId: string) => {
     setProcessing(requestId);
@@ -73,10 +73,9 @@ export default function UnlockRequestsPage() {
   };
 
   const handleReject = async (requestId: string) => {
-    const reason = prompt("Reason for rejection (optional):");
     setProcessing(requestId);
     try {
-      const { success, error } = await rejectUnlockRequest(requestId, reason || undefined);
+      const { success, error } = await rejectUnlockRequest(requestId);
       
       if (success) {
         // Update local state

@@ -198,7 +198,7 @@ export async function isPostUnlockedByVisitor(
       .single();
 
     return !error && !!data;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

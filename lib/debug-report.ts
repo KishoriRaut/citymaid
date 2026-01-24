@@ -5,11 +5,15 @@ export interface DebugReport {
   userAgent: string;
   url: string;
   isAdmin: boolean;
-  currentUser: any;
+  currentUser: {
+    id?: string;
+    email?: string;
+    role?: string;
+  } | null;
   sessionInfo: {
     cookies: string;
-    localStorage: Record<string, any>;
-    sessionStorage: Record<string, any>;
+    localStorage: Record<string, unknown>;
+    sessionStorage: Record<string, unknown>;
   };
   databaseRole?: {
     is_admin: boolean;
@@ -66,7 +70,11 @@ class DebugReportCollector {
     };
   }
 
-  setDatabaseRole(roleData: any) {
+  setDatabaseRole(roleData: {
+    is_admin: boolean;
+    role: string;
+    admin_emails: string[];
+  }) {
     this.report.databaseRole = roleData;
   }
 

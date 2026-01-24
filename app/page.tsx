@@ -9,7 +9,6 @@ import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
 import { LoadMore } from "@/components/marketplace/LoadMore";
-import { getCurrentUser } from "@/lib/session";
 
 export default function Home() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
@@ -35,20 +34,10 @@ export default function Home() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Get current authenticated user
-        const currentUser = getCurrentUser();
-        const userId = currentUser?.id || undefined;
-
         let initialPosts: PostWithMaskedContact[] = [];
         let totalCount = 0;
 
-        const result = await getPublicPostsClient({
-          post_type: activeTab === "all" ? undefined : activeTab as "employer" | "employee",
-          work: filters.work === "All" ? null : filters.work,
-          limit: 1000, // Large limit to fetch all, then filter client-side
-          offset: 0,
-          viewer_user_id: userId, // Pass current user ID for contact visibility
-        });
+        const result = await getPublicPostsClient();
 
         initialPosts = result.posts;
         totalCount = result.total || 0;
@@ -63,7 +52,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [activeTab]);
+  }, [activeTab, filters.work]);
 
   const loadPosts = async (append = false) => {
     if (append) {
@@ -74,18 +63,8 @@ export default function Home() {
     }
 
     try {
-      // Get current authenticated user
-      const currentUser = getCurrentUser();
-      const currentUserId = currentUser?.id;
-
       // Fetch all posts (use large limit to get all for filtering)
-      const result = await getPublicPostsClient({
-        post_type: activeTab === "all" ? undefined : activeTab,
-        work: filters.work === "All" ? undefined : filters.work,
-        limit: 1000, // Large limit to fetch all, then filter client-side
-        offset: 0,
-        viewer_user_id: currentUserId || undefined, // Pass current user ID for contact visibility
-      });
+      const result = await getPublicPostsClient();
 
       if (result.error) {
         setError(result.error);

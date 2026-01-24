@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/shared/button";
 import { 
-  getPendingHomepagePayments, 
   getAllHomepagePayments, 
   approveHomepagePayment, 
   rejectHomepagePayment,
@@ -16,11 +15,7 @@ export default function HomepagePaymentsPage() {
   const [processing, setProcessing] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
 
-  useEffect(() => {
-    loadRequests();
-  }, [filter]);
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     setLoading(true);
     try {
       const { requests: data, error } = await getAllHomepagePayments(
@@ -37,7 +32,11 @@ export default function HomepagePaymentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    loadRequests();
+  }, [filter, loadRequests]);
 
   const handleApprove = async (postId: string) => {
     setProcessing(postId);
@@ -66,6 +65,7 @@ export default function HomepagePaymentsPage() {
 
   const handleReject = async (postId: string) => {
     const reason = prompt("Reason for rejection (optional):");
+    if (reason === null) return; // User cancelled
     setProcessing(postId);
     try {
       const { success, error } = await rejectHomepagePayment(postId);

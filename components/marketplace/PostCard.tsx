@@ -1,9 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/shared/button";
-import { appConfig } from "@/lib/config";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import UnlockContactButton from "./UnlockContactButton";

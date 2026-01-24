@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setSession } from "@/lib/session";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export default function LoginPage() {
         // Check if user is already logged in via localStorage
         const userStr = localStorage.getItem("user");
         if (userStr) {
-          const user = JSON.parse(userStr);
+          JSON.parse(userStr);
           // User is already logged in, redirect to intended destination
           const redirectTo = searchParams.get('redirect');
           if (redirectTo) {
@@ -181,5 +181,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold">Loading...</h2>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/shared/button";
 import { useRouter } from "next/navigation";
-import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
-import { getOrCreateVisitorId } from "@/lib/visitor-id";
 
 interface HomepageFeatureButtonProps {
   postId: string;

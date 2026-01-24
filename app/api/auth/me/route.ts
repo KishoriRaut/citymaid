@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     let sessionUser;
     try {
       sessionUser = JSON.parse(sessionCookie);
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: "Invalid session format" },
         { status: 401 }
