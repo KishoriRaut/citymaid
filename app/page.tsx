@@ -20,8 +20,8 @@ export default function Home() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [visitorId, setVisitorId] = useState<string | null>(null);
   
-  // Primary tab: "employer" is default
-  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employer");
+  // Primary tab: "employee" (Find a Job) is now default
+  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   
   // Filters
   const [filters, setFilters] = useState({
