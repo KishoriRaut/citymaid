@@ -5,15 +5,18 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/shared/button";
 import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
-import { uploadPhoto } from "@/lib/storage";
+import { getOrCreateVisitorId } from "@/lib/visitor-id";
+import { useToast } from "@/components/shared/toast";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
 import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
+import { uploadPhoto } from "@/lib/storage";
 
 export default function PostPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { addToast } = useToast();
 
   const [formData, setFormData] = useState({
     post_type: "employer" as "employer" | "employee",
@@ -84,14 +87,18 @@ export default function PostPage() {
         return;
       }
 
-      // Show success message
-      setSuccess(true);
+      // Show success toast and redirect immediately
       setIsSubmitting(false);
-
-      // Redirect to payment page after showing success message
-      setTimeout(() => {
-        router.push(`/post-payment/${post.id}`);
-      }, 2000);
+      
+      // Show success toast
+      addToast(
+        "Post submitted successfully! Redirecting to payment page...",
+        "success",
+        2000
+      );
+      
+      // Immediate redirect to payment page
+      router.push(`/post-payment/${post.id}`);
     } catch (err) {
       console.error("Error submitting form:", err);
       setError("An unexpected error occurred");
@@ -274,35 +281,11 @@ export default function PostPage() {
             </div>
           )}
 
-          {/* Success Message */}
-          {success && (
-            <div className="rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 text-sm text-green-800 dark:text-green-200 flex items-start gap-3">
-              <svg
-                className="h-5 w-5 flex-shrink-0 mt-0.5 text-green-600 dark:text-green-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="font-semibold mb-1">Post submitted successfully!</p>
-                <p className="text-green-700 dark:text-green-300">
-                  Your post is pending admin approval. It will appear on the homepage once approved.
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Error Message */}
           {error && (
-            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-              {error}
+            <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 text-destructive">
+              <p className="font-semibold mb-1.5">Error</p>
+              <p className="text-sm leading-relaxed">{error}</p>
             </div>
           )}
 
