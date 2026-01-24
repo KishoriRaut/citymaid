@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
-import { Skeleton } from "@/components/shared/skeleton";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
@@ -15,10 +14,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Primary tab: "employee" (Find a Job) is now default
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
-  
+
   // Filters
   const [filters, setFilters] = useState({
     work: "All",
@@ -26,205 +25,217 @@ export default function Home() {
     place: "",
     salary: "",
   });
-  
+
   const [hasMore, setHasMore] = useState(true);
-  const POSTS_PER_LOAD = 12; // Load 10-15 posts at a time
 
-  // Get current user session on mount
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        let initialPosts: PostWithMaskedContact[] = [];
-        let totalCount = 0;
-
-        const result = await getPublicPostsClient();
-
-        initialPosts = result.posts;
-        totalCount = result.total || 0;
-
-        setPosts(initialPosts);
-        setHasMore(totalCount > POSTS_PER_LOAD);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching initial data:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, [activeTab, filters.work]);
-
-  const loadPosts = async (append = false) => {
-    if (append) {
-      setIsLoadingMore(true);
-    } else {
-      setIsLoading(true);
-      setError(null);
-    }
-
+  // Load posts function
+  const loadPosts = useCallback(async (reset = true) => {
     try {
-      // Fetch all posts (use large limit to get all for filtering)
+      if (reset) {
+        setIsLoading(true);
+        setError(null);
+      } else {
+        setIsLoadingMore(true);
+      }
+
       const result = await getPublicPostsClient();
 
+      
       if (result.error) {
         setError(result.error);
-        setIsLoading(false);
-        setIsLoadingMore(false);
+        setPosts([]);
+        setHasMore(false);
         return;
       }
 
-      // Apply client-side filters
-      let fetchedPosts = result.posts;
-      
-      // Filter by post_type if not "all"
-      if (activeTab !== "all") {
-        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) => p.post_type === activeTab);
-      }
-      
-      if (filters.time !== "All") {
-        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) => 
-          p.time.toLowerCase().includes(filters.time.toLowerCase())
-        );
-      }
-      
-      if (filters.place) {
-        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) =>
-          p.place.toLowerCase().includes(filters.place.toLowerCase())
-        );
-      }
-      
-      // Salary filter (search within salary text)
-      if (filters.salary) {
-        fetchedPosts = fetchedPosts.filter((p: PostWithMaskedContact) =>
-          p.salary.toLowerCase().includes(filters.salary.toLowerCase())
-        );
-      }
-
-      // Apply pagination
-      const startIndex = append ? posts.length : 0;
-      const endIndex = startIndex + POSTS_PER_LOAD;
-      const paginatedPosts = fetchedPosts.slice(startIndex, endIndex);
-
-      if (append) {
-        setPosts([...posts, ...paginatedPosts]);
+      if (reset) {
+        setPosts(result.posts);
       } else {
-        // Initial load - show first batch
-        const initialPosts = fetchedPosts.slice(0, POSTS_PER_LOAD);
-        setPosts(initialPosts);
-        setHasMore(fetchedPosts.length > POSTS_PER_LOAD);
-        
-        if (process.env.NODE_ENV === "development") {
-          console.log("Initial load. Showing:", initialPosts.length, "out of", fetchedPosts.length, "total posts");
-        }
+        setPosts(prev => [...prev, ...result.posts]);
       }
-
-      setIsLoading(false);
-      setIsLoadingMore(false);
+      
+      setHasMore(result.posts.length >= 50); // If we got 50 posts, there might be more
     } catch (err) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error loading posts:", err);
-      }
-      setError("Failed to load posts");
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
+      setError(errorMessage);
+      setPosts([]);
+      setHasMore(false);
+    } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  };
+  }, []);
 
-  const handleLoadMore = () => {
-    loadPosts(true);
-  };
-
-  const handleResetFilters = () => {
-    setFilters({
-      work: "All",
-      time: "All",
-      place: "",
-      salary: "",
-    });
-  };
-
-  // Reload when tab or any filter changes (initial load, not append)
+  // Initial load
   useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
+
+  // Filter posts based on active tab and filters
+  const filteredPosts = useMemo(() => {
+    let filtered = posts;
+
+    // Filter by post type (tab)
+    if (activeTab !== "all") {
+      filtered = filtered.filter(post => post.post_type === activeTab);
+    }
+
+    // Filter by work type
+    if (filters.work !== "All") {
+      filtered = filtered.filter(post => post.work === filters.work);
+    }
+
+    // Filter by time
+    if (filters.time !== "All") {
+      filtered = filtered.filter(post => post.time === filters.time);
+    }
+
+    // Filter by place
+    if (filters.place.trim()) {
+      filtered = filtered.filter(post => 
+        post.place.toLowerCase().includes(filters.place.toLowerCase())
+      );
+    }
+
+    // Filter by salary
+    if (filters.salary.trim()) {
+      filtered = filtered.filter(post => 
+        post.salary.toLowerCase().includes(filters.salary.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [posts, activeTab, filters]);
+
+  // Handle load more
+  const handleLoadMore = useCallback(() => {
     loadPosts(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, filters.work, filters.time, filters.place, filters.salary]);
+  }, [loadPosts]);
 
-  const handleTabChange = (tab: "employer" | "employee") => {
+  // Handle filter changes
+  const handleFilterChange = useCallback((newFilters: typeof filters) => {
+    setFilters(newFilters);
+  }, []);
+
+  // Handle tab change
+  const handleTabChange = useCallback((tab: typeof activeTab) => {
     setActiveTab(tab);
-    setPosts([]);
-    setHasMore(true);
-  };
+  }, []);
 
-  const handleFilterChange = (key: keyof typeof filters, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setPosts([]);
-    setHasMore(true);
-  };
-
-  return (
-    <div className="container mx-auto px-4 py-6 sm:py-8">
-      {/* Clean Header */}
-      <div className="mb-10 text-center sm:text-left">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 tracking-tight">CityMaid Marketplace</h1>
-        <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">Hire trusted local workers or find jobs near you — fast and safe.</p>
-      </div>
-
-      {/* Primary Tabs */}
-      <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
-
-      {/* Filter Bar */}
-      <FilterBar
-        workFilter={filters.work}
-        timeFilter={filters.time}
-        placeFilter={filters.place}
-        salaryFilter={filters.salary}
-        onWorkChange={(value) => handleFilterChange("work", value)}
-        onTimeChange={(value) => handleFilterChange("time", value)}
-        onPlaceChange={(value) => handleFilterChange("place", value)}
-        onSalaryChange={(value) => handleFilterChange("salary", value)}
-        onReset={handleResetFilters}
-      />
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-8 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
-          <p className="font-semibold mb-1.5">Error loading posts:</p>
-          <p className="text-sm leading-relaxed">{error}</p>
-        </div>
-      )}
-
-      {/* Posts Grid */}
-      {isLoading && posts.length === 0 ? (
-        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
-            <div key={i} className="rounded-xl border bg-card p-5">
-              <Skeleton className="h-6 w-24 mb-4" />
-              <Skeleton className="h-40 w-full mb-4 rounded-lg" />
-              <Skeleton className="h-6 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-full mb-1" />
-              <Skeleton className="h-4 w-2/3 mb-4" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ))}
-        </div>
-      ) : posts.length === 0 ? (
-        <EmptyState activeTab={activeTab} />
-      ) : (
-        <>
-          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+  // Show loading skeleton
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-10 bg-gray-200 rounded w-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+                </div>
+              </div>
             ))}
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          {/* Load More */}
-          <LoadMore
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Unable to Load Posts</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => loadPosts()}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state
+  if (filteredPosts.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
+          <FilterBar 
+            workFilter={filters.work}
+            timeFilter={filters.time}
+            placeFilter={filters.place}
+            salaryFilter={filters.salary}
+            onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
+            onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
+            onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
+            onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
+            onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
+          />
+          
+          <EmptyState 
+            activeTab={activeTab}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Show posts
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
+        <FilterBar 
+          workFilter={filters.work}
+          timeFilter={filters.time}
+          placeFilter={filters.place}
+          salaryFilter={filters.salary}
+          onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
+          onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
+          onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
+          onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
+          onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
+        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {filteredPosts.map((post) => (
+            <PostCard 
+              key={post.id} 
+              post={post}
+            />
+          ))}
+        </div>
+
+        {hasMore && !isLoadingMore && filteredPosts.length >= 12 && (
+          <LoadMore 
             hasMore={hasMore}
             isLoading={isLoadingMore}
-            onLoadMore={handleLoadMore}
+            onLoadMore={handleLoadMore} 
           />
-        </>
-      )}
+        )}
+
+        {isLoadingMore && (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

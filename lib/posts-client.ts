@@ -5,236 +5,97 @@ import type { PostWithMaskedContact } from "./types";
 
 // Get public posts (client-side version for public pages)
 export async function getPublicPostsClient() {
-  // Debug: Check if environment variables are set
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  
-  console.log("Supabase URL configured:", !!supabaseUrl);
-  console.log("Supabase Anon Key configured:", !!supabaseAnonKey);
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables");
-    return {
-      posts: [],
-      total: 0,
-      error: "Missing Supabase configuration",
-    };
-  }
-
   try {
-    // First try the RPC function
-    const { data, error } = await supabaseClient.rpc("get_public_posts");
+    // First try to get approved posts
+    const { data: approvedPosts, error: approvedError } = await supabaseClient
+      .from("posts")
+      .select("*")
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-    if (error) {
-      console.warn("RPC function failed, falling back to direct query:", error);
-      
-      try {
-        // First, let's check what posts exist at all
-        const { data: allPosts } = await supabaseClient
-          .from("posts")
-          .select("status, count")
-          .limit(10);
-
-        console.log("Sample posts and their statuses:", allPosts);
-        
-        // Now try the approved posts query
-        const { data: postsData, error: postsError } = await supabaseClient
-          .from("posts")
-          .select("*")
-          .eq("status", "approved")
-          .order("created_at", { ascending: false })
-          .limit(50);
-
-        if (postsError) {
-          console.error("Direct query also failed:", postsError);
-          // Return empty array with error message
-          return {
-            posts: [],
-            total: 0,
-            error: `RPC failed: ${error.message}. Direct query also failed: ${postsError.message}`,
-          };
-        }
-
-        console.log("Direct query succeeded, posts count:", postsData?.length || 0);
-
-        // If no approved posts, try to get posts with any status for debugging
-        if (!postsData || postsData.length === 0) {
-          console.log("No approved posts found, trying to get any posts...");
-          const { data: anyPosts, error: anyPostsError } = await supabaseClient
-            .from("posts")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(10);
-
-          if (anyPostsError) {
-            console.error("Error getting any posts:", anyPostsError);
-          } else {
-            console.log("Found posts with any status:", anyPosts?.length || 0);
-            console.log("Status distribution:", anyPosts?.reduce((acc: Record<string, number>, post: { status: string }) => {
-              acc[post.status] = (acc[post.status] || 0) + 1;
-              return acc;
-            }, {}));
-            
-            // For now, return any posts (we'll filter by status in the UI)
-            const posts = (anyPosts as Array<{
-              id: string;
-              post_type: string;
-              work: string;
-              time: string;
-              place: string;
-              salary: string;
-              contact: string;
-              photo_url: string;
-              status: string;
-              homepage_payment_status: string;
-              created_at: string;
-            }> || []).map((p: {
-              id: string;
-              post_type: string;
-              work: string;
-              time: string;
-              place: string;
-              salary: string;
-              contact: string;
-              photo_url: string;
-              status: string;
-              homepage_payment_status: string;
-              created_at: string;
-            }) => ({
-              id: p.id,
-              post_type: p.post_type,
-              work: p.work,
-              time: p.time,
-              place: p.place,
-              salary: p.salary,
-              contact: p.contact,
-              photo_url: p.photo_url,
-              status: p.status,
-              homepage_payment_status: p.homepage_payment_status,
-              created_at: p.created_at,
-              can_view_contact: false // Default to false for direct query
-            }));
-
-            console.log("Returning any posts count:", posts.length);
-
-            return {
-              posts: posts as PostWithMaskedContact[],
-              total: posts.length,
-              error: null,
-            };
-          }
-        }
-
-        // Transform data to match PostWithMaskedContact interface
-        const posts = (postsData as Array<{
-          id: string;
-          post_type: string;
-          work: string;
-          time: string;
-          place: string;
-          salary: string;
-          contact: string;
-          photo_url: string;
-          status: string;
-          homepage_payment_status: string;
-          created_at: string;
-        }> || []).map((p: {
-          id: string;
-          post_type: string;
-          work: string;
-          time: string;
-          place: string;
-          salary: string;
-          contact: string;
-          photo_url: string;
-          status: string;
-          homepage_payment_status: string;
-          created_at: string;
-        }) => ({
-          id: p.id,
-          post_type: p.post_type,
-          work: p.work,
-          time: p.time,
-          place: p.place,
-          salary: p.salary,
-          contact: p.contact,
-          photo_url: p.photo_url,
-          status: p.status,
-          homepage_payment_status: p.homepage_payment_status,
-          created_at: p.created_at,
-          can_view_contact: false // Default to false for direct query
-        }));
-
-        console.log("Transformed posts count:", posts.length);
-
-        return {
-          posts: posts as PostWithMaskedContact[],
-          total: posts.length,
-          error: null,
-        };
-      } catch (fallbackError) {
-        console.error("Fallback query threw exception:", fallbackError);
-        return {
-          posts: [],
-          total: 0,
-          error: `All fetch methods failed. RPC: ${error.message}. Fallback: ${fallbackError instanceof Error ? fallbackError.message : 'Unknown'}`,
-        };
-      }
+    if (approvedError) {
+      console.error("Error fetching approved posts:", approvedError);
     }
 
-    // Transform data to match PostWithMaskedContact interface
-    const posts = (data as Array<{
-      id: string;
-      post_type: string;
-      work: string;
-      time: string;
-      place: string;
-      salary: string;
-      contact: string;
-      photo_url: string;
-      status: string;
-      homepage_payment_status: string;
-      created_at: string;
-      contact_visible: boolean;
-    }> || []).map((p: {
-      id: string;
-      post_type: string;
-      work: string;
-      time: string;
-      place: string;
-      salary: string;
-      contact: string;
-      photo_url: string;
-      status: string;
-      homepage_payment_status: string;
-      created_at: string;
-      contact_visible: boolean;
-    }) => ({
-      id: p.id,
-      post_type: p.post_type,
-      work: p.work,
-      time: p.time,
-      place: p.place,
-      salary: p.salary,
-      contact: p.contact,
-      photo_url: p.photo_url,
-      status: p.status,
-      homepage_payment_status: p.homepage_payment_status,
-      created_at: p.created_at,
-      can_view_contact: p.contact_visible
-    }));
+    // If approved posts exist, return them
+    if (approvedPosts && approvedPosts.length > 0) {
+      console.log(`Found ${approvedPosts.length} approved posts`);
+      const posts = transformPosts(approvedPosts);
+      return {
+        posts,
+        total: posts.length,
+        error: null,
+      };
+    }
 
+    // If no approved posts, get status distribution for debugging
+    console.log("No approved posts found, checking status distribution...");
+    const { data: statusData, error: statusError } = await supabaseClient
+      .from("posts")
+      .select("status")
+      .limit(100);
+
+    if (statusError) {
+      console.error("Error getting status distribution:", statusError);
+    } else if (statusData && statusData.length > 0) {
+      const statusCount = statusData.reduce((acc: Record<string, number>, post: { status: string }) => {
+        acc[post.status] = (acc[post.status] || 0) + 1;
+        return acc;
+      }, {});
+      console.log("Status distribution:", statusCount);
+    }
+
+    // Fallback: get any posts (we'll filter in UI)
+    const { data: anyPosts, error: anyPostsError } = await supabaseClient
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (anyPostsError) {
+      console.error("Error fetching any posts:", anyPostsError);
+      return {
+        posts: [],
+        total: 0,
+        error: `Failed to fetch posts: ${anyPostsError.message}`,
+      };
+    }
+
+    console.log(`Found ${anyPosts?.length || 0} posts with any status`);
+    const posts = transformPosts(anyPosts || []);
     return {
-      posts: posts as PostWithMaskedContact[],
+      posts,
       total: posts.length,
       error: null,
     };
+
   } catch (error) {
     console.error("Unexpected error in getPublicPostsClient:", error);
     return {
       posts: [],
       total: 0,
-      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown'}`,
     };
   }
 }
+
+// Transform posts data to match PostWithMaskedContact interface
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
+  return posts.map((post) => ({
+    id: (post as any).id,
+    post_type: (post as any).post_type,
+    work: (post as any).work,
+    time: (post as any).time,
+    place: (post as any).place,
+    salary: (post as any).salary,
+    contact: (post as any).contact,
+    photo_url: (post as any).photo_url,
+    status: (post as any).status,
+    homepage_payment_status: (post as any).homepage_payment_status,
+    created_at: (post as any).created_at,
+    can_view_contact: (post as any).status === 'approved' || false, // Only approved posts show contact
+  }));
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
