@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shared/button";
 import { appConfig } from "@/lib/config";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
-import { getContactUnlockPriceFormatted } from "@/lib/pricing";
 import UnlockContactButton from "./UnlockContactButton";
 import HomepageFeatureButton from "./HomepageFeatureButton";
 
@@ -165,7 +164,7 @@ export function PostCard({ post }: PostCardProps) {
               canViewContact={contactVisible}
               className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
             >
-              🔓 Unlock Contact — {getContactUnlockPriceFormatted()}
+              🔓 Unlock Contact — Rs. 50
             </UnlockContactButton>
             <p className="text-xs text-center text-muted-foreground leading-relaxed">
               Small verification fee to protect workers from spam and misuse.

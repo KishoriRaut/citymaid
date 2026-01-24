@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
-import { getCurrentSessionClient } from "@/lib/email-auth";
 import type { PostWithMaskedContact } from "@/lib/types";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
@@ -17,8 +16,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [visitorId, setVisitorId] = useState<string | null>(null);
   
   // Primary tab: "employee" (Find a Job) is now default
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
@@ -34,35 +31,27 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const POSTS_PER_LOAD = 12; // Load 10-15 posts at a time
 
-  // Get current user session and visitor ID on mount
+  // Get current user session on mount
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Get current authenticated session (email auth)
-        const currentSession = await getCurrentSessionClient();
-        const userId = currentSession?.user?.id;
+        // Get current authenticated user
+        const currentUser = getCurrentUser();
+        const userId = currentUser?.id || undefined;
 
         let initialPosts: PostWithMaskedContact[] = [];
         let totalCount = 0;
 
-        if (activeTab === "all") {
-          const result = await getPublicPostsClient({
-            limit: POSTS_PER_LOAD,
-            offset: 0,
-            viewer_user_id: userId,
-          });
-          initialPosts = result.posts;
-          totalCount = result.total || 0;
-        } else {
-          const result = await getPublicPostsClient({
-            limit: POSTS_PER_LOAD,
-            offset: 0,
-            post_type: activeTab as "employer" | "employee",
-            viewer_user_id: userId,
-          });
-          initialPosts = result.posts;
-          totalCount = result.total || 0;
-        }
+        const result = await getPublicPostsClient({
+          post_type: activeTab === "all" ? undefined : activeTab as "employer" | "employee",
+          work: filters.work === "All" ? null : filters.work,
+          limit: 1000, // Large limit to fetch all, then filter client-side
+          offset: 0,
+          viewer_user_id: userId, // Pass current user ID for contact visibility
+        });
+
+        initialPosts = result.posts;
+        totalCount = result.total || 0;
 
         setPosts(initialPosts);
         setHasMore(totalCount > POSTS_PER_LOAD);
@@ -85,9 +74,9 @@ export default function Home() {
     }
 
     try {
-      // Get current authenticated session (email auth)
-      const currentSession = await getCurrentSessionClient();
-      const currentUserId = currentSession?.user?.id;
+      // Get current authenticated user
+      const currentUser = getCurrentUser();
+      const currentUserId = currentUser?.id;
 
       // Fetch all posts (use large limit to get all for filtering)
       const result = await getPublicPostsClient({

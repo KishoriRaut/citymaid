@@ -9,132 +9,56 @@ export async function getPublicPostsClient(filters?: {
   work?: string;
   limit?: number;
   offset?: number;
-  viewer_user_id?: string; // Add viewer user ID for contact visibility
-  visitor_id?: string; // Add visitor ID for contact visibility
+  viewer_user_id?: string | null;
+  visitor_id?: string | null;
 }) {
   try {
-    // Try new function with contact masking based on user access
-    const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
-      "get_public_posts_with_masked_contacts",
-      { viewer_user_id_param: filters?.viewer_user_id || null }
-    );
+    // Use the optimized get_public_posts function directly
+    const { data, error } = await supabaseClient.rpc("get_public_posts", {
+      p_post_type: filters?.post_type || null,
+      p_work: filters?.work === "All" ? null : filters?.work,
+      p_place: null,
+      p_limit: filters?.limit || 50,
+      p_offset: filters?.offset || 0,
+      p_viewer_user_id: filters?.viewer_user_id || filters?.visitor_id || null
+    });
 
-    // If new function doesn't exist, fall back to existing function
-    if (rpcError && (rpcError.code === "42883" || rpcError.message?.includes("does not exist"))) {
-      console.log("New function not found, using fallback with existing get_public_posts");
-      
-      const { data: fallbackData, error: fallbackError } = await supabaseClient.rpc("get_public_posts");
-
-      if (fallbackError) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("Fallback RPC Error:", fallbackError);
-        }
-        
-        // If RPC also fails, try direct query as fallback
-        if (fallbackError.code === "42883" || fallbackError.message?.includes("does not exist")) {
-          const { data: directData, error: directError } = await supabaseClient
-            .from("posts")
-            .select("*")
-            .eq("status", "approved")
-            .order("created_at", { ascending: false });
-
-          if (directError) {
-            return {
-              posts: [],
-              total: 0,
-              error: `Function not found. Direct query also failed: ${directError.message}. Please run the SQL setup script.`,
-            };
-          }
-
-          // Mask all contacts in fallback mode (no payment check)
-          const fallbackPosts = (directData || []).map((p) => ({
-            ...p,
-            contact: null,
-            can_view_contact: false, // Add this field for consistency
-          })) as PostWithMaskedContact[];
-
-          let posts = fallbackPosts;
-          if (filters?.post_type) {
-            posts = posts.filter((p) => p.post_type === filters.post_type);
-          }
-          if (filters?.work) {
-            posts = posts.filter((p) => p.work.toLowerCase().includes(filters.work!.toLowerCase()));
-          }
-
-          const total = posts.length;
-          const limit = filters?.limit || 20;
-          const offset = filters?.offset || 0;
-          const paginatedPosts = posts.slice(offset, offset + limit);
-
-          return {
-            posts: paginatedPosts,
-            total,
-            error: null,
-          };
-        }
-
-        return { posts: [], total: 0, error: fallbackError.message };
-      }
-
-      // Process fallback data with client-side masking
-      let posts = (fallbackData || []).map((p: any) => ({
-        ...p,
-        can_view_contact: false, // Default to false for fallback
-      })) as PostWithMaskedContact[];
-
-      // Apply filters
-      if (filters?.post_type) {
-        posts = posts.filter((p) => p.post_type === filters.post_type);
-      }
-      if (filters?.work) {
-        posts = posts.filter((p) => p.work.toLowerCase().includes(filters.work!.toLowerCase()));
-      }
-
-      // Apply pagination
-      const total = posts.length;
-      const limit = filters?.limit || 20;
-      const offset = filters?.offset || 0;
-      const paginatedPosts = posts.slice(offset, offset + limit);
-
+    if (error) {
+      console.error("Error fetching public posts:", error);
       return {
-        posts: paginatedPosts,
-        total,
-        error: null,
+        posts: [],
+        total: 0,
+        error: `Failed to fetch posts: ${error.message}`,
       };
     }
 
-    if (rpcError) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("RPC Error:", rpcError);
-      }
-      return { posts: [], total: 0, error: rpcError.message };
-    }
-
-    let posts = (rpcData || []) as PostWithMaskedContact[];
-
-    // Apply filters
-    if (filters?.post_type) {
-      posts = posts.filter((p) => p.post_type === filters.post_type);
-    }
-    if (filters?.work) {
-      posts = posts.filter((p) => p.work.toLowerCase().includes(filters.work!.toLowerCase()));
-    }
-
-    // Apply pagination
-    const total = posts.length;
-    const limit = filters?.limit || 20;
-    const offset = filters?.offset || 0;
-    const paginatedPosts = posts.slice(offset, offset + limit);
+    // Transform data to match PostWithMaskedContact interface
+    const posts = (data || []).map((p: any) => ({
+      id: p.id,
+      post_type: p.post_type,
+      work: p.work,
+      time: p.time,
+      place: p.place,
+      salary: p.salary,
+      contact: p.contact,
+      photo_url: p.photo_url,
+      status: p.status,
+      homepage_payment_status: p.homepage_payment_status,
+      created_at: p.created_at,
+      contact_visible: p.contact_visible
+    }));
 
     return {
-      posts: paginatedPosts,
-      total,
+      posts: posts as PostWithMaskedContact[],
+      total: posts.length,
       error: null,
     };
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error in getPublicPostsClient:", error);
-    }
-    return { posts: [], total: 0, error: "Failed to fetch posts" };
+    console.error("Unexpected error in getPublicPostsClient:", error);
+    return {
+      posts: [],
+      total: 0,
+      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
   }
 }

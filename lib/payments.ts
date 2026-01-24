@@ -1,10 +1,11 @@
 "use server";
 
 import { supabase } from "./supabase";
-import { CONTACT_UNLOCK_PRICE } from "./pricing";
 import { createContactUnlock } from "./contact-unlock";
 import { getServerSession } from "./auth-server";
-import { getCurrentPhoneUser } from "./phone-auth";
+
+// Hardcoded contact unlock price (replaces deleted pricing.ts)
+const CONTACT_UNLOCK_PRICE = 50;
 
 export interface Payment {
   id: string;
@@ -30,9 +31,9 @@ export async function createPayment(paymentData: {
   receipt_url?: string;
 }): Promise<{ payment: Payment | null; error?: string }> {
   try {
-    // Get current authenticated user (email auth)
-    const { getCurrentUser } = await import("./email-auth");
-    const currentUser = await getCurrentUser();
+    // Get current authenticated user
+    const { getCurrentUser } = await import("./session");
+    const currentUser = getCurrentUser();
     
     if (!currentUser) {
       return { payment: null, error: "User not authenticated" };

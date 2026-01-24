@@ -1,7 +1,32 @@
 "use client";
 
 import { supabaseClient } from "./supabase-client";
-import { optimizeImage, validateImageFile } from "./image-optimization";
+
+// Simple image validation functions (replaces deleted image-optimization.ts)
+function validateImageFile(file: File): { valid: boolean; error?: string } {
+  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_TYPES = [
+    "image/jpeg",
+    "image/jpg", 
+    "image/png",
+    "image/webp"
+  ];
+  
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return { valid: false, error: "Invalid file type. Only JPEG, PNG, and WebP are allowed." };
+  }
+  
+  if (file.size > MAX_SIZE) {
+    return { valid: false, error: "File size must be less than 5MB." };
+  }
+  
+  return { valid: true };
+}
+
+function optimizeImage(file: File): Promise<File> {
+  // Simple pass-through optimization since we removed the complex optimization
+  return Promise.resolve(file);
+}
 
 const BUCKET_NAME = "post-photos";
 const PAYMENT_RECEIPTS_BUCKET = "payment-receipts";

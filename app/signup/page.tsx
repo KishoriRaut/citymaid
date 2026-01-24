@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shared/button";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { isValidEmail, isValidPassword } from "@/lib/validation";
-import { Spinner } from "@/components/ui/spinner";
+import { Spinner } from "@/components/shared/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 import { appConfig } from "@/lib/config";
 

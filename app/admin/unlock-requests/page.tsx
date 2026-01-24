@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest } from "@/lib/unlock-requests";
+import { Button } from "@/components/shared/button";
+import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
 
 interface UnlockRequest {
   id: string;
   post_id: string;
-  user_id: string | null;
+  visitor_id: string;
   status: 'pending' | 'paid' | 'approved' | 'rejected';
   payment_proof: string | null;
   created_at: string;
@@ -15,9 +15,6 @@ interface UnlockRequest {
   posts?: {
     title: string;
     contact: string;
-  };
-  users?: {
-    email: string;
   };
 }
 
@@ -203,7 +200,7 @@ export default function UnlockRequestsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {request.users?.email || 'Anonymous'}
+                            Visitor ID: {request.visitor_id || 'Unknown'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

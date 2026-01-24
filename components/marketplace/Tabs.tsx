@@ -1,7 +1,7 @@
 "use client";
 
 interface TabsProps {
-  activeTab: "employer" | "employee";
+  activeTab: "all" | "employer" | "employee";
   onTabChange: (tab: "employer" | "employee") => void;
 }
 

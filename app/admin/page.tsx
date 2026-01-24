@@ -9,7 +9,7 @@ import { appConfig } from "@/lib/config";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { MetricCard } from "@/components/admin/MetricCard";
 import { QuickActionCard } from "@/components/admin/QuickActionCard";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/shared/skeleton";
 
 export default function AdminDashboardPage() {
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shared/button";
 import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
 import { uploadPhoto } from "@/lib/storage";

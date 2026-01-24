@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shared/button";
 import { getUnlockRequestById } from "@/lib/unlock-requests";
 
 interface UnlockRequest {

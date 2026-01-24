@@ -2,9 +2,44 @@
 
 import { supabase } from "./supabase";
 import { getServerSession } from "./auth-server";
-import { maskPhoneNumber } from "./contact-utils";
 import { canViewContactViaRequest } from "./unlock-requests";
 import type { Post } from "./types";
+
+// Simple phone number masking function (replaces deleted contact-utils.ts)
+function maskPhoneNumber(contact: string): string {
+  if (!contact || contact.length < 4) return "****";
+  
+  const digitsOnly = contact.replace(/\D/g, "");
+  const digitLength = digitsOnly.length;
+  
+  let startDigits: number;
+  let endDigits: number;
+  
+  if (digitLength >= 10) {
+    startDigits = digitLength >= 12 ? 3 : 2;
+    endDigits = 2;
+  } else if (digitLength >= 7) {
+    startDigits = 2;
+    endDigits = 2;
+  } else {
+    startDigits = 2;
+    endDigits = 1;
+  }
+  
+  const digits = contact.replace(/\D/g, "");
+  const start = digits.slice(0, startDigits);
+  const end = digits.slice(-endDigits);
+  const maskedLength = digitLength - startDigits - endDigits;
+  const masked = "*".repeat(Math.max(3, maskedLength));
+  
+  const countryCodeMatch = contact.match(/^(\+?\d{1,4}\s?)/);
+  if (countryCodeMatch) {
+    const countryCode = countryCodeMatch[1].trim();
+    return `${countryCode} ${start}${masked}${end}`;
+  }
+  
+  return `${start}${masked}${end}`;
+}
 
 // Contact unlock types
 export interface ContactUnlock {

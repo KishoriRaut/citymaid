@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shared/button";
 import { appConfig } from "@/lib/config";
 
 interface EmptyStateProps {
-  activeTab: "employer" | "employee";
+  activeTab: "all" | "employer" | "employee";
 }
 
 export function EmptyState({ activeTab }: EmptyStateProps) {

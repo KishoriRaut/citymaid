@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/shared/button";
+import { Skeleton } from "@/components/shared/skeleton";
 import { getAllPayments, updatePaymentStatus, type Payment } from "@/lib/payments";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
