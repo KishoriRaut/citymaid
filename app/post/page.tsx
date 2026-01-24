@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/shared/button";
 import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
-import { getOrCreateVisitorId } from "@/lib/visitor-id";
 import { useToast } from "@/components/shared/toast";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
 import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
@@ -15,8 +14,30 @@ export default function PostPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const { addToast } = useToast();
+  
+  // Check if current user is admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    // Check admin status from server
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.isAdmin);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const [formData, setFormData] = useState({
     post_type: "employer" as "employer" | "employee",
@@ -42,8 +63,19 @@ export default function PostPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
     setIsSubmitting(true);
+
+    // Get fresh admin status from server
+    let isAdminStatus = false;
+    try {
+      const response = await fetch("/api/auth/me");
+      if (response.ok) {
+        const data = await response.json();
+        isAdminStatus = data.isAdmin;
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
 
     try {
       // Upload photo only for employee posts
@@ -57,7 +89,6 @@ export default function PostPage() {
         }
         photoUrl = url;
       }
-      // Employer posts: photo_url will be set to NULL on server-side
 
       // Determine work and time values
       const work = formData.work === "Other" ? formData.workOther : formData.work;
@@ -70,16 +101,18 @@ export default function PostPage() {
         return;
       }
 
-      // Create post
-      const { post, error: createError } = await createPost({
+      // Create post (server will determine admin status)
+      const postData = {
         post_type: formData.post_type,
         work,
         time,
         place: formData.place,
         salary: formData.salary,
         contact: formData.contact,
-        photo_url: photoUrl,
-      });
+        photo_url: photoUrl
+      };
+
+      const { post, error: createError } = await createPost(postData);
 
       if (createError || !post) {
         setError(createError || "Failed to create post");
@@ -87,18 +120,34 @@ export default function PostPage() {
         return;
       }
 
-      // Show success toast and redirect immediately
+      // Show success toast and handle redirect based on user type
       setIsSubmitting(false);
       
-      // Show success toast
-      addToast(
-        "Post submitted successfully! Redirecting to payment page...",
-        "success",
-        2000
-      );
-      
-      // Immediate redirect to payment page
-      router.push(`/post-payment/${post.id}`);
+      if (isAdminStatus) {
+        // Admin: Instant publishing with success message
+        addToast(
+          "Post published successfully! Your post is now live on the platform.",
+          "success",
+          3000
+        );
+        
+        // Redirect to admin posts management
+        setTimeout(() => {
+          router.push("/admin/posts");
+        }, 1000);
+      } else {
+        // Regular user: Go to payment flow
+        addToast(
+          "Post submitted successfully! Redirecting to payment page...",
+          "success",
+          2000
+        );
+        
+        // Redirect to payment page
+        setTimeout(() => {
+          router.push(`/post-payment/${post.id}`);
+        }, 1000);
+      }
     } catch (err) {
       console.error("Error submitting form:", err);
       setError("An unexpected error occurred");
@@ -113,8 +162,32 @@ export default function PostPage() {
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
+          {pageTitle}
+        </h1>
+        {isAdmin && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.586-4L12 3l-4.586 4.414M3 7h6l4-4 4 4h6" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-green-800 dark:text-green-200">🎉 Admin Mode Active</p>
+                <p className="text-sm text-green-700 dark:text-green-300">Your posts will be published instantly and featured on homepage.</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">{pageTitle}</h1>
-        <p className="text-muted-foreground mb-8 text-sm sm:text-base">Fill in the details to create your post</p>
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">
+          {isAdmin 
+            ? "Create posts that will be published instantly on the platform" 
+            : "Fill in the details to create your post"
+          }
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Role Toggle */}
@@ -300,7 +373,12 @@ export default function PostPage() {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
-              {isSubmitting ? "Submitting..." : "Submit Post"}
+              {isSubmitting 
+                ? "Submitting..." 
+                : isAdmin 
+                  ? "Publish Post Instantly" 
+                  : "Submit Post"
+              }
             </Button>
           </div>
         </form>

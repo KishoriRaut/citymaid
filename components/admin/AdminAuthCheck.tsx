@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCurrentPhoneUserClient } from "@/lib/phone-auth";
 import { useRouter } from "next/navigation";
+import { getCurrentUser } from "@/lib/session";
+import { isAdminUser } from "@/lib/auth/isAdmin";
 
 interface AdminAuthCheckProps {
   children: React.ReactNode;
@@ -16,11 +17,11 @@ export default function AdminAuthCheck({ children, redirectTo = "/login" }: Admi
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       try {
-        const userSession = await getCurrentPhoneUserClient();
+        const user = getCurrentUser();
         
-        if (!userSession || !userSession.user) {
+        if (!user) {
           setIsAuthenticated(false);
           setIsAdmin(false);
           router.push(redirectTo);
@@ -29,12 +30,11 @@ export default function AdminAuthCheck({ children, redirectTo = "/login" }: Admi
 
         setIsAuthenticated(true);
         
-        // Check if user is admin by checking if they have admin privileges
-        // This is a simplified check - in production, you'd have a proper role system
-        const isAdminUser = await checkIfAdmin(userSession.user.email);
-        setIsAdmin(isAdminUser);
+        // Check if user is admin using role
+        const isAdminUserCheck = isAdminUser(user);
+        setIsAdmin(isAdminUserCheck);
         
-        if (!isAdminUser) {
+        if (!isAdminUserCheck) {
           router.push("/");
         }
       } catch (error) {
@@ -49,20 +49,6 @@ export default function AdminAuthCheck({ children, redirectTo = "/login" }: Admi
 
     checkAuth();
   }, [router, redirectTo]);
-
-  // Simple admin check - replace with your actual admin logic
-  const checkIfAdmin = async (email?: string): Promise<boolean> => {
-    if (!email) return false;
-    
-    // For now, check if email is in a predefined list or has admin domain
-    // In production, you'd check against a users table or role system
-    const adminEmails = [
-      "admin@citymaid.com",
-      "kishoriraut@example.com", // Add your admin emails here
-    ];
-    
-    return adminEmails.includes(email) || email.endsWith("@citymaid.com");
-  };
 
   if (isLoading) {
     return (

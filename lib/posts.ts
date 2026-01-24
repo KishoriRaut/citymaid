@@ -2,8 +2,63 @@
 
 import { supabase } from "./supabase";
 import type { Post } from "./types";
-import { getServerSession } from "./auth-server";
-import { findUserByEmail } from "./db";
+
+// Helper function to get user from session
+async function getUserFromSession(request?: Request) {
+  try {
+    // For server actions, we need to get cookies differently
+    let cookieHeader = "";
+    
+    if (request) {
+      cookieHeader = request.headers.get("cookie") || "";
+    } else {
+      // Try to get cookies from headers if available in server context
+      const headers = (globalThis as any).headers;
+      if (headers) {
+        cookieHeader = headers.get("cookie") || "";
+      }
+    }
+
+    if (!cookieHeader) {
+      return null;
+    }
+
+    // Parse cookies to find user_session
+    const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split("=");
+      if (key && value) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    const sessionCookie = cookies["user_session"];
+    if (!sessionCookie) {
+      return null;
+    }
+
+    const sessionUser = JSON.parse(sessionCookie);
+    if (!sessionUser?.id) {
+      return null;
+    }
+
+    // Fetch fresh user data from database
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, email, role")
+      .eq("id", sessionUser.id)
+      .single();
+
+    if (error || !user) {
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Error getting user from session:", error);
+    return null;
+  }
+}
 
 // Create a new post (public)
 // Includes spam prevention and duplicate detection
@@ -15,37 +70,18 @@ export async function createPost(post: {
   salary: string;
   contact: string;
   photo_url?: string | null;
-}) {
+}, request?: Request) {
   try {
     // ========================================================================
-    // DETECT ADMIN USER FIRST: Check if user is admin before applying limits
+    // SERVER-SIDE ADMIN ENFORCEMENT
     // ========================================================================
-    // Check if the user creating the post is an admin
-    // Admins are users in the public.users table
-    // If admin: status = 'approved' (appears immediately on homepage) + skip limits
-    // If regular user: status = 'pending' (requires manual approval) + apply limits
-    let postStatus: "pending" | "approved" = "pending";
-    let isAdmin = false;
+    // Get user from session to determine admin status
+    const user = await getUserFromSession(request);
+    const isAdmin = user?.role === "admin";
     
-    try {
-      const session = await getServerSession();
-      if (session?.email) {
-        // Check if this email exists in the users table (admin check)
-        // All users in public.users table are admins
-        const { user: adminUser } = await findUserByEmail(session.email);
-        if (adminUser) {
-          // User is an admin - auto-approve the post and skip limits
-          isAdmin = true;
-          postStatus = "approved";
-        }
-      }
-    } catch (error) {
-      // If admin check fails, default to pending (safe fallback)
-      // This ensures regular users always get pending status
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error checking admin status:", error);
-      }
-    }
+    // Determine status based on server-side admin check
+    const postStatus: "pending" | "approved" = isAdmin ? "approved" : "pending";
+    const homepagePaymentStatus: "none" | "pending" | "approved" | "rejected" = isAdmin ? "approved" : "none";
 
     // ========================================================================
     // VALIDATION 1: Check for duplicate posts (applies to all users)
@@ -83,8 +119,8 @@ export async function createPost(post: {
     // - Max 4 total active posts per contact
     // Admins: No limits (unlimited posts)
 
-    if (!isAdmin) {
-      // Only apply limits for non-admin users
+    if (postStatus !== "approved") {
+      // Only apply limits for non-approved posts (regular users)
       // Count active posts for this contact and post_type
       const { count: activePostsByType, error: countError1 } = await supabase
         .from("posts")
@@ -133,6 +169,7 @@ export async function createPost(post: {
       ...post,
       photo_url: post.post_type === "employer" ? null : post.photo_url || null,
       status: postStatus, // 'approved' for admins, 'pending' for regular users
+      homepage_payment_status: homepagePaymentStatus, // 'approved' for admins, 'none' for regular users
     };
 
     const { data, error } = await supabase
