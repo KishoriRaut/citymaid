@@ -127,23 +127,33 @@ export async function updateHomepagePaymentProof(
   paymentProofUrl: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    console.log("Updating homepage payment proof:", { postId, paymentProofUrl });
+    
     // Update post with payment proof and set status to pending
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("posts")
       .update({ 
         homepage_payment_status: 'pending',
         payment_proof: paymentProofUrl
       })
-      .eq("id", postId);
+      .eq("id", postId)
+      .select();
+
+    console.log("Update result:", { data, error });
 
     if (error) {
       console.error("Error updating homepage payment proof:", error);
-      return { success: false, error: "Failed to update homepage payment proof" };
+      return { success: false, error: `Database error: ${error.message || error.code || JSON.stringify(error)}` };
+    }
+
+    if (!data || data.length === 0) {
+      console.error("No rows updated - post not found");
+      return { success: false, error: "Post not found or no changes made" };
     }
 
     return { success: true };
   } catch (error) {
     console.error("Error in updateHomepagePaymentProof:", error);
-    return { success: false, error: "Failed to update homepage payment proof" };
+    return { success: false, error: `Exception: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }

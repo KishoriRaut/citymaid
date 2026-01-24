@@ -96,10 +96,20 @@ export default function PostPaymentPage() {
         ? `payment_proof_${post.id}_${visitorId}_${Date.now()}.${paymentProof.type.split('/')[1]}`
         : `transaction_${post.id}_${transactionId}_${Date.now()}`;
 
+      console.log("Submitting payment proof:", {
+        postId: post.id,
+        paymentProofUrl,
+        visitorId,
+        hasFile: !!paymentProof,
+        transactionId
+      });
+
       const { success, error } = await updateHomepagePaymentProof(
         post.id,
         paymentProofUrl
       );
+
+      console.log("Payment proof submission result:", { success, error });
 
       if (success) {
         setShowConfirmation(true);
@@ -108,7 +118,7 @@ export default function PostPaymentPage() {
       }
     } catch (error) {
       console.error("Error submitting payment proof:", error);
-      setError("Failed to submit payment proof");
+      setError(`Failed to submit payment proof: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -259,8 +269,8 @@ export default function PostPaymentPage() {
                     <div className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
                       <div className="w-48 h-48 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
                         <img 
-                          src="/esewa-qr.png" 
-                          alt="eSewa QR Code" 
+                          src="/sanima-qr.png" 
+                          alt="Sanima Bank QR Code" 
                           className="w-full h-full object-contain"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -275,7 +285,7 @@ export default function PostPaymentPage() {
                           <p>QR Code</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">Scan with eSewa app</p>
+                      <p className="text-sm text-gray-600">Scan with Sanima Bank app</p>
                     </div>
                   </div>
 
@@ -284,14 +294,14 @@ export default function PostPaymentPage() {
                     <h4 className="font-medium text-gray-900 mb-3">Payment Instructions</h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. Scan the QR code with eSewa app</li>
+                        <li>1. Scan the QR code with Sanima Bank app</li>
                         <li>2. Enter amount: NPR 500</li>
                         <li>3. Complete the payment</li>
                         <li>4. Save the transaction ID or screenshot</li>
                         <li>5. Upload payment proof below</li>
                       </ol>
                       <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                        <strong>eSewa Merchant:</strong> CityMaid Nepal
+                        <strong>Bank:</strong> Sanima Bank
                       </div>
                     </div>
                   </div>
