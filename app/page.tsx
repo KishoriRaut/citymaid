@@ -8,6 +8,7 @@ import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
 import { LoadMore } from "@/components/marketplace/LoadMore";
+import DebugPostsPanel from "@/components/debug/DebugPostsPanel";
 
 export default function Home() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
@@ -199,6 +200,7 @@ export default function Home() {
   // Show posts
   return (
     <div className="min-h-screen bg-gray-50">
+      <DebugPostsPanel />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
         <FilterBar 
