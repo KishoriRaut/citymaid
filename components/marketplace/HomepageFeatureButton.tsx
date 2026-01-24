@@ -26,11 +26,8 @@ export default function HomepageFeatureButton({
     setIsLoading(true);
 
     try {
-      // Get visitor ID (no authentication required)
-      const visitorId = getOrCreateVisitorId();
-
-      // Navigate to homepage payment request page
-      router.push(`/homepage-feature/${postId}`);
+      // Navigate to post payment page
+      router.push(`/post-payment/${postId}`);
       
     } catch (error) {
       console.error("Error handling homepage feature request:", error);
@@ -62,7 +59,7 @@ export default function HomepageFeatureButton({
           Processing...
         </span>
       ) : (
-        children || "🏠 Show on Homepage"
+        children || "🏠 Feature on Homepage - NPR 500"
       )}
     </Button>
   );

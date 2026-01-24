@@ -6,25 +6,9 @@ import {
   getPendingHomepagePayments, 
   getAllHomepagePayments, 
   approveHomepagePayment, 
-  rejectHomepagePayment 
+  rejectHomepagePayment,
+  type HomepagePaymentRequest
 } from "@/lib/homepage-payments";
-
-interface HomepagePaymentRequest {
-  id: string;
-  post_id: string;
-  homepage_payment_status: 'none' | 'pending' | 'approved' | 'rejected';
-  payment_proof?: string | null;
-  created_at: string;
-  updated_at: string;
-  posts?: {
-    title: string;
-    work: string;
-    contact: string;
-    salary: string;
-    place: string;
-    post_type: string;
-  };
-}
 
 export default function HomepagePaymentsPage() {
   const [requests, setRequests] = useState<HomepagePaymentRequest[]>([]);
@@ -203,10 +187,10 @@ export default function HomepagePaymentsPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {request.posts?.title || 'Unknown Post'}
+                              {request.work} - {request.place}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {request.posts?.work} • {request.posts?.place}
+                              {request.post_type === 'employer' ? 'Hiring' : 'Job Seeker'} • {request.salary}
                             </div>
                             <div className="text-xs text-gray-400">
                               {new Date(request.created_at).toLocaleDateString()}

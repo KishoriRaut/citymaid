@@ -5,19 +5,18 @@ import { supabase } from "./supabase";
 // Homepage payment types
 export interface HomepagePaymentRequest {
   id: string;
-  post_id: string;
+  post_type: "employer" | "employee";
+  work: string;
+  time: string;
+  place: string;
+  salary: string;
+  contact: string;
+  photo_url: string | null;
+  status: "pending" | "approved" | "hidden";
   homepage_payment_status: 'none' | 'pending' | 'approved' | 'rejected';
   payment_proof?: string | null;
   created_at: string;
   updated_at: string;
-  posts?: {
-    title: string;
-    work: string;
-    contact: string;
-    salary: string;
-    place: string;
-    post_type: string;
-  };
 }
 
 // Get posts with pending homepage payments
@@ -28,17 +27,7 @@ export async function getPendingHomepagePayments(): Promise<{
   try {
     const { data: requests, error } = await supabase
       .from("posts")
-      .select(`
-        *,
-        posts (
-          title,
-          work,
-          contact,
-          salary,
-          place,
-          post_type
-        )
-      `)
+      .select("*")
       .eq("homepage_payment_status", "pending")
       .eq("status", "approved") // Only approved posts can request homepage feature
       .order("created_at", { ascending: false });
@@ -65,17 +54,7 @@ export async function getAllHomepagePayments(
   try {
     let query = supabase
       .from("posts")
-      .select(`
-        *,
-        posts (
-          title,
-          work,
-          contact,
-          salary,
-          place,
-          post_type
-        )
-      `)
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (status) {

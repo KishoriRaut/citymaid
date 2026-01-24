@@ -26,7 +26,15 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Call logout API to clear server-side session
+      await fetch("/api/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout API error:", error);
+    }
+    
+    // Clear client-side session
     clearSession();
     router.push(appConfig.routes.login);
   };

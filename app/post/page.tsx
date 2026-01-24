@@ -88,9 +88,9 @@ export default function PostPage() {
       setSuccess(true);
       setIsSubmitting(false);
 
-      // Redirect to homepage after showing success message
+      // Redirect to payment page after showing success message
       setTimeout(() => {
-        router.push(appConfig.routes.home);
+        router.push(`/post-payment/${post.id}`);
       }, 2000);
     } catch (err) {
       console.error("Error submitting form:", err);

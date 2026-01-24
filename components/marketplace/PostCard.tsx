@@ -154,7 +154,7 @@ export function PostCard({ post }: PostCardProps) {
           homepagePaymentStatus={post.homepage_payment_status}
           className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
         >
-          🏠 Show on Homepage — Featured Listing
+          🏠 Feature on Homepage - NPR 500
         </HomepageFeatureButton>
 
         {/* Contact Unlock Button */}
