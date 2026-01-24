@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { debugPostsTable, insertTestData } from "@/lib/debug-posts";
 import { debugProductionDatabase, insertProductionTestData } from "@/lib/debug-production";
 import { setupProductionDatabase, quickFixProductionData } from "@/lib/setup-production";
+import { emergencyProductionFix } from "@/lib/emergency-fix";
 
 export default function DebugPostsPanel() {
   const [debugResults, setDebugResults] = useState<any>(null);
@@ -81,6 +82,42 @@ export default function DebugPostsPanel() {
       }
     } catch (error) {
       alert(`Quick fix error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const emergencyFix = async () => {
+    setIsLoading(true);
+    try {
+      const result = await emergencyProductionFix();
+      
+      let message = `🚨 EMERGENCY FIX RESULTS:\n\n`;
+      message += `✅ Connection: ${result.step1_connection ? 'PASS' : 'FAIL'}\n`;
+      message += `✅ Table Exists: ${result.step2_tableExists ? 'PASS' : 'FAIL'}\n`;
+      message += `✅ Permissions: ${result.step3_permissions ? 'PASS' : 'FAIL'}\n`;
+      message += `✅ Insertion: ${result.step4_insertion ? 'PASS' : 'FAIL'}\n`;
+      message += `✅ Verification: ${result.step5_verification ? 'PASS' : 'FAIL'}\n\n`;
+      message += `📊 Final Post Count: ${result.finalPostCount}\n\n`;
+      message += `🔍 Diagnosis: ${result.diagnosis}\n\n`;
+      
+      if (result.errors.length > 0) {
+        message += `❌ Errors:\n${result.errors.join('\n')}`;
+      }
+      
+      if (result.success) {
+        message += `\n\n🎉 SUCCESS! Refresh the page to see posts!`;
+      } else {
+        message += `\n\n⚠️ Issues found. Check the diagnosis above.`;
+      }
+      
+      alert(message);
+      
+      if (result.success) {
+        setTimeout(runProductionDebug, 1000);
+      }
+    } catch (error) {
+      alert(`Emergency fix error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -176,7 +213,7 @@ export default function DebugPostsPanel() {
           <strong>🌐 Production Environment Detected</strong>
           <div>• URL: {typeof window !== "undefined" ? window.location.hostname : "Unknown"}</div>
           <div>• Using production Supabase instance</div>
-          <div><strong>⚡ QUICK FIX:</strong> Click the red &quot;QUICK FIX&quot; button to instantly add posts</div>
+          <div><strong>🚨 EMERGENCY:</strong> Click the red &quot;🚨 EMERGENCY FIX&quot; button - it diagnoses and fixes everything!</div>
         </div>
       )}
 
@@ -213,6 +250,24 @@ export default function DebugPostsPanel() {
               }}
             >
               {isLoading ? "Running..." : "🌐 Production Debug"}
+            </button>
+            
+            <button
+              onClick={emergencyFix}
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#9ca3af" : "#dc2626",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: "4px",
+                border: "none",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                fontSize: "12px",
+                fontWeight: "bold",
+                animation: "pulse 2s infinite"
+              }}
+            >
+              {isLoading ? "Emergency..." : "🚨 EMERGENCY FIX"}
             </button>
             
             <button
