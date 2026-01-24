@@ -3,6 +3,7 @@
 import { supabase } from "./supabase";
 import { getServerSession } from "./auth-server";
 import { maskPhoneNumber } from "./contact-utils";
+import { canViewContactViaRequest } from "./unlock-requests";
 import type { Post } from "./types";
 
 // Contact unlock types
@@ -21,15 +22,15 @@ export interface ContactUnlock {
 // Check if user can view full contact information
 export async function canViewFullContact(
   postId: string, 
-  viewerUserId?: string | null
+  visitorId?: string | null
 ): Promise<boolean> {
   try {
-    // If no viewer user ID, they can't view
-    if (!viewerUserId) {
+    // If no visitor ID, they can't view
+    if (!visitorId) {
       return false;
     }
 
-    // Check if user is admin
+    // Check if admin is viewing
     const session = await getServerSession();
     if (session?.email) {
       const { data: adminCheck } = await supabase
@@ -43,16 +44,22 @@ export async function canViewFullContact(
       }
     }
 
-    // Check if user has paid for this contact
+    // Check if visitor has paid for this contact via traditional unlock
     const { data: unlockRecord } = await supabase
       .from("contact_unlocks")
       .select("*")
       .eq("post_id", postId)
-      .eq("viewer_user_id", viewerUserId)
+      .eq("viewer_user_id", visitorId)
       .eq("payment_verified", true)
       .single();
 
-    return !!unlockRecord;
+    if (unlockRecord) {
+      return true;
+    }
+
+    // Check if visitor has approved unlock request
+    const canViewViaRequest = await canViewContactViaRequest(postId, visitorId);
+    return canViewViaRequest;
   } catch (error) {
     console.error("Error checking contact view permission:", error);
     return false;
@@ -62,9 +69,9 @@ export async function canViewFullContact(
 // Get contact display (masked or full)
 export async function getContactDisplay(
   post: Post,
-  viewerUserId?: string | null
+  visitorId?: string | null
 ): Promise<{ contact: string | null; canView: boolean }> {
-  const canView = await canViewFullContact(post.id, viewerUserId);
+  const canView = await canViewFullContact(post.id, visitorId);
   
   return {
     contact: canView ? post.contact : maskPhoneNumber(post.contact),
@@ -75,38 +82,30 @@ export async function getContactDisplay(
 // Create contact unlock record after payment
 export async function createContactUnlock(
   postId: string,
-  userId: string,
+  visitorId: string,
   paymentMethod: string,
   paymentAmount: number,
-  transactionId?: string,
-  isVisitorId: boolean = false // Flag to indicate if userId is a visitor_id
+  transactionId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // For emergency fix, ignore visitor_id and always use viewer_user_id
-    // This is a temporary limitation until we run the full migration
-    if (isVisitorId) {
-      console.warn("Visitor ID not supported yet in emergency fix. Skipping unlock creation.");
-      return { success: false, error: "Visitor ID not supported in emergency mode" };
-    }
-    
     // Check if unlock already exists
     const { data: existingUnlock } = await supabase
       .from("contact_unlocks")
       .select("*")
       .eq("post_id", postId)
-      .eq("viewer_user_id", userId)
+      .eq("viewer_user_id", visitorId)
       .single();
 
     if (existingUnlock) {
       return { success: true }; // Already unlocked
     }
 
-    // Create new unlock record (emergency fix version - no visitor_id support)
+    // Create new unlock record
     const { error } = await supabase
       .from("contact_unlocks")
       .insert({
         post_id: postId,
-        viewer_user_id: userId,
+        viewer_user_id: visitorId,
         payment_verified: true,
         payment_method: paymentMethod,
         payment_amount: paymentAmount,
@@ -125,41 +124,41 @@ export async function createContactUnlock(
   }
 }
 
-// Get user's contact unlocks
-export async function getUserContactUnlocks(
-  userId: string
+// Get visitor's contact unlocks
+export async function getVisitorContactUnlocks(
+  visitorId: string
 ): Promise<{ unlocks: ContactUnlock[]; error?: string }> {
   try {
     const { data, error } = await supabase
       .from("contact_unlocks")
       .select("*")
-      .eq("viewer_user_id", userId)
+      .eq("viewer_user_id", visitorId)
       .eq("payment_verified", true)
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching user contact unlocks:", error);
+      console.error("Error fetching visitor contact unlocks:", error);
       return { unlocks: [], error: error.message };
     }
 
     return { unlocks: (data || []) as ContactUnlock[] };
   } catch (error) {
-    console.error("Error in getUserContactUnlocks:", error);
+    console.error("Error in getVisitorContactUnlocks:", error);
     return { unlocks: [], error: "Failed to fetch contact unlocks" };
   }
 }
 
-// Check if post is unlocked by user
-export async function isPostUnlockedByUser(
+// Check if post is unlocked by visitor
+export async function isPostUnlockedByVisitor(
   postId: string,
-  userId: string
+  visitorId: string
 ): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("contact_unlocks")
       .select("id")
       .eq("post_id", postId)
-      .eq("viewer_user_id", userId)
+      .eq("viewer_user_id", visitorId)
       .eq("payment_verified", true)
       .single();
 
