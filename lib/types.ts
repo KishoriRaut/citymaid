@@ -10,6 +10,7 @@ export interface Post {
   contact: string;
   photo_url: string | null;
   status: "pending" | "approved" | "hidden";
+  homepage_payment_status: 'none' | 'pending' | 'approved' | 'rejected';
   created_at: string;
 }
 

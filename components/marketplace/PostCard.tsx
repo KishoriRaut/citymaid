@@ -8,6 +8,7 @@ import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { getContactUnlockPriceFormatted } from "@/lib/pricing";
 import UnlockContactButton from "./UnlockContactButton";
+import HomepageFeatureButton from "./HomepageFeatureButton";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -145,21 +146,33 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </div>
 
-      {/* CTA Button */}
-      {!contactVisible && (
-        <div className="mt-auto space-y-2.5 pt-2">
-          <UnlockContactButton 
-            postId={post.id}
-            canViewContact={contactVisible}
-            className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
-          >
-            🔓 Unlock Contact — {getContactUnlockPriceFormatted()}
-          </UnlockContactButton>
-          <p className="text-xs text-center text-muted-foreground leading-relaxed">
-            Small verification fee to protect workers from spam and misuse.
-          </p>
-        </div>
-      )}
+      {/* CTA Buttons */}
+      <div className="mt-auto space-y-2.5 pt-2">
+        {/* Homepage Feature Button */}
+        <HomepageFeatureButton
+          postId={post.id}
+          homepagePaymentStatus={post.homepage_payment_status}
+          className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
+        >
+          🏠 Show on Homepage — Featured Listing
+        </HomepageFeatureButton>
+
+        {/* Contact Unlock Button */}
+        {!contactVisible && (
+          <>
+            <UnlockContactButton 
+              postId={post.id}
+              canViewContact={contactVisible}
+              className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
+            >
+              🔓 Unlock Contact — {getContactUnlockPriceFormatted()}
+            </UnlockContactButton>
+            <p className="text-xs text-center text-muted-foreground leading-relaxed">
+              Small verification fee to protect workers from spam and misuse.
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
