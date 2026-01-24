@@ -1,13 +1,55 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { debugPostsTable, insertTestData } from "@/lib/debug-posts";
+import { debugProductionDatabase, insertProductionTestData } from "@/lib/debug-production";
 
 export default function DebugPostsPanel() {
   const [debugResults, setDebugResults] = useState<any>(null);
+  const [productionResults, setProductionResults] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPanel, setShowPanel] = useState(false);
+  const [isProduction, setIsProduction] = useState(false);
+
+  // Check if we're in production
+  useEffect(() => {
+    setIsProduction(
+      typeof window !== "undefined" && 
+      (window.location.hostname.includes("vercel.app") || 
+       window.location.hostname !== "localhost")
+    );
+  }, []);
+
+  const runProductionDebug = async () => {
+    setIsLoading(true);
+    try {
+      const results = await debugProductionDatabase();
+      setProductionResults(results);
+    } catch (error) {
+      console.error("Production debug failed:", error);
+      setProductionResults({ issues: [`Production debug failed: ${error instanceof Error ? error.message : 'Unknown error'}`] });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const insertProductionTestPosts = async () => {
+    setIsLoading(true);
+    try {
+      const result = await insertProductionTestData();
+      if (result.success) {
+        alert("Production test data inserted successfully! Refresh the page to see posts.");
+        setTimeout(runProductionDebug, 1000);
+      } else {
+        alert(`Failed to insert production test data: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Failed to insert production test data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const runDebug = async () => {
     setIsLoading(true);
@@ -77,7 +119,9 @@ export default function DebugPostsPanel() {
       zIndex: 9999
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>🔍 Posts Debug Panel</h3>
+        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>
+          🔍 Posts Debug Panel {isProduction && "🌐 PRODUCTION"}
+        </h3>
         <button
           onClick={() => setShowPanel(false)}
           style={{
@@ -92,7 +136,15 @@ export default function DebugPostsPanel() {
         </button>
       </div>
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+      {isProduction && (
+        <div style={{ marginBottom: "12px", padding: "8px", background: "#fef3c7", borderRadius: "4px", fontSize: "12px" }}>
+          <strong>🌐 Production Environment Detected</strong>
+          <div>• URL: {typeof window !== "undefined" ? window.location.hostname : "Unknown"}</div>
+          <div>• Using production Supabase instance</div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
         <button
           onClick={runDebug}
           disabled={isLoading}
@@ -108,8 +160,27 @@ export default function DebugPostsPanel() {
         >
           {isLoading ? "Running..." : "🔍 Run Debug"}
         </button>
+        
+        {isProduction && (
+          <button
+            onClick={runProductionDebug}
+            disabled={isLoading}
+            style={{
+              background: isLoading ? "#9ca3af" : "#3b82f6",
+              color: "white",
+              padding: "8px 12px",
+              borderRadius: "4px",
+              border: "none",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              fontSize: "12px"
+            }}
+          >
+            {isLoading ? "Running..." : "🌐 Production Debug"}
+          </button>
+        )}
+        
         <button
-          onClick={insertTestPosts}
+          onClick={isProduction ? insertProductionTestPosts : insertTestPosts}
           disabled={isLoading}
           style={{
             background: isLoading ? "#9ca3af" : "#f59e0b",
@@ -121,7 +192,7 @@ export default function DebugPostsPanel() {
             fontSize: "12px"
           }}
         >
-          {isLoading ? "Inserting..." : "📝 Insert Test Data"}
+          {isLoading ? "Inserting..." : `📝 Insert ${isProduction ? "Production " : ""}Test Data`}
         </button>
       </div>
 
@@ -186,6 +257,50 @@ export default function DebugPostsPanel() {
             <div style={{ padding: "8px", background: "#e0e7ff", borderRadius: "4px" }}>
               <strong>💡 Recommendations:</strong>
               {debugResults.recommendations.map((rec: string, index: number) => (
+                <div key={index} style={{ marginTop: "4px" }}>• {rec}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {productionResults && (
+        <div style={{ fontSize: "12px", lineHeight: "1.4", marginTop: "16px" }}>
+          <div style={{ marginBottom: "12px", padding: "8px", background: "#dbeafe", borderRadius: "4px" }}>
+            <strong>🌐 Production Database Results:</strong>
+            <div>• Supabase URL: {productionResults.environment?.supabaseUrl || "Unknown"}</div>
+            <div>• Is Production: {productionResults.environment?.isProduction ? "✅ Yes" : "❌ No"}</div>
+            <div>• Table exists: {productionResults.database?.tableExists ? "✅ Yes" : "❌ No"}</div>
+            <div>• Total rows: {productionResults.database?.totalRows}</div>
+            <div>• Can select: {productionResults.database?.canSelect ? "✅ Yes" : "❌ No"}</div>
+            <div>• RLS blocking: {productionResults.database?.hasRLS ? "⚠️ Yes" : "✅ No"}</div>
+          </div>
+
+          {/* Production Status Distribution */}
+          {Object.keys(productionResults.database?.statusDistribution || {}).length > 0 && (
+            <div style={{ marginBottom: "12px", padding: "8px", background: "#fef3c7", borderRadius: "4px" }}>
+              <strong>📈 Production Status Distribution:</strong>
+              {Object.entries(productionResults.database.statusDistribution).map(([status, count]) => (
+                <div key={status}>• {status}: {String(count)}</div>
+              ))}
+            </div>
+          )}
+
+          {/* Production Issues */}
+          {productionResults.issues && productionResults.issues.length > 0 && (
+            <div style={{ marginBottom: "12px", padding: "8px", background: "#fee2e2", borderRadius: "4px" }}>
+              <strong>❌ Production Issues:</strong>
+              {productionResults.issues.map((issue: string, index: number) => (
+                <div key={index}>• {issue}</div>
+              ))}
+            </div>
+          )}
+
+          {/* Production Recommendations */}
+          {productionResults.recommendations && productionResults.recommendations.length > 0 && (
+            <div style={{ padding: "8px", background: "#e0e7ff", borderRadius: "4px" }}>
+              <strong>💡 Production Recommendations:</strong>
+              {productionResults.recommendations.map((rec: string, index: number) => (
                 <div key={index} style={{ marginTop: "4px" }}>• {rec}</div>
               ))}
             </div>
