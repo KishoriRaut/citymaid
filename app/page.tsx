@@ -1,20 +1,19 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { getPublicPostsClient } from "@/lib/posts-client";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { getPublicPostsBypass } from "@/lib/posts-bypass";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
 import { LoadMore } from "@/components/marketplace/LoadMore";
-import DebugPostsPanel from "@/components/debug/DebugPostsPanel";
 
-export default function Home() {
+export default function HomeBypass() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bypassActive, setBypassActive] = useState(false);
 
   // Primary tab: "employee" (Find a Job) is now default
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
@@ -27,43 +26,29 @@ export default function Home() {
     salary: "",
   });
 
-  const [hasMore, setHasMore] = useState(true);
-
-  // Load posts function
-  const loadPosts = useCallback(async (reset = true) => {
+  // Load posts using bypass
+  const loadPosts = useCallback(async () => {
     try {
-      if (reset) {
-        setIsLoading(true);
-        setError(null);
-      } else {
-        setIsLoadingMore(true);
-      }
-
-      const result = await getPublicPostsClient();
-
+      setIsLoading(true);
+      setError(null);
       
-      if (result.error) {
-        setError(result.error);
-        setPosts([]);
-        setHasMore(false);
-        return;
-      }
-
-      if (reset) {
+      console.log("🔥 Loading posts with BYPASS system...");
+      const result = await getPublicPostsBypass();
+      
+      if (result.success) {
         setPosts(result.posts);
+        setBypassActive(true);
+        console.log(`✅ BYPASS SUCCESS: Loaded ${result.posts.length} posts`);
       } else {
-        setPosts(prev => [...prev, ...result.posts]);
+        setError("Failed to load posts");
+        setPosts([]);
       }
-      
-      setHasMore(result.posts.length >= 50); // If we got 50 posts, there might be more
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
       setPosts([]);
-      setHasMore(false);
     } finally {
       setIsLoading(false);
-      setIsLoadingMore(false);
     }
   }, []);
 
@@ -107,11 +92,6 @@ export default function Home() {
 
     return filtered;
   }, [posts, activeTab, filters]);
-
-  // Handle load more
-  const handleLoadMore = useCallback(() => {
-    loadPosts(false);
-  }, [loadPosts]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: typeof filters) => {
@@ -160,7 +140,7 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Unable to Load Posts</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <button
-              onClick={() => loadPosts()}
+              onClick={loadPosts}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Try Again
@@ -200,7 +180,14 @@ export default function Home() {
   // Show posts
   return (
     <div className="min-h-screen bg-gray-50">
-      <DebugPostsPanel />
+      {bypassActive && (
+        <div className="bg-green-100 border-b border-green-200 px-4 py-2">
+          <div className="max-w-7xl mx-auto text-sm text-green-800">
+            🔥 <strong>BYPASS ACTIVE:</strong> Using hardcoded posts - Supabase issues bypassed! ({posts.length} posts loaded)
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
         <FilterBar 
@@ -224,18 +211,12 @@ export default function Home() {
           ))}
         </div>
 
-        {hasMore && !isLoadingMore && filteredPosts.length >= 12 && (
+        {filteredPosts.length >= 6 && (
           <LoadMore 
-            hasMore={hasMore}
-            isLoading={isLoadingMore}
-            onLoadMore={handleLoadMore} 
+            hasMore={false}
+            isLoading={false}
+            onLoadMore={() => {}}
           />
-        )}
-
-        {isLoadingMore && (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
         )}
       </div>
     </div>
