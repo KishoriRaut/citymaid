@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { debugPostsTable, insertTestData } from "@/lib/debug-posts";
 import { debugProductionDatabase, insertProductionTestData } from "@/lib/debug-production";
+import { setupProductionDatabase, quickFixProductionData } from "@/lib/setup-production";
 
 export default function DebugPostsPanel() {
   const [debugResults, setDebugResults] = useState<any>(null);
@@ -46,6 +47,40 @@ export default function DebugPostsPanel() {
       }
     } catch (error) {
       alert(`Failed to insert production test data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const setupProduction = async () => {
+    setIsLoading(true);
+    try {
+      const result = await setupProductionDatabase();
+      if (result.success) {
+        alert(`🎉 Production setup complete! Inserted ${result.postsInserted} posts. Refresh the page to see posts.`);
+        setTimeout(runProductionDebug, 1000);
+      } else {
+        alert(`Production setup failed: ${result.errors.join(', ')}`);
+      }
+    } catch (error) {
+      alert(`Production setup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const quickFixProduction = async () => {
+    setIsLoading(true);
+    try {
+      const result = await quickFixProductionData();
+      if (result.success) {
+        alert(`⚡ Quick fix complete! ${result.message}`);
+        setTimeout(runProductionDebug, 1000);
+      } else {
+        alert(`Quick fix failed: ${result.error}`);
+      }
+    } catch (error) {
+      alert(`Quick fix error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -141,6 +176,7 @@ export default function DebugPostsPanel() {
           <strong>🌐 Production Environment Detected</strong>
           <div>• URL: {typeof window !== "undefined" ? window.location.hostname : "Unknown"}</div>
           <div>• Using production Supabase instance</div>
+          <div><strong>⚡ QUICK FIX:</strong> Click the red &quot;QUICK FIX&quot; button to instantly add posts</div>
         </div>
       )}
 
@@ -162,21 +198,56 @@ export default function DebugPostsPanel() {
         </button>
         
         {isProduction && (
-          <button
-            onClick={runProductionDebug}
-            disabled={isLoading}
-            style={{
-              background: isLoading ? "#9ca3af" : "#3b82f6",
-              color: "white",
-              padding: "8px 12px",
-              borderRadius: "4px",
-              border: "none",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              fontSize: "12px"
-            }}
-          >
-            {isLoading ? "Running..." : "🌐 Production Debug"}
-          </button>
+          <>
+            <button
+              onClick={runProductionDebug}
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#9ca3af" : "#3b82f6",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: "4px",
+                border: "none",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                fontSize: "12px"
+              }}
+            >
+              {isLoading ? "Running..." : "🌐 Production Debug"}
+            </button>
+            
+            <button
+              onClick={quickFixProduction}
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#9ca3af" : "#ef4444",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: "4px",
+                border: "none",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                fontSize: "12px",
+                fontWeight: "bold"
+              }}
+            >
+              {isLoading ? "Fixing..." : "⚡ QUICK FIX"}
+            </button>
+            
+            <button
+              onClick={setupProduction}
+              disabled={isLoading}
+              style={{
+                background: isLoading ? "#9ca3af" : "#8b5cf6",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: "4px",
+                border: "none",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                fontSize: "12px"
+              }}
+            >
+              {isLoading ? "Setting..." : "🚀 Full Setup"}
+            </button>
+          </>
         )}
         
         <button
