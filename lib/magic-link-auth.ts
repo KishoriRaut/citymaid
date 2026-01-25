@@ -9,10 +9,15 @@ export async function sendMagicLink(email: string, redirectTo?: string): Promise
       return { success: false, error: "Supabase client not initialized" };
     }
 
+    // Construct the callback URL with redirect parameter
+    const callbackUrl = redirectTo 
+      ? `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: redirectTo || `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callbackUrl,
       },
     });
 
