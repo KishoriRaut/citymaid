@@ -180,10 +180,10 @@ export function PostCard({ post }: PostCardProps) {
       {/* CTA Buttons */}
       <div className="mt-auto space-y-2.5 pt-2">
         {/* Homepage Feature Button - Only show if not already paid/pending */}
-        {post.homepage_payment_status === 'none' && (
+        {(!post.homepage_payment_status || post.homepage_payment_status === 'none') && (
           <HomepageFeatureButton
             postId={post.id}
-            homepagePaymentStatus={post.homepage_payment_status}
+            homepagePaymentStatus={post.homepage_payment_status || 'none'}
             className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
           >
             🏠 Feature on Homepage - NPR 500
