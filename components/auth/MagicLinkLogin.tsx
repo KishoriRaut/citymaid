@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { sendMagicLink } from "@/lib/magic-link-auth";
 import { Button } from "@/components/shared/button";
 
 export default function MagicLinkLogin() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,7 +28,7 @@ export default function MagicLinkLogin() {
       } else {
         setError(result.error || "Failed to send magic link");
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -57,7 +56,7 @@ export default function MagicLinkLogin() {
 
       <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-md">
         <p className="text-xs text-green-800">
-          <strong>No password needed.</strong> We'll email you a secure login link that works instantly.
+          <strong>No password needed.</strong> We&apos;ll email you a secure login link that works instantly.
         </p>
       </div>
 
@@ -100,7 +99,7 @@ export default function MagicLinkLogin() {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          Check your spam folder if you don't see the email within 1 minute.
+          Check your spam folder if you don&apos;t see the email within 1 minute.
         </p>
       </div>
     </div>

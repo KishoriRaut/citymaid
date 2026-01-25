@@ -9,7 +9,7 @@ export async function sendMagicLink(email: string, redirectTo?: string): Promise
       return { success: false, error: "Supabase client not initialized" };
     }
 
-    const { data, error } = await supabaseClient.auth.signInWithOtp({
+    const { error } = await supabaseClient.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: redirectTo || `${window.location.origin}/auth/callback`,
@@ -53,7 +53,7 @@ export function getCurrentUser() {
 }
 
 // Set user session after magic link authentication
-export function setUserSession(user: any) {
+export function setUserSession(user: { id: string; email: string }) {
   if (typeof window === 'undefined') return;
   
   try {

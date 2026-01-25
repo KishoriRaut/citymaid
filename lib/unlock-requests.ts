@@ -40,7 +40,12 @@ export async function createUnlockRequest(
     }
 
     // Create new request
-    const requestData: any = {
+    const requestData: {
+      post_id: string;
+      status: 'pending';
+      user_id?: string;
+      visitor_id?: string;
+    } = {
       post_id: postId,
       status: 'pending'
     };
@@ -252,12 +257,12 @@ export async function rejectUnlockRequest(
 export async function updateUnlockRequestPayment(
   requestId: string,
   paymentProofFile: File,
-  transactionId: string
+  _transactionId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Upload payment proof to Supabase Storage
     const fileName = `payment-proof-${requestId}-${Date.now()}.${paymentProofFile.name.split('.').pop()}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('payment-proofs')
       .upload(fileName, paymentProofFile);
 

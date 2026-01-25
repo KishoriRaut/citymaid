@@ -172,13 +172,13 @@ export default function UnlockPaymentPage() {
                   <p><strong>Next Steps:</strong></p>
                   <ol className="list-decimal list-inside space-y-1 ml-4">
                     <li>Our admin team will verify your payment within 24 hours</li>
-                    <li>Once approved, you'll receive the contact information</li>
+                    <li>Once approved, you&apos;ll receive the contact information</li>
                     <li>You can check the status anytime in your unlock requests</li>
                   </ol>
-                  <p className="mt-3"><strong>How you'll receive the contact:</strong></p>
+                  <p className="mt-3"><strong>How you&apos;ll receive the contact:</strong></p>
                   <ul className="list-disc list-inside space-y-1 ml-4">
                     <li>Contact number will appear on this page after approval</li>
-                    <li>You'll also receive an email notification</li>
+                    <li>You&apos;ll also receive an email notification</li>
                     <li>The contact will be permanently available in your account</li>
                   </ul>
                 </div>
