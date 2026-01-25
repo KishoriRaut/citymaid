@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient, isSupabaseConfigured } from "@/lib/supabase-client";
 import { setUserSession } from "@/lib/magic-link-auth";
 
+// Disable static generation
+export const dynamic = 'force-dynamic';
+
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
