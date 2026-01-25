@@ -22,6 +22,19 @@ export async function debugPostsTable() {
   try {
     // 1. Check if table exists and get row count
     console.log("📊 Checking if posts table exists and counting rows...");
+    
+    if (!supabaseClient) {
+      return {
+        success: false,
+        error: "Supabase client not initialized - missing environment variables",
+        details: {
+          environment: process.env.NODE_ENV || "unknown",
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "NOT_FOUND",
+          supabaseKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
+        }
+      };
+    }
+    
     const { count, error: countError } = await supabaseClient
       .from("posts")
       .select("*", { count: "exact", head: true });
@@ -219,6 +232,13 @@ export async function insertTestData() {
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!supabaseClient) {
+      return {
+        success: false,
+        error: "Supabase client not initialized - missing environment variables"
+      };
+    }
+    
     const { data, error } = await supabaseClient
       .from("posts")
       .insert(testPosts as any)

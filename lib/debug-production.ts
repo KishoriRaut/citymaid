@@ -31,6 +31,17 @@ export async function debugProductionDatabase() {
     // 1. Test basic connection
     console.log("🔌 Testing Supabase connection...");
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    if (!supabaseClient) {
+      return {
+        success: false,
+        error: "Supabase client not initialized - missing environment variables",
+        environment: process.env.NODE_ENV || "unknown",
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || "NOT_FOUND",
+        supabaseKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0
+      };
+    }
+    
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { data: connectionTest, error: connectionError } = await supabaseClient
       .from("posts")
       .select("id")
@@ -201,6 +212,13 @@ export async function insertProductionTestData() {
   ];
 
   try {
+    if (!supabaseClient) {
+      return {
+        success: false,
+        error: "Supabase client not initialized - missing environment variables"
+      };
+    }
+    
     const { data, error } = await supabaseClient
       .from("posts")
       .insert(testPosts as any)

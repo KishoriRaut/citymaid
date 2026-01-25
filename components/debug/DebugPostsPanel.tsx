@@ -58,10 +58,18 @@ export default function DebugPostsPanel() {
     try {
       const result = await setupProductionDatabase();
       if (result.success) {
-        alert(`🎉 Production setup complete! Inserted ${result.postsInserted} posts. Refresh the page to see posts.`);
+        if ('postsInserted' in result) {
+          alert(`🎉 Production setup complete! Inserted ${result.postsInserted} posts. Refresh the page to see posts.`);
+        } else {
+          alert(`🎉 Production setup complete! Refresh the page to see posts.`);
+        }
         setTimeout(runProductionDebug, 1000);
       } else {
-        alert(`Production setup failed: ${result.errors.join(', ')}`);
+        if ('errors' in result) {
+          alert(`Production setup failed: ${result.errors.join(', ')}`);
+        } else {
+          alert(`Production setup failed: ${result.error}`);
+        }
       }
     } catch (error) {
       alert(`Production setup error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -93,29 +101,38 @@ export default function DebugPostsPanel() {
       const result = await emergencyProductionFix();
       
       let message = `🚨 EMERGENCY FIX RESULTS:\n\n`;
-      message += `✅ Connection: ${result.step1_connection ? 'PASS' : 'FAIL'}\n`;
-      message += `✅ Table Exists: ${result.step2_tableExists ? 'PASS' : 'FAIL'}\n`;
-      message += `✅ Permissions: ${result.step3_permissions ? 'PASS' : 'FAIL'}\n`;
-      message += `✅ Insertion: ${result.step4_insertion ? 'PASS' : 'FAIL'}\n`;
-      message += `✅ Verification: ${result.step5_verification ? 'PASS' : 'FAIL'}\n\n`;
-      message += `📊 Final Post Count: ${result.finalPostCount}\n\n`;
-      message += `🔍 Diagnosis: ${result.diagnosis}\n\n`;
       
-      if (result.errors.length > 0) {
-        message += `❌ Errors:\n${result.errors.join('\n')}`;
-      }
-      
-      if (result.success) {
-        message += `\n\n🎉 SUCCESS! Refresh the page to see posts!`;
+      // Handle different return types
+      if ('step' in result) {
+        // Early return with error
+        message += `❌ Step ${result.step} failed: ${result.error}\n`;
+        message += `🔍 Diagnosis: ${result.diagnosis}\n`;
       } else {
-        message += `\n\n⚠️ Issues found. Check the diagnosis above.`;
+        // Full results object
+        message += `✅ Connection: ${result.step1_connection ? 'PASS' : 'FAIL'}\n`;
+        message += `✅ Table Exists: ${result.step2_tableExists ? 'PASS' : 'FAIL'}\n`;
+        message += `✅ Permissions: ${result.step3_permissions ? 'PASS' : 'FAIL'}\n`;
+        message += `✅ Insertion: ${result.step4_insertion ? 'PASS' : 'FAIL'}\n`;
+        message += `✅ Verification: ${result.step5_verification ? 'PASS' : 'FAIL'}\n\n`;
+        message += `📊 Final Post Count: ${result.finalPostCount}\n\n`;
+        message += `🔍 Diagnosis: ${result.diagnosis}\n\n`;
+        
+        if (result.errors.length > 0) {
+          message += `❌ Errors:\n${result.errors.join('\n')}`;
+        }
+        
+        if (result.success) {
+          message += `\n\n🎉 SUCCESS! Refresh the page to see posts!`;
+        } else {
+          message += `\n\n⚠️ Issues found. Check the diagnosis above.`;
+        }
+        
+        if (result.success) {
+          setTimeout(runProductionDebug, 1000);
+        }
       }
       
       alert(message);
-      
-      if (result.success) {
-        setTimeout(runProductionDebug, 1000);
-      }
     } catch (error) {
       alert(`Emergency fix error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {

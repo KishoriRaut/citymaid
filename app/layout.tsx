@@ -16,6 +16,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: `${appConfig.brand.name} - ${appConfig.brand.tagline}`,
   description: appConfig.brand.description,
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

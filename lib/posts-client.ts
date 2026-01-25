@@ -1,11 +1,21 @@
 "use client";
 
-import { supabaseClient } from "./supabase-client";
+import { supabaseClient, isSupabaseConfigured } from "./supabase-client";
 import type { PostWithMaskedContact } from "./types";
 
 // Get public posts (client-side version for public pages)
 export async function getPublicPostsClient() {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured || !supabaseClient) {
+      console.error(" Supabase not configured - missing environment variables");
+      return {
+        posts: [],
+        total: 0,
+        error: "Supabase environment variables are missing. Please check Vercel configuration.",
+      };
+    }
+
     // First try to get approved posts
     const { data: approvedPosts, error: approvedError } = await supabaseClient
       .from("posts")
@@ -51,14 +61,14 @@ export async function getPublicPostsClient() {
       .from("posts")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
 
     if (anyPostsError) {
       console.error("Error fetching any posts:", anyPostsError);
       return {
         posts: [],
         total: 0,
-        error: `Failed to fetch posts: ${anyPostsError.message}`,
+        error: `Database error: ${anyPostsError.message}`,
       };
     }
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { supabaseClient } from "./supabase-client";
-import { supabase } from "./supabase";
+import type { PostWithMaskedContact } from "./types";
 
 // Comprehensive diagnostic to compare admin vs homepage connections
 export async function compareAdminVsHomepage() {
@@ -36,6 +36,11 @@ export async function compareAdminVsHomepage() {
     // 1. Test Homepage Connection (Client-side with Anon Key)
     console.log("🌐 Testing HOMEPAGE connection (anon key)...");
     try {
+      if (!supabaseClient) {
+        results.homepageErrors.push("Supabase client not initialized - missing environment variables");
+        return results;
+      }
+      
       const { count: homeTotal, error: homeTotalError } = await supabaseClient
         .from("posts")
         .select("*", { count: "exact", head: true });
@@ -74,62 +79,23 @@ export async function compareAdminVsHomepage() {
       results.homepageErrors.push(`Homepage connection exception: ${homeErr instanceof Error ? homeErr.message : 'Unknown'}`);
     }
 
-    // 2. Test Admin Connection (Server-side with Service Role Key)
-    console.log("🔧 Testing ADMIN connection (service role key)...");
-    try {
-      const { count: adminTotal, error: adminTotalError } = await supabase
-        .from("posts")
-        .select("*", { count: "exact", head: true });
-
-      if (adminTotalError) {
-        results.adminErrors.push(`Admin total count failed: ${adminTotalError.message} (${adminTotalError.code})`);
-      } else {
-        results.adminTotalPosts = adminTotal || 0;
-        results.adminConnection = true;
-      }
-
-      const { count: adminApproved, error: adminApprovedError } = await supabase
-        .from("posts")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "approved");
-
-      if (adminApprovedError) {
-        results.adminErrors.push(`Admin approved count failed: ${adminApprovedError.message} (${adminApprovedError.code})`);
-      } else {
-        results.adminApprovedPosts = adminApproved || 0;
-      }
-
-      // Get sample posts
-      const { data: adminSample, error: adminSampleError } = await supabase
-        .from("posts")
-        .select("id, status, post_type, work, created_at")
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      if (adminSampleError) {
-        results.adminErrors.push(`Admin sample failed: ${adminSampleError.message}`);
-      } else {
-        results.adminSamplePosts = adminSample || [];
-      }
-    } catch (adminErr) {
-      results.adminErrors.push(`Admin connection exception: ${adminErr instanceof Error ? adminErr.message : 'Unknown'}`);
-    }
+    // 2. Admin tests skipped - server-side only
+    console.log("🔧 Admin tests skipped - server-side only");
+    results.adminErrors.push("Admin tests require server-side execution");
+    results.adminConnection = false;
+    results.adminTotalPosts = 0;
+    results.adminApprovedPosts = 0;
+    results.adminSamplePosts = [];
 
     // 3. Analysis and Diagnosis
     console.log("📊 ANALYZING RESULTS...");
     
-    if (!results.homepageConnection && !results.adminConnection) {
-      results.diagnosis = "❌ CRITICAL: Both homepage and admin cannot connect to Supabase - Check URL and keys";
-    } else if (!results.homepageConnection && results.adminConnection) {
-      results.diagnosis = "❌ HOMEPAGE ISSUE: Admin can connect but homepage cannot - Anon key or RLS issue";
-    } else if (results.homepageConnection && !results.adminConnection) {
-      results.diagnosis = "❌ ADMIN ISSUE: Homepage can connect but admin cannot - Service role key issue";
-    } else if (results.adminTotalPosts > results.homepageTotalPosts) {
-      results.diagnosis = "⚠️ MISMATCH: Admin sees more posts than homepage - RLS policy blocking anon users";
-    } else if (results.adminTotalPosts === 0) {
+    if (!results.homepageConnection) {
+      results.diagnosis = "❌ HOMEPAGE ISSUE: Cannot connect to Supabase - Check environment variables";
+    } else if (results.homepageTotalPosts === 0) {
       results.diagnosis = "❌ EMPTY DATABASE: No posts found - Admin panel might be writing to wrong project";
-    } else if (results.homepageApprovedPosts === 0 && results.adminApprovedPosts > 0) {
-      results.diagnosis = "⚠️ RLS BLOCK: Approved posts exist but homepage can't see them - Check RLS policies";
+    } else if (results.homepageApprovedPosts === 0 && results.homepageTotalPosts > 0) {
+      results.diagnosis = "⚠️ RLS BLOCK: Posts exist but none are approved - Check admin approval system";
     } else if (results.homepageApprovedPosts > 0) {
       results.diagnosis = `✅ SUCCESS: Homepage can see ${results.homepageApprovedPosts} approved posts - Should be working`;
     } else {

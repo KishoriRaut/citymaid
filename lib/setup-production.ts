@@ -18,6 +18,15 @@ export async function setupProductionDatabase() {
   try {
     // Step 1: Check if posts table exists
     console.log("📋 Step 1: Checking posts table...");
+    
+    if (!supabaseClient) {
+      return {
+        success: false,
+        error: "Supabase client not initialized - missing environment variables",
+        step: 1
+      };
+    }
+    
     const { count, error: tableCheckError } = await supabaseClient
       .from("posts")
       .select("*", { count: "exact", head: true });
@@ -253,6 +262,14 @@ export async function quickFixProductionData() {
   ];
 
   try {
+    if (!supabaseClient) {
+      return {
+        success: false,
+        error: "Supabase client not initialized - missing environment variables",
+        step: 4
+      };
+    }
+    
     const { data, error } = await supabaseClient
       .from("posts")
       .insert(quickPosts as any)

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import { compareAdminVsHomepage } from "@/lib/admin-vs-homepage-diagnostic";
+import { EnvironmentCheck } from "@/components/EnvironmentCheck";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
@@ -10,7 +11,7 @@ import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
 import { LoadMore } from "@/components/marketplace/LoadMore";
 
-export default function HomePage() {
+function HomePageContent() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -341,5 +342,13 @@ export default function HomePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <EnvironmentCheck>
+      <HomePageContent />
+    </EnvironmentCheck>
   );
 }

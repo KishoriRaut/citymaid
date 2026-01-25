@@ -88,6 +88,13 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
     const filePath = `${fileName}`;
 
     // Upload file to payment-receipts bucket
+    if (!supabaseClient) {
+      return {
+        error: "Supabase client not initialized - missing environment variables",
+        url: null
+      };
+    }
+    
     const { error: uploadError } = await supabaseClient.storage
       .from(PAYMENT_RECEIPTS_BUCKET)
       .upload(filePath, fileToUpload, {

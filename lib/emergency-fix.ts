@@ -22,6 +22,15 @@ export async function emergencyProductionFix() {
     // 1. Test basic Supabase connection
     console.log("🔌 STEP 1: Testing Supabase connection...");
     try {
+      if (!supabaseClient) {
+        return {
+          success: false,
+          error: "Supabase client not initialized - missing environment variables",
+          step: 1,
+          diagnosis: "Environment variables missing"
+        };
+      }
+      
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data: connectionTest, error: connectionError } = await supabaseClient
         .from("posts")
