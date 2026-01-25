@@ -3,6 +3,7 @@
 import { supabase } from "./supabase";
 import { getServerSession } from "./auth-server";
 import { createContactUnlock } from "./contact-unlock";
+import { getOrCreateVisitorId } from "./visitor-id";
 
 // Contact unlock request types
 export interface ContactUnlockRequest {
@@ -15,18 +16,22 @@ export interface ContactUnlockRequest {
   updated_at: string;
 }
 
-// Create a new unlock request
+// Create a new unlock request (for authenticated users)
 export async function createUnlockRequest(
   postId: string,
-  visitorId: string
+  userId?: string | null
 ): Promise<{ success: boolean; error?: string; requestId?: string }> {
   try {
-    // Check if visitor already has a pending/paid request for this post
+    // For authenticated users, use user_id, for visitors use visitor_id
+    const identifier = userId || getOrCreateVisitorId();
+    const identifierField = userId ? 'user_id' : 'visitor_id';
+
+    // Check if user already has a pending/paid request for this post
     const { data: existingRequest } = await supabase
       .from("contact_unlock_requests")
       .select("*")
       .eq("post_id", postId)
-      .eq("visitor_id", visitorId)
+      .eq(identifierField, identifier)
       .in("status", ["pending", "paid"])
       .single();
 
@@ -35,13 +40,25 @@ export async function createUnlockRequest(
     }
 
     // Create new request
+    const requestData: {
+      post_id: string;
+      status: 'pending';
+      user_id?: string;
+      visitor_id?: string;
+    } = {
+      post_id: postId,
+      status: 'pending'
+    };
+
+    if (userId) {
+      requestData.user_id = userId;
+    } else {
+      requestData.visitor_id = identifier;
+    }
+
     const { data: request, error } = await supabase
       .from("contact_unlock_requests")
-      .insert({
-        post_id: postId,
-        visitor_id: visitorId,
-        status: 'pending'
-      })
+      .insert(requestData)
       .select()
       .single();
 
@@ -233,6 +250,49 @@ export async function rejectUnlockRequest(
   } catch (error) {
     console.error("Error in rejectUnlockRequest:", error);
     return { success: false, error: "Failed to reject request" };
+  }
+}
+
+// Update request with payment proof (for payment page)
+export async function updateUnlockRequestPayment(
+  requestId: string,
+  paymentProofFile: File
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Upload payment proof to Supabase Storage
+    const fileName = `payment-proof-${requestId}-${Date.now()}.${paymentProofFile.name.split('.').pop()}`;
+    const { error: uploadError } = await supabase.storage
+      .from('payment-proofs')
+      .upload(fileName, paymentProofFile);
+
+    if (uploadError) {
+      console.error("Error uploading payment proof:", uploadError);
+      return { success: false, error: "Failed to upload payment proof" };
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('payment-proofs')
+      .getPublicUrl(fileName);
+
+    // Update request with payment proof and transaction ID
+    const { error: updateError } = await supabase
+      .from("contact_unlock_requests")
+      .update({
+        payment_proof: publicUrl,
+        status: 'paid'
+      })
+      .eq("id", requestId);
+
+    if (updateError) {
+      console.error("Error updating payment proof:", updateError);
+      return { success: false, error: "Failed to update payment proof" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateUnlockRequestPayment:", error);
+    return { success: false, error: "Failed to update payment proof" };
   }
 }
 

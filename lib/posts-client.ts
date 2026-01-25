@@ -2,6 +2,7 @@
 
 import { supabaseClient, isSupabaseConfigured } from "./supabase-client";
 import type { PostWithMaskedContact } from "./types";
+import { maskContact } from "./utils";
 
 // Get public posts (client-side version for public pages)
 export async function getPublicPostsClient() {
@@ -16,7 +17,7 @@ export async function getPublicPostsClient() {
       };
     }
 
-    // First try to get approved posts
+    // Get approved posts from the database
     const { data: approvedPosts, error: approvedError } = await supabaseClient
       .from("posts")
       .select("*")
@@ -26,12 +27,17 @@ export async function getPublicPostsClient() {
 
     if (approvedError) {
       console.error("Error fetching approved posts:", approvedError);
+      return {
+        posts: [],
+        total: 0,
+        error: `Database error: ${approvedError.message}`,
+      };
     }
 
-    // If approved posts exist, return them
+    // If approved posts exist, return them with client-side masking
     if (approvedPosts && approvedPosts.length > 0) {
       console.log(`Found ${approvedPosts.length} approved posts`);
-      const posts = transformPosts(approvedPosts);
+      const posts = transformPosts(approvedPosts as unknown[]);
       return {
         posts,
         total: posts.length,
@@ -56,7 +62,7 @@ export async function getPublicPostsClient() {
       console.log("Status distribution:", statusCount);
     }
 
-    // Fallback: get any posts (we'll filter in UI)
+    // Fallback: get any posts from the database
     const { data: anyPosts, error: anyPostsError } = await supabaseClient
       .from("posts")
       .select("*")
@@ -73,7 +79,7 @@ export async function getPublicPostsClient() {
     }
 
     console.log(`Found ${anyPosts?.length || 0} posts with any status`);
-    const posts = transformPosts(anyPosts || []);
+    const posts = transformPosts((anyPosts || []) as unknown[]);
     return {
       posts,
       total: posts.length,
@@ -93,19 +99,24 @@ export async function getPublicPostsClient() {
 // Transform posts data to match PostWithMaskedContact interface
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
-  return posts.map((post) => ({
-    id: (post as any).id,
-    post_type: (post as any).post_type,
-    work: (post as any).work,
-    time: (post as any).time,
-    place: (post as any).place,
-    salary: (post as any).salary,
-    contact: (post as any).contact,
-    photo_url: (post as any).photo_url,
-    status: (post as any).status,
-    homepage_payment_status: (post as any).homepage_payment_status,
-    created_at: (post as any).created_at,
-    can_view_contact: false, // Contact is always locked by default - requires payment to unlock
-  }));
+  return posts.map((post) => {
+    const postData = post as any;
+    // Apply client-side contact masking - contacts are locked by default
+    const isContactLocked = true; // All contacts are locked by default
+    return {
+      id: postData.id,
+      post_type: postData.post_type,
+      work: postData.work,
+      time: postData.time,
+      place: postData.place,
+      salary: postData.salary,
+      contact: isContactLocked ? maskContact(postData.contact) : postData.contact,
+      photo_url: postData.photo_url,
+      status: postData.status,
+      homepage_payment_status: postData.homepage_payment_status,
+      created_at: postData.created_at,
+      can_view_contact: !isContactLocked, // Always false for now
+    };
+  });
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
