@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
+import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
 import HomepageFeatureButton from "./HomepageFeatureButton";
 
@@ -16,6 +17,10 @@ export function PostCard({ post }: PostCardProps) {
   // Use the new can_view_contact flag from the database
   const contactVisible = post.can_view_contact && post.contact !== null;
   const isHiring = post.post_type === "employer";
+  
+  // Format posting time
+  const timeInfo = formatTimeWithDetails(post.created_at);
+  const isFresh = isFreshPost(post.created_at);
 
   return (
     <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200 flex flex-col transform hover:-translate-y-0.5 h-full">
@@ -68,15 +73,45 @@ export function PostCard({ post }: PostCardProps) {
       {/* Work Type (Bold) */}
       <h3 className="font-semibold text-lg mb-3 text-foreground line-clamp-2 leading-snug">{post.work}</h3>
 
-      {/* Time (Small Tag) */}
-      <div className="mb-4">
-        <span className="inline-block px-2.5 py-1 text-xs font-medium rounded-md bg-muted/60 text-muted-foreground">
-          {post.time}
+      {/* Posting Time with Fresh Indicator */}
+      <div className="mb-4 flex items-center gap-2">
+        <span 
+          className={`inline-block px-2.5 py-1 text-xs font-medium rounded-md ${
+            isFresh 
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+              : 'bg-muted/60 text-muted-foreground'
+          }`}
+          title={timeInfo.title}
+        >
+          🕐 {timeInfo.relative}
         </span>
+        {isFresh && (
+          <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+            🔥 New
+          </span>
+        )}
       </div>
 
       {/* Details */}
       <div className="space-y-3 mb-5 flex-1">
+        {/* Work Schedule (Time) */}
+        <div className="flex items-center gap-2.5 text-sm">
+          <svg
+            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span className="text-muted-foreground leading-relaxed">{post.time}</span>
+        </div>
+
         {/* Location */}
         <div className="flex items-center gap-2.5 text-sm">
           <svg

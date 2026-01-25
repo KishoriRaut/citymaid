@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { sendMagicLink } from "@/lib/magic-link-auth";
 import { Button } from "@/components/shared/button";
@@ -11,9 +11,38 @@ export default function MagicLinkLogin() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  
+  // Cooldown state for rate limiting protection
+  const [cooldownTime, setCooldownTime] = useState(0);
+  const [canResend, setCanResend] = useState(true);
+
+  // Handle countdown timer
+  useEffect(() => {
+    if (cooldownTime > 0) {
+      const timer = setTimeout(() => {
+        setCooldownTime(cooldownTime - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [cooldownTime]);
+
+  // Start cooldown timer
+  const startCooldown = () => {
+    setCanResend(false);
+    setCooldownTime(60);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent submission during cooldown
+    if (!canResend) {
+      setError(`Please wait ${cooldownTime}s before requesting another link`);
+      return;
+    }
+    
     setLoading(true);
     setError("");
     setMessage("");
@@ -23,10 +52,18 @@ export default function MagicLinkLogin() {
       const result = await sendMagicLink(email, redirectTo);
       
       if (result.success) {
-        setMessage("✅ Magic link sent! Check your email and click the link to continue.");
+        setMessage("We've sent a secure login link. Check your inbox and spam folder.");
         setEmail(""); // Clear email input
+        startCooldown(); // Start 60-second cooldown
       } else {
-        setError(result.error || "Failed to send magic link");
+        // Check for rate limit errors
+        const errorMessage = result.error || "Failed to send magic link";
+        if (errorMessage.toLowerCase().includes("rate limit")) {
+          setError("Too many requests. Please wait a minute and check your inbox or spam folder.");
+          startCooldown(); // Start cooldown immediately on rate limit error
+        } else {
+          setError(errorMessage);
+        }
       }
     } catch {
       setError("An unexpected error occurred");
@@ -90,10 +127,12 @@ export default function MagicLinkLogin() {
 
         <Button
           type="submit"
-          disabled={loading || !email}
+          disabled={loading || !email || !canResend}
           className="w-full"
         >
-          {loading ? "Sending Magic Link..." : "Send Magic Link"}
+          {loading ? "Sending Magic Link..." : 
+           !canResend ? `Resend in ${cooldownTime}s` : 
+           "Send Magic Link"}
         </Button>
       </form>
 
