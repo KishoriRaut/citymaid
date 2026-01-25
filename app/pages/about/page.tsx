@@ -55,7 +55,7 @@ export default function AboutPage() {
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 my-6">
                 <p className="text-blue-800 font-medium">
-                  "Bridging the gap between quality domestic work and families who need it most"
+                  &quot;Bridging the gap between quality domestic work and families who need it most&quot;
                 </p>
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function AboutPage() {
       <div className="mt-12 text-center bg-gray-50 rounded-lg p-8">
         <h2 className="text-2xl font-bold mb-4 text-gray-900">Join Our Community</h2>
         <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          Whether you're looking for reliable domestic help or seeking employment opportunities, 
+          Whether you&apos;re looking for reliable domestic help or seeking employment opportunities, 
           CityMaid is here to connect you with the right match.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">

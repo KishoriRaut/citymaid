@@ -397,8 +397,8 @@ export default function PrivacyPolicy() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Policy Updates</h3>
                 <p className="text-gray-700">
                   We may update this Privacy Policy from time to time. We will notify you of 
-                  any changes by posting the new policy on this page and updating the "Last 
-                  updated" date. Changes are effective immediately upon posting.
+                  any changes by posting the new policy on this page and updating the &quot;Last 
+                  updated&quot; date. Changes are effective immediately upon posting.
                 </p>
               </div>
 
