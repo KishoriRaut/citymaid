@@ -53,7 +53,7 @@ export function getCurrentUser() {
 }
 
 // Set user session after magic link authentication
-export function setUserSession(user: { id: string; email: string }) {
+export function setUserSession(user: { id: string; email?: string }) {
   if (typeof window === 'undefined') return;
   
   try {
