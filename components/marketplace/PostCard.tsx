@@ -179,23 +179,6 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* CTA Buttons */}
       <div className="mt-auto space-y-2.5 pt-2">
-        {/* Homepage Feature Status - Show if paid/pending */}
-        {post.homepage_payment_status === 'pending' && (
-          <div className="w-full px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-            <span className="text-sm font-medium text-yellow-800">
-              ⏳ Payment Pending - Awaiting Approval
-            </span>
-          </div>
-        )}
-
-        {post.homepage_payment_status === 'approved' && (
-          <div className="w-full px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-center">
-            <span className="text-sm font-medium text-green-800">
-              🏠 Featured on Homepage
-            </span>
-          </div>
-        )}
-
         {/* Contact Unlock Button */}
         {!contactVisible && (
           <>
