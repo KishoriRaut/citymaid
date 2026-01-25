@@ -53,8 +53,8 @@ export default function TermsOfService() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
             <div className="prose max-w-none">
               <p className="text-gray-700 leading-relaxed mb-4">
-                Welcome to CityMaid! These Terms of Service ("Terms") govern your access to and use of 
-                our platform, website, and services (collectively, the "Service"). By using CityMaid, 
+                Welcome to CityMaid! These Terms of Service (&quot;Terms&quot;) govern your access to and use of 
+                our platform, website, and services (collectively, the &quot;Service&quot;). By using CityMaid, 
                 you agree to be bound by these Terms.
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">

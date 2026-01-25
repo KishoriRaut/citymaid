@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Overview</h2>
             <div className="prose max-w-none">
               <p className="text-gray-700 leading-relaxed mb-4">
-                CityMaid ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy 
+                CityMaid (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy 
                 explains how we collect, use, disclose, and safeguard your information when you use our 
                 platform and services.
               </p>

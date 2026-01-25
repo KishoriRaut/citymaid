@@ -37,6 +37,12 @@ export default function AboutPage() {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
             <div className="prose max-w-none">
+              <p className="text-gray-600 leading-relaxed mb-4">
+                CityMaid (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is a trusted platform that connects families and individuals with verified domestic workers across Nepal. We provide a safe and reliable way to find skilled domestic help for cooking, cleaning, childcare, elderly care, and other household services.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                We&apos;re not just a platform; we&apos;re a community dedicated to creating meaningful employment opportunities and improving household management across Nepal.
+              </p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 At CityMaid, our mission is to revolutionize the domestic work industry in Nepal by 
                 creating a transparent, reliable, and efficient platform that connects skilled domestic 

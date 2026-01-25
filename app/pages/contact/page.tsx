@@ -255,8 +255,8 @@ export default function ContactPage() {
           {/* Emergency Contact */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h2 className="text-xl font-bold mb-3 text-red-800">Emergency Support</h2>
-            <p className="text-red-700 mb-3">
-              For urgent matters requiring immediate attention:
+            <p className="text-gray-600 mb-6">
+              We&apos;re here to help! Whether you have questions, need support, or want to learn more about our services, feel free to reach out to us.
             </p>
             <p className="font-semibold text-red-800">+977-9841234567</p>
             <p className="text-sm text-red-600 mt-2">
