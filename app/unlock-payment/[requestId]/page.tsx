@@ -37,6 +37,10 @@ export default function UnlockPaymentPage() {
   useEffect(() => {
     if (params.requestId) {
       loadUnlockRequest(params.requestId as string);
+    } else {
+      console.error("❌ No requestId found in params");
+      setError("No request ID provided");
+      setLoading(false);
     }
   }, [params.requestId]);
 

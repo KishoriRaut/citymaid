@@ -4,6 +4,9 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient, isSupabaseConfigured } from "@/lib/supabase-client";
 import { setUserSession } from "@/lib/magic-link-auth";
+import { consumeUnlockIntent } from "@/lib/unlock-intent";
+import { createUnlockRequest } from "@/lib/unlock-requests";
+import { getCurrentUser } from "@/lib/magic-link-auth";
 
 // Disable static generation
 export const dynamic = 'force-dynamic';
@@ -40,7 +43,39 @@ function AuthCallbackContent() {
           // Set user session in localStorage
           setUserSession(session.user);
           
-          // Check for redirect parameter from magic link
+          // Check for unlock intent first
+          const unlockIntent = consumeUnlockIntent();
+          
+          if (unlockIntent) {
+            console.log("🔓 Processing unlock intent for post:", unlockIntent.postId);
+            
+            // Create unlock request with authenticated user
+            const currentUser = getCurrentUser();
+            const userId = currentUser?.id;
+            
+            const { success, requestId, error: unlockError } = await createUnlockRequest(
+              unlockIntent.postId,
+              userId
+            );
+            
+            if (!success) {
+              console.error("Failed to create unlock request:", unlockError);
+              setError(unlockError || 'Failed to process unlock request');
+              setLoading(false);
+              return;
+            }
+            
+            console.log("🔄 Redirecting to payment page with requestId:", requestId);
+            
+            // Redirect to payment page
+            setTimeout(() => {
+              router.push(`/unlock-payment/${requestId}`);
+              router.refresh();
+            }, 1000);
+            return;
+          }
+          
+          // Check for regular redirect parameter from magic link
           const redirectTo = searchParams.get('redirect') || '/';
           
           setTimeout(() => {

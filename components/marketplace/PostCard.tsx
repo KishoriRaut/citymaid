@@ -5,7 +5,6 @@ import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
-import HomepageFeatureButton from "./HomepageFeatureButton";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -179,15 +178,6 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* CTA Buttons */}
       <div className="mt-auto space-y-2.5 pt-2">
-        {/* Homepage Feature Button */}
-        <HomepageFeatureButton
-          postId={post.id}
-          homepagePaymentStatus={post.homepage_payment_status}
-          className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
-        >
-          🏠 Feature on Homepage - NPR 500
-        </HomepageFeatureButton>
-
         {/* Contact Unlock Button */}
         {!contactVisible && (
           <>

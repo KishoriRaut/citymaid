@@ -5,6 +5,7 @@ import { Button } from "@/components/shared/button";
 import { useRouter } from "next/navigation";
 import { createUnlockRequest } from "@/lib/unlock-requests";
 import { isAuthenticated, getCurrentUser } from "@/lib/magic-link-auth";
+import { storeUnlockIntent } from "@/lib/unlock-intent";
 
 interface UnlockContactButtonProps {
   postId: string;
@@ -28,23 +29,15 @@ export default function UnlockContactButton({
     try {
       // Check if user is authenticated
       if (!isAuthenticated()) {
-        // For unauthenticated users, create unlock request with visitor ID first
-        const { success, requestId, error } = await createUnlockRequest(
-          postId,
-          null // No userId for visitors
-        );
-
-        if (!success) {
-          alert(error || 'Failed to create unlock request');
-          return;
-        }
-
-        // Redirect to login with return URL containing the requestId
-        router.push(`/login?redirect=/unlock-payment/${requestId}`);
+        // Store unlock intent before redirecting to auth
+        storeUnlockIntent(postId);
+        
+        // Redirect to login with postId in redirect URL
+        router.push(`/login?redirect=/unlock-payment`);
         return;
       }
 
-      // User is authenticated, get user ID and create unlock request
+      // User is authenticated, create unlock request directly
       const currentUser = getCurrentUser();
       const userId = currentUser?.id;
 
