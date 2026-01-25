@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient, isSupabaseConfigured } from "@/lib/supabase-client";
+import { setUserSession } from "@/lib/magic-link-auth";
 
 function AuthCallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +19,7 @@ function AuthCallbackContent() {
         // Wait a moment for Supabase to process the magic link
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Get the current session (use getSession instead of getUser for anonymous users)
+        // Get the current session
         const { data: { session }, error: sessionError } = await supabaseClient!.auth.getSession();
         
         if (sessionError) {
@@ -32,9 +34,14 @@ function AuthCallbackContent() {
           // Successfully authenticated
           console.log("✅ Authentication successful for user:", session.user.email);
           
-          // Redirect based on user role or to homepage
+          // Set user session in localStorage
+          setUserSession(session.user);
+          
+          // Check for redirect parameter from magic link
+          const redirectTo = searchParams.get('redirect') || '/';
+          
           setTimeout(() => {
-            router.push("/");
+            router.push(redirectTo);
             router.refresh();
           }, 1000);
         } else {
@@ -50,7 +57,7 @@ function AuthCallbackContent() {
     };
 
     handleAuthCallback();
-  }, [router]);
+  }, [router, searchParams]);
 
   if (loading) {
     return (
@@ -95,7 +102,7 @@ function AuthCallbackContent() {
       <div className="text-center">
         <div className="text-green-500 text-6xl mb-4">✅</div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Authentication Successful!</h2>
-        <p className="text-gray-600">Redirecting you to the homepage...</p>
+        <p className="text-gray-600">Redirecting you to continue...</p>
       </div>
     </div>
   );

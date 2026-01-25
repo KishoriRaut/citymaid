@@ -133,12 +133,33 @@ export default function UnlockPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
                   <div className="space-y-3">
-                    {request.posts?.contact && (
+                    {request.status === 'approved' && request.posts?.contact ? (
                       <div>
-                        <p className="text-sm font-medium text-gray-500">Contact</p>
-                        <p className="text-sm text-gray-900">{request.posts.contact}</p>
+                        <p className="text-sm font-medium text-gray-500">Contact Number</p>
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-lg font-semibold text-green-800">{request.posts.contact}</p>
+                          <p className="text-sm text-green-600 mt-1">✅ Payment approved - contact unlocked</p>
+                        </div>
                       </div>
-                    )}
+                    ) : request.status === 'pending' ? (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          <strong>📋 Payment Pending:</strong> Please complete the payment to unlock contact information.
+                        </p>
+                      </div>
+                    ) : request.status === 'paid' ? (
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>⏳ Payment Verification:</strong> Your payment is being reviewed by our admin team. Contact will be available within 24 hours.
+                        </p>
+                      </div>
+                    ) : request.status === 'rejected' ? (
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-800">
+                          <strong>❌ Payment Rejected:</strong> Your payment was not approved. Please contact support for assistance.
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

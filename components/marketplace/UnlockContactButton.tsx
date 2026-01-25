@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/shared/button";
 import { useRouter } from "next/navigation";
 import { createUnlockRequest } from "@/lib/unlock-requests";
-import { getOrCreateVisitorId } from "@/lib/visitor-id";
+import { isAuthenticated, getCurrentUser } from "@/lib/magic-link-auth";
 
 interface UnlockContactButtonProps {
   postId: string;
@@ -26,13 +26,31 @@ export default function UnlockContactButton({
     setIsLoading(true);
 
     try {
-      // Get or create visitor ID (no authentication required)
-      const visitorId = getOrCreateVisitorId();
+      // Check if user is authenticated
+      if (!isAuthenticated()) {
+        // For unauthenticated users, create unlock request with visitor ID first
+        const { success, requestId, error } = await createUnlockRequest(
+          postId,
+          null // No userId for visitors
+        );
 
-      // Create unlock request with visitor ID
+        if (!success) {
+          alert(error || 'Failed to create unlock request');
+          return;
+        }
+
+        // Redirect to login with return URL containing the requestId
+        router.push(`/login?redirect=/unlock-payment/${requestId}`);
+        return;
+      }
+
+      // User is authenticated, get user ID and create unlock request
+      const currentUser = getCurrentUser();
+      const userId = currentUser?.id;
+
       const { success, requestId, error } = await createUnlockRequest(
         postId,
-        visitorId
+        userId
       );
 
       if (!success) {
@@ -40,8 +58,8 @@ export default function UnlockContactButton({
         return;
       }
 
-      // Navigate to the unlock request page
-      router.push(`/unlock/${requestId}`);
+      // Navigate to the payment page
+      router.push(`/unlock-payment/${requestId}`);
       
     } catch (error) {
       console.error("Error handling unlock contact:", error);
