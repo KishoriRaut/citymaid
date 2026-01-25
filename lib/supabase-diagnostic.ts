@@ -33,6 +33,11 @@ export async function diagnoseSupabaseConnection() {
     // 2. Test basic connection
     console.log("🔌 Testing Supabase connection...");
     try {
+      if (!supabaseClient) {
+        results.errors.push("Supabase client not initialized");
+        results.diagnosis = "❌ Supabase client not working";
+        return results;
+      }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data: connectionTest, error: connectionError } = await supabaseClient
         .from("posts")

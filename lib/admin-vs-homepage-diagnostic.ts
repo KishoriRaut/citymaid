@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { supabaseClient } from "./supabase-client";
-import type { PostWithMaskedContact } from "./types";
 
 // Comprehensive diagnostic to compare admin vs homepage connections
 export async function compareAdminVsHomepage() {

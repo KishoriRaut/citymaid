@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { supabaseClientServer } from '@/lib/supabase-client-server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const results = {
       environment: process.env.NODE_ENV || "unknown",
@@ -11,14 +11,15 @@ export async function GET(request: NextRequest) {
       tableExists: false,
       totalPosts: 0,
       approvedPosts: 0,
-      samplePosts: [] as any[],
+      samplePosts: [] as unknown[],
       errors: [] as string[],
       diagnosis: ""
     };
 
     // Test basic connection with client-side Supabase
     try {
-      const { data: connectionTest, error: connectionError } = await supabaseClientServer
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { data: _connectionTest, error: connectionError } = await supabaseClientServer
         .from("posts")
         .select("id")
         .limit(1);

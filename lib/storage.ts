@@ -151,6 +151,9 @@ export async function uploadPhoto(file: File): Promise<{ url: string | null; err
     const filePath = `${fileName}`;
 
     // Upload optimized file
+    if (!supabaseClient) {
+      throw new Error("Supabase client not initialized");
+    }
     const { error: uploadError } = await supabaseClient.storage
       .from(BUCKET_NAME)
       .upload(filePath, optimizedFile, {
