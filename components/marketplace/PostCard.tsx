@@ -179,8 +179,8 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* CTA Buttons */}
       <div className="mt-auto space-y-2.5 pt-2">
-        {/* Homepage Feature Button - Only show if not already paid/pending */}
-        {(!post.homepage_payment_status || post.homepage_payment_status === 'none') && (
+        {/* Homepage Feature Button - Only show if post is approved and not already paid/pending */}
+        {post.status === 'approved' && (!post.homepage_payment_status || post.homepage_payment_status === 'none') && (
           <HomepageFeatureButton
             postId={post.id}
             homepagePaymentStatus={post.homepage_payment_status || 'none'}
