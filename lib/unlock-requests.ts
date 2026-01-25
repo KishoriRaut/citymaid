@@ -256,8 +256,7 @@ export async function rejectUnlockRequest(
 // Update request with payment proof (for payment page)
 export async function updateUnlockRequestPayment(
   requestId: string,
-  paymentProofFile: File,
-  _transactionId: string
+  paymentProofFile: File
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Upload payment proof to Supabase Storage

@@ -106,8 +106,7 @@ export default function UnlockPaymentPage() {
       // Upload payment proof and update request
       const result = await updateUnlockRequestPayment(
         request!.id,
-        paymentProof,
-        transactionId.trim()
+        paymentProof
       );
 
       if (result.success) {
