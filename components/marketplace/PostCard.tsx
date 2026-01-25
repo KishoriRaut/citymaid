@@ -5,7 +5,6 @@ import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
-import HomepageFeatureButton from "./HomepageFeatureButton";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
