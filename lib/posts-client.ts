@@ -105,7 +105,7 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
     status: (post as any).status,
     homepage_payment_status: (post as any).homepage_payment_status,
     created_at: (post as any).created_at,
-    can_view_contact: (post as any).status === 'approved' || false, // Only approved posts show contact
+    can_view_contact: false, // Contact is always locked by default - requires payment to unlock
   }));
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
