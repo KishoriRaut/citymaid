@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createUnifiedPaymentRequest } from '@/lib/unified-payment-requests';
 import { PaymentType } from '@/lib/unified-payments';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { type, postId, userId, visitorId } = await request.json();

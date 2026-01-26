@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUnifiedPaymentRequest } from '@/lib/unified-payment-requests';
 import { PaymentType } from '@/lib/unified-payments';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
