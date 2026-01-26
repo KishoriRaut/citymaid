@@ -22,12 +22,12 @@ export async function POST(request: Request) {
     const isAdmin = adminCredentials.some(cred => cred.email === email && cred.password === password);
     
     if (isAdmin) {
-      // Create a mock admin user object
+      // Create a mock admin user object matching the User interface
       const user = {
         id: "admin-123",
-        email: "admin@citymaid.com",
-        name: "Admin User",
-        role: "admin"
+        email: email, // Use the actual email that was provided
+        role: "admin",
+        created_at: new Date().toISOString()
       };
 
       return NextResponse.json({
@@ -52,7 +52,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      user: data.user,
+      user: {
+        id: data.user.id,
+        email: data.user.email || email,
+        role: "user",
+        created_at: data.user.created_at || new Date().toISOString()
+      },
       message: "Login successful"
     });
 
