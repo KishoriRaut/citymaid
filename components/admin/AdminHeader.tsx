@@ -36,7 +36,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     
     // Clear client-side session
     clearSession();
-    router.push(appConfig.routes.login);
+    router.push("/admin/login");
   };
 
   const userInitials = user.email.charAt(0).toUpperCase();
