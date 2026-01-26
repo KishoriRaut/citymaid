@@ -12,22 +12,17 @@ export interface User {
  */
 export function getCurrentUser(): User | null {
   if (typeof window === "undefined") {
-    console.log("Session: Window is undefined (server-side)");
     return null;
   }
 
   try {
     const userStr = localStorage.getItem("user");
-    console.log("Session: Retrieved user string from localStorage:", userStr);
     if (!userStr) {
-      console.log("Session: No user found in localStorage");
       return null;
     }
     const user = JSON.parse(userStr) as User;
-    console.log("Session: Parsed user object:", user);
     return user;
   } catch (error) {
-    console.error("Session: Error parsing user from localStorage:", error);
     if (process.env.NODE_ENV === "development") {
       console.error("Error parsing user from localStorage:", error);
     }
