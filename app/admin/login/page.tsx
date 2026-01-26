@@ -21,7 +21,7 @@ export default function AdminLoginRedirect() {
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <h2 className="text-xl font-semibold mb-2">Redirecting to login...</h2>
-        <p className="text-sm text-gray-600 mb-4">You'll be redirected to the main login page.</p>
+        <p className="text-sm text-gray-600 mb-4">You&apos;ll be redirected to the main login page.</p>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
           <p className="text-sm text-blue-800 mb-2">
