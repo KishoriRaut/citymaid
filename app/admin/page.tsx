@@ -24,11 +24,15 @@ export default function AdminDashboardPage() {
   const [metricsLoading, setMetricsLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Admin page: Checking user session...");
     const currentUser = getCurrentUser();
+    console.log("Admin page: Current user from session:", currentUser);
     if (!currentUser) {
+      console.log("Admin page: No user found, redirecting to login");
       router.push("/admin/login");
       return;
     }
+    console.log("Admin page: User found, setting user and loading metrics");
     setUser(currentUser);
     setIsLoading(false);
     loadMetrics();
