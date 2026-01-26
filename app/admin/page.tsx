@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getCurrentUser, type User } from "@/lib/session";
+import { type User } from "@/lib/session";
 import { getAllPosts } from "@/lib/posts";
 import { getAllPayments } from "@/lib/payments";
 import { appConfig } from "@/lib/config";
@@ -12,7 +11,6 @@ import { QuickActionCard } from "@/components/admin/QuickActionCard";
 import { Skeleton } from "@/components/shared/skeleton";
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
