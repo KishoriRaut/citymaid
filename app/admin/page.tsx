@@ -22,18 +22,23 @@ export default function AdminDashboardPage() {
     hiddenPosts: 0,
   });
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Temporarily bypass authentication for testing
-    const mockUser = {
-      id: "admin-123",
-      email: "admin@test.com",
-      role: "admin",
-      created_at: new Date().toISOString()
-    };
-    setUser(mockUser);
-    setIsLoading(false);
-    loadMetrics();
+    if (!isInitialized) {
+      // Temporarily bypass authentication for testing
+      const mockUser = {
+        id: "admin-123",
+        email: "admin@test.com",
+        role: "admin",
+        created_at: new Date().toISOString()
+      };
+      
+      setUser(mockUser);
+      setIsLoading(false);
+      setIsInitialized(true);
+      loadMetrics();
+    }
     
     // Original authentication code (commented out for testing)
     /*
@@ -46,7 +51,7 @@ export default function AdminDashboardPage() {
     setIsLoading(false);
     loadMetrics();
     */
-  }, [router]);
+  }, [isInitialized]);
 
   const loadMetrics = async () => {
     try {
