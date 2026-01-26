@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
 import { clearSession, type User } from "@/lib/session";
+import { ChevronDown, LogOut, User as UserIcon, Settings } from "lucide-react";
 
 interface AdminHeaderProps {
   user: User;
@@ -79,14 +80,9 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                 <span className="hidden sm:block text-sm font-medium text-foreground max-w-[150px] truncate">
                   {user.email}
                 </span>
-                <svg
+                <ChevronDown
                   className={`w-4 h-4 text-muted-foreground transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                />
               </button>
 
               {/* Dropdown Menu */}
@@ -101,15 +97,17 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                     </div>
                     <Link
                       href={appConfig.routes.adminProfile}
-                      className="block px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors"
                       onClick={() => setDropdownOpen(false)}
                     >
+                      <UserIcon className="w-4 h-4" />
                       Account Info
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors text-destructive"
+                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors text-destructive"
                     >
+                      <LogOut className="w-4 h-4" />
                       Logout
                     </button>
                   </div>
