@@ -11,7 +11,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { MetricCard } from "@/components/admin/MetricCard";
 import { QuickActionCard } from "@/components/admin/QuickActionCard";
 import { Skeleton } from "@/components/shared/skeleton";
-import { FileText, DollarSign, CheckCircle, Eye, User as UserIcon, Plus, BarChart3, Edit } from "lucide-react";
+import { FileText, DollarSign, CheckCircle, Eye, User as UserIcon, Plus, BarChart3, Edit, Users } from "lucide-react";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -22,6 +22,7 @@ export default function AdminDashboardPage() {
     pendingPayments: 0,
     approvedPosts: 0,
     hiddenPosts: 0,
+    unlockRequests: 0,
   });
   const [metricsLoading, setMetricsLoading] = useState(true);
 
@@ -115,7 +116,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Metrics Section */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5 mb-8">
           <MetricCard
             title="Total Posts"
             value={metrics.totalPosts}
@@ -143,6 +144,13 @@ export default function AdminDashboardPage() {
             status="hidden"
             loading={metricsLoading}
           />
+          <MetricCard
+            title="Unlock Requests"
+            value={metrics.unlockRequests}
+            icon={<Users className="w-6 h-6" />}
+            status="pending"
+            loading={metricsLoading}
+          />
         </div>
 
         {/* Quick Actions Section */}
@@ -167,7 +175,7 @@ export default function AdminDashboardPage() {
         {/* Management Section */}
         <div>
           <h2 className="text-xl font-semibold text-foreground mb-4">Management</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <QuickActionCard
               title="Posts Management"
               description="View and manage all marketplace posts. Approve pending posts, hide or delete as needed."
@@ -175,10 +183,28 @@ export default function AdminDashboardPage() {
               icon={<Edit className="w-5 h-5" />}
             />
             <QuickActionCard
+              title="Payments Management"
+              description="Review and approve payment requests for contact unlocks and homepage features."
+              href={appConfig.routes.adminPayments}
+              icon={<DollarSign className="w-5 h-5" />}
+            />
+            <QuickActionCard
               title="Revenue Dashboard"
               description="Manage all transactions and revenue in one unified interface. View contact unlock and homepage feature payments together."
               href="/admin/revenue"
               icon={<BarChart3 className="w-5 h-5" />}
+            />
+            <QuickActionCard
+              title="Unlock Requests"
+              description="Manage contact unlock requests and approve user access to contact information."
+              href="/admin/unlock-requests"
+              icon={<Eye className="w-5 h-5" />}
+            />
+            <QuickActionCard
+              title="User Profile"
+              description="Manage your admin account settings and preferences."
+              href={appConfig.routes.adminProfile}
+              icon={<UserIcon className="w-5 h-5" />}
             />
           </div>
         </div>
