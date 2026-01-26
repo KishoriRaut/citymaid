@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PaymentPage() {
@@ -12,7 +12,14 @@ export default function PaymentPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   
-  const [postDetails, setPostDetails] = useState<any>(null);
+  const [postDetails, setPostDetails] = useState<{
+    work: string;
+    place: string;
+    salary: string;
+    time: string;
+    post_type: string;
+    photo_url?: string;
+  } | null>(null);
   const [transactionId, setTransactionId] = useState("");
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
 
@@ -20,7 +27,7 @@ export default function PaymentPage() {
   const type = searchParams.get('type');
   const paymentRequestId = searchParams.get('id');
 
-  const fetchPaymentData = async () => {
+  const fetchPaymentData = useCallback(async () => {
     try {
       // Fetch payment request
       const paymentResponse = await fetch(`/api/payment-request/${paymentRequestId}`);
@@ -45,7 +52,7 @@ export default function PaymentPage() {
       setError('Failed to load payment details');
       setLoading(false);
     }
-  };
+  }, [paymentRequestId, type]);
 
   useEffect(() => {
     if (!type || !paymentRequestId) {
@@ -55,7 +62,7 @@ export default function PaymentPage() {
     }
 
     fetchPaymentData();
-  }, [type, paymentRequestId]);
+  }, [type, paymentRequestId, fetchPaymentData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -8,10 +8,8 @@ import {
   PaymentStatus, 
   UnifiedPaymentRequest,
   getPaymentConfig,
-  isValidPaymentType,
-  PaymentStatusFlow
+  isValidPaymentType
 } from './unified-payments';
-import { getOrCreateVisitorId } from './visitor-id';
 
 // Server-side check to prevent client-side execution
 if (typeof window !== 'undefined') {
@@ -132,7 +130,7 @@ async function createPostPromotionRequest(
   amount: number
 ): Promise<{ success: boolean; error?: string; requestId?: string }> {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('posts')
       .update({ 
         homepage_payment_status: 'pending'
@@ -199,7 +197,6 @@ async function createContactUnlockRequest(
       .from('payments')
       .insert({
         post_id: postId,
-        user_id: userId,
         visitor_id: visitorId,
         amount,
         payment_type: 'contact_unlock',
@@ -232,9 +229,9 @@ export async function getUnifiedPaymentRequest(
     console.log('🔧 UNIFIED - Getting payment request:', { requestId, type, userId });
 
     if (type === 'post_promotion') {
-      return getPostPromotionRequest(requestId, userId);
+      return getPostPromotionRequest(requestId);
     } else if (type === 'contact_unlock') {
-      return getContactUnlockRequest(requestId, userId);
+      return getContactUnlockRequest(requestId);
     }
 
     return { error: "Invalid payment type" };
@@ -245,8 +242,7 @@ export async function getUnifiedPaymentRequest(
 }
 
 async function getPostPromotionRequest(
-  postId: string,
-  userId?: string | null
+  postId: string
 ): Promise<{ request?: UnifiedPaymentRequest; error?: string }> {
   try {
     const { data: post, error } = await supabase
@@ -291,11 +287,10 @@ async function getPostPromotionRequest(
 }
 
 async function getContactUnlockRequest(
-  requestId: string,
-  userId?: string | null
+  requestId: string
 ): Promise<{ request?: UnifiedPaymentRequest; error?: string }> {
   try {
-    let query = supabase
+    const query = supabase
       .from('contact_unlock_requests')
       .select(`
         id,
@@ -323,7 +318,6 @@ async function getContactUnlockRequest(
       type: 'contact_unlock',
       post_id: request.post_id,
       visitor_id: request.visitor_id,
-      user_id: request.user_id || undefined,
       amount: config.amount,
       status: request.status as any,
       payment_proof: request.payment_proof || undefined,
