@@ -5,7 +5,8 @@ import { getCurrentUser } from "./session";
 // Admin emails - should match your database admin users
 const ADMIN_EMAILS = [
   "admin@citymaid.com",
-  "kishoriraut.dev@gmail.com"
+  "kishoriraut.dev@gmail.com",
+  "kishoriraut369@gmail.com"
 ];
 
 /**
