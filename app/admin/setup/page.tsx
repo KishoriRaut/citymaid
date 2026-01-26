@@ -33,7 +33,7 @@ export default function AdminSetupPage() {
       } else {
         setError(data.error);
       }
-    } catch (err) {
+    } catch (error) {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);

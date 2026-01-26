@@ -37,7 +37,7 @@ export default function AdminLoginRedirect() {
             href="/admin/temp-login"
             className="inline-block text-xs text-blue-600 underline hover:text-blue-800"
           >
-            Use Temporary Admin Login →
+            Use Temporary Admin Login &rarr;
           </Link>
         </div>
         

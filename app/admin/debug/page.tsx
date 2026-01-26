@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUser, type User } from "@/lib/session";
 import { isAdminUser } from "@/lib/auth-utils";
 
 export default function AdminDebugPage() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
