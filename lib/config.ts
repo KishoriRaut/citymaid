@@ -31,8 +31,7 @@ export const appConfig = {
   // Routes
   routes: {
     home: "/",
-    login: "/login",
-    signup: "/signup",
+    payment: "/payment",
     admin: "/admin",
     adminProfile: "/admin/profile",
     post: "/post",

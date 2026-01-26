@@ -8,14 +8,14 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only protect /admin routes (excluding /admin/login if it exists)
+  // Only protect /admin routes (excluding /admin/login)
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
     // Check for user session cookie
     const userCookie = request.cookies.get("user_session");
     
     if (!userCookie?.value) {
-      // Redirect to login if no session cookie
-      const loginUrl = new URL("/login", request.url);
+      // Redirect to admin login if no session cookie
+      const loginUrl = new URL("/admin/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -23,8 +23,8 @@ export function middleware(request: NextRequest) {
     try {
       JSON.parse(userCookie.value);
     } catch {
-      // Invalid cookie, redirect to login
-      const loginUrl = new URL("/login", request.url);
+      // Invalid cookie, redirect to admin login
+      const loginUrl = new URL("/admin/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
   }
