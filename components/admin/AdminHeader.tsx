@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
 import { clearSession, type User } from "@/lib/session";
-import { ChevronDown, LogOut, User as UserIcon, Settings } from "lucide-react";
+import { ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 
 interface AdminHeaderProps {
   user: User;
