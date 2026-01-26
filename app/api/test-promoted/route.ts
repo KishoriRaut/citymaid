@@ -20,7 +20,7 @@ export async function GET() {
       promoted_posts: promotedPosts || [],
       count: promotedPosts?.length || 0
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' });
   }
 }

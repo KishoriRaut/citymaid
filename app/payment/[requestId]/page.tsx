@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/shared/button";
 import { 
-  getPaymentRequestAPI, 
-  updatePaymentAPI 
+  getPaymentRequestAPI
 } from "@/lib/unified-payments-client";
 import { 
   PaymentType, 
   getPaymentConfig,
-  formatAmount,
-  PaymentStatusFlow 
+  formatAmount
 } from "@/lib/unified-payments";
 
 interface PaymentRequest {
@@ -250,13 +248,13 @@ export default function UnifiedPaymentPage() {
                     {request.type === 'post_promotion' ? (
                       <>
                         <li>Your post will be featured on homepage for 30 days</li>
-                        <li>You'll receive priority placement in search results</li>
+                        <li>You&apos;ll receive priority placement in search results</li>
                         <li>More visibility means better responses</li>
                       </>
                     ) : (
                       <>
                         <li>Contact number will appear on this page after approval</li>
-                        <li>You'll also receive an email notification</li>
+                        <li>You&apos;ll also receive an email notification</li>
                         <li>The contact will be permanently available to you</li>
                       </>
                     )}

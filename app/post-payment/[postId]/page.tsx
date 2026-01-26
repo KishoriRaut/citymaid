@@ -222,7 +222,7 @@ export default function PostPaymentPage() {
               </p>
               {isContactUnlock ? (
                 <p className="text-green-800 text-sm">
-                  <strong>📞 Once approved, you'll be able to view the contact information for this post.</strong>
+                  <strong>📞 Once approved, you&apos;ll be able to view the contact information for this post.</strong>
                 </p>
               ) : (
                 <p className="text-green-800 text-sm">

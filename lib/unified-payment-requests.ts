@@ -319,7 +319,7 @@ async function getContactUnlockRequest(
       post_id: request.post_id,
       visitor_id: request.visitor_id,
       amount: config.amount,
-      status: request.status as any,
+      status: request.status as PaymentStatus,
       payment_proof: request.payment_proof || undefined,
       transaction_id: request.transaction_id || undefined,
       created_at: request.created_at,

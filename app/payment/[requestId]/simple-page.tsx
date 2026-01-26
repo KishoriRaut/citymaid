@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/shared/button";
 import { 
-  getPaymentRequestAPI, 
-  updatePaymentAPI 
+  getPaymentRequestAPI
 } from "@/lib/unified-payments-client";
 import { 
   PaymentType, 
@@ -62,7 +61,7 @@ export default function SimplePaymentPage() {
       } else {
         setError("Payment request not found");
       }
-    } catch (error) {
+    } catch {
       setError("Failed to load payment request");
     } finally {
       setLoading(false);
