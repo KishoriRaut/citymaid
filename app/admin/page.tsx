@@ -26,7 +26,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      router.push(appConfig.routes.login);
+      router.push("/admin/login");
       return;
     }
     setUser(currentUser);
