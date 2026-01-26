@@ -12,8 +12,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // For demo purposes, accept default admin credentials
-    if (email === "admin@citymaid.com" && password === "admin123") {
+    // For demo purposes, accept common admin credentials
+    const adminCredentials = [
+      { email: "admin@citymaid.com", password: "admin123" },
+      { email: "admin", password: "admin" },
+      { email: "test@test.com", password: "test123" }
+    ];
+    
+    const isAdmin = adminCredentials.some(cred => cred.email === email && cred.password === password);
+    
+    if (isAdmin) {
       // Create a mock admin user object
       const user = {
         id: "admin-123",
