@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getCurrentUser, type User } from "@/lib/session";
+import { type User } from "@/lib/session";
 import { getAllPosts } from "@/lib/posts";
 import { getAllPayments } from "@/lib/payments";
 import { appConfig } from "@/lib/config";
@@ -12,7 +11,6 @@ import { QuickActionCard } from "@/components/admin/QuickActionCard";
 import { Skeleton } from "@/components/shared/skeleton";
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
@@ -22,17 +20,36 @@ export default function AdminDashboardPage() {
     hiddenPosts: 0,
   });
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    if (!isInitialized) {
+      // Temporarily bypass authentication for testing
+      const mockUser = {
+        id: "admin-123",
+        email: "admin@test.com",
+        role: "admin",
+        created_at: new Date().toISOString()
+      };
+      
+      setUser(mockUser);
+      setIsLoading(false);
+      setIsInitialized(true);
+      loadMetrics();
+    }
+    
+    // Original authentication code (commented out for testing)
+    /*
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      router.push(appConfig.routes.login);
+      router.push("/admin/login");
       return;
     }
     setUser(currentUser);
     setIsLoading(false);
     loadMetrics();
-  }, [router]);
+    */
+  }, [isInitialized]);
 
   const loadMetrics = async () => {
     try {

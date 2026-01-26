@@ -38,7 +38,7 @@ export function ConditionalHeader() {
               </Button>
             </Link>
             <Link
-              href={appConfig.routes.login}
+              href="/admin/login"
               className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 px-2 py-1.5 sm:px-3 sm:py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
             >
               Admin

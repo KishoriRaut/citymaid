@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState("");
 
   // Check authentication - redirects if not logged in
-  const currentUser = useAuth(appConfig.routes.login);
+  const currentUser = useAuth("/admin/login");
   
   useEffect(() => {
     if (!currentUser) {
@@ -336,7 +336,7 @@ export default function ProfilePage() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => router.push(appConfig.routes.login)}
+            onClick={() => router.push("/admin/login")}
           >
             Change Password
           </Button>

@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setSession } from "@/lib/session";
-import MagicLinkLogin from "@/components/auth/MagicLinkLogin";
 
 function LoginContent() {
   const router = useRouter();
@@ -14,9 +13,6 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-
-  // Check if this is an unlock payment redirect
-  const isUnlockRedirect = searchParams.get('redirect')?.includes('/unlock-payment');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -95,15 +91,6 @@ function LoginContent() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold">Loading...</h2>
         </div>
-      </div>
-    );
-  }
-
-  // If this is an unlock redirect, show the specialized login component
-  if (isUnlockRedirect) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <MagicLinkLogin />
       </div>
     );
   }

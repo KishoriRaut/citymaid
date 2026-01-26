@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/shared/button";
 import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
 import { getOrCreateVisitorId } from "@/lib/visitor-id";
@@ -21,6 +21,7 @@ interface Post {
 export default function PostPaymentPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,10 @@ export default function PostPaymentPage() {
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  
+  // Check if this is a contact unlock payment
+  const unlockRequestId = searchParams.get('unlock_request');
+  const isContactUnlock = !!unlockRequestId;
 
   useEffect(() => {
     if (params.postId) {
@@ -91,30 +96,60 @@ export default function PostPaymentPage() {
     try {
       const visitorId = getOrCreateVisitorId();
       
-      // Create a simple payment proof URL (in production, this would be a file upload)
-      const paymentProofUrl = paymentProof 
-        ? `payment_proof_${post.id}_${visitorId}_${Date.now()}.${paymentProof.type.split('/')[1]}`
-        : `transaction_${post.id}_${transactionId}_${Date.now()}`;
+      if (isContactUnlock && unlockRequestId) {
+        // Handle contact unlock payment
+        const base64String = paymentProof ? await fileToBase64(paymentProof) : '';
+        
+        const formData = new FormData();
+        formData.append('requestId', unlockRequestId);
+        formData.append('type', 'contact_unlock');
+        formData.append('paymentProofBase64', base64String);
+        formData.append('fileName', paymentProof?.name || '');
+        formData.append('fileType', paymentProof?.type || '');
+        formData.append('transactionId', transactionId.trim());
 
-      console.log("Submitting payment proof:", {
-        postId: post.id,
-        paymentProofUrl,
-        visitorId,
-        hasFile: !!paymentProof,
-        transactionId
-      });
+        const response = await fetch('/api/unified-payment', {
+          method: 'POST',
+          body: formData,
+        });
 
-      const { success, error } = await updateHomepagePaymentProof(
-        post.id,
-        paymentProofUrl
-      );
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to submit payment');
+        }
 
-      console.log("Payment proof submission result:", { success, error });
-
-      if (success) {
-        setShowConfirmation(true);
+        const result = await response.json();
+        if (result.success) {
+          setShowConfirmation(true);
+        } else {
+          setError(result.error || 'Failed to submit payment');
+        }
       } else {
-        setError(`Failed to submit payment proof: ${error}`);
+        // Handle post promotion payment (existing logic)
+        const paymentProofUrl = paymentProof 
+          ? `payment_proof_${post.id}_${visitorId}_${Date.now()}.${paymentProof.type.split('/')[1]}`
+          : `transaction_${post.id}_${transactionId}_${Date.now()}`;
+
+        console.log("Submitting payment proof:", {
+          postId: post.id,
+          paymentProofUrl,
+          visitorId,
+          hasFile: !!paymentProof,
+          transactionId
+        });
+
+        const { success, error } = await updateHomepagePaymentProof(
+          post.id,
+          paymentProofUrl
+        );
+
+        console.log("Payment proof submission result:", { success, error });
+
+        if (success) {
+          setShowConfirmation(true);
+        } else {
+          setError(`Failed to submit payment proof: ${error}`);
+        }
       }
     } catch (error) {
       console.error("Error submitting payment proof:", error);
@@ -122,6 +157,19 @@ export default function PostPaymentPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
   };
 
   if (loading) {
@@ -172,9 +220,15 @@ export default function PostPaymentPage() {
               <p className="text-green-800 text-sm mb-2">
                 <strong>⏰ Approval usually takes 2-4 hours.</strong>
               </p>
-              <p className="text-green-800 text-sm">
-                <strong>🏠 Once approved, your post will be displayed on the homepage for 30 days.</strong>
-              </p>
+              {isContactUnlock ? (
+                <p className="text-green-800 text-sm">
+                  <strong>📞 Once approved, you&apos;ll be able to view the contact information for this post.</strong>
+                </p>
+              ) : (
+                <p className="text-green-800 text-sm">
+                  <strong>🏠 Once approved, your post will be displayed on the homepage for 30 days.</strong>
+                </p>
+              )}
             </div>
             <div className="space-y-3">
               <Button 
@@ -225,8 +279,12 @@ export default function PostPaymentPage() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white shadow rounded-lg">
             <div className="p-6 border-b border-gray-200">
-              <h1 className="text-2xl font-bold text-gray-900">Feature Your Post on Homepage</h1>
-              <p className="text-gray-600">Get maximum visibility for your post</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {isContactUnlock ? 'Unlock Contact Information' : 'Feature Your Post on Homepage'}
+              </h1>
+              <p className="text-gray-600">
+                {isContactUnlock ? 'Get contact details for this job opportunity' : 'Get maximum visibility for your post'}
+              </p>
             </div>
 
             <div className="p-6">
@@ -255,10 +313,11 @@ export default function PostPaymentPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Information</h3>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <p className="text-blue-800 text-sm mb-2">
-                    <strong>Homepage Feature Fee:</strong> Get your post displayed prominently on the homepage for 30 days.
+                    <strong>{isContactUnlock ? 'Contact Unlock Fee:' : 'Homepage Feature Fee:'}</strong> 
+                    {isContactUnlock ? ' Get contact details for this job opportunity.' : ' Get your post displayed prominently on the homepage for 30 days.'}
                   </p>
                   <p className="text-blue-800 text-sm">
-                    <strong>Price:</strong> NPR 500 (Limited time offer)
+                    <strong>Price:</strong> NPR 299
                   </p>
                 </div>
 
