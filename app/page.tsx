@@ -8,7 +8,6 @@ import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
-import { LoadMore } from "@/components/marketplace/LoadMore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -217,13 +216,7 @@ function HomePageContent() {
           ))}
         </div>
 
-        {filteredPosts.length >= 6 && (
-          <LoadMore 
-            hasMore={false}
-            isLoading={false}
-            onLoadMore={() => {}}
-          />
-        )}
+        {/* Load more functionality can be implemented here when needed */}
       </div>
     </div>
   );

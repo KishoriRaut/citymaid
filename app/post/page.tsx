@@ -2,169 +2,147 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+// Shadcn Components
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
+
+// Libs
 import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
-import { useToast } from "@/hooks/use-toast";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
 import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
 import { uploadPhoto } from "@/lib/storage";
 
-export default function PostPage() {
+// Form Schema
+const formSchema = z.object({
+  post_type: z.enum(["employer", "employee"] as const, {
+    required_error: "Please select a post type",
+  }),
+  work: z.string().min(1, "Please select a work type"),
+  workOther: z.string().optional(),
+  time: z.string().min(1, "Please select a time option"),
+  timeOther: z.string().optional(),
+  place: z.string().min(1, "Please enter a location"),
+  salary: z.string().min(1, "Please enter a salary"),
+  contact: z.string().min(1, "Please enter contact information"),
+  photo: z.any().optional(),
+});
+
+export default function NewPostPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  
-  // Check if current user is admin
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  
+
+  // Initialize form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      post_type: "employer",
+      work: "",
+      workOther: "",
+      time: "",
+      timeOther: "",
+      place: "",
+      salary: "",
+      contact: "",
+    },
+  });
+
+  // Watch post_type to show/hide photo upload
+  const postType = form.watch("post_type");
+  const workValue = form.watch("work");
+  const timeValue = form.watch("time");
+
+  // Check admin status - this is optional and won't block the form
   useEffect(() => {
-    // Check admin status from server
     const checkAdminStatus = async () => {
       try {
         const response = await fetch("/api/auth/me");
         if (response.ok) {
           const data = await response.json();
-          setIsAdmin(data.isAdmin);
-        } else {
-          setIsAdmin(false);
+          setIsAdmin(!!data.isAdmin);
         }
+        // Silently handle 401 (not logged in) or other errors
       } catch (error) {
-        console.error("Error checking auth:", error);
-        setIsAdmin(false);
+        console.debug("Not logged in or error checking admin status:", error);
       }
     };
-
-    checkAdminStatus();
+    
+    // Only check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      checkAdminStatus();
+    }
   }, []);
 
-  const [formData, setFormData] = useState({
-    post_type: "employer" as "employer" | "employee",
-    work: "",
-    workOther: "",
-    time: "",
-    timeOther: "",
-    place: "",
-    salary: "",
-    contact: "",
-    photo: null as File | null,
-  });
-
-  // Clear photo when switching to employer
-  const handlePostTypeChange = (newType: "employer" | "employee") => {
-    setFormData({
-      ...formData,
-      post_type: newType,
-      photo: newType === "employer" ? null : formData.photo, // Clear photo for employer
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
-    // Get fresh admin status from server
-    let isAdminStatus = false;
+  // Handle form submission
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await fetch("/api/auth/me");
-      if (response.ok) {
-        const data = await response.json();
-        isAdminStatus = data.isAdmin;
-      }
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-    }
-
-    try {
-      // Upload photo only for employee posts
+      setIsSubmitting(true);
+      
+      // Handle photo upload for employee posts
       let photoUrl: string | null = null;
-      if (formData.post_type === "employee" && formData.photo) {
-        const { url, error: uploadError } = await uploadPhoto(formData.photo);
-        if (uploadError) {
-          setError(uploadError);
-          setIsSubmitting(false);
-          return;
-        }
+      if (values.post_type === "employee" && values.photo?.[0]) {
+        const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
+        if (uploadError) throw new Error(uploadError);
         photoUrl = url;
       }
 
-      // Determine work and time values
-      const work = formData.work === "Other" ? formData.workOther : formData.work;
-      const time = formData.time === "Other" ? formData.timeOther : formData.time;
-
-      // Validate required fields
-      if (!work || !time || !formData.place || !formData.salary || !formData.contact) {
-        setError("Please fill in all required fields");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Create post (server will determine admin status)
+      // Create post data
       const postData = {
-        post_type: formData.post_type,
-        work,
-        time,
-        place: formData.place,
-        salary: formData.salary,
-        contact: formData.contact,
-        photo_url: photoUrl
+        post_type: values.post_type,
+        work: values.work === "Other" ? values.workOther || "" : values.work,
+        time: values.time === "Other" ? values.timeOther || "" : values.time,
+        place: values.place,
+        salary: values.salary,
+        contact: values.contact,
+        photo_url: photoUrl,
       };
 
-      const { post, error: createError } = await createPost(postData);
+      // Submit post
+      const { post, error } = await createPost(postData);
+      if (error) throw new Error(error);
 
-      if (createError || !post) {
-        setError(createError || "Failed to create post");
-        setIsSubmitting(false);
-        return;
-      }
+      // Show success message
+      toast({
+        title: "Success",
+        description: isAdmin 
+          ? "Your post has been created and published!" 
+          : "Post submitted successfully! Redirecting to payment page...",
+      });
 
-      // Show success toast and handle redirect based on user type
-      setIsSubmitting(false);
-      
-      if (isAdminStatus) {
-        // Admin: Instant publishing with success message
-        toast({
-          title: "Success",
-          description: "Your post has been created successfully!",
-          variant: "default",
-        });
-        
-        // Redirect to admin posts management
-        setTimeout(() => {
-          router.push("/admin/posts");
-        }, 1000);
-      } else {
-        // Regular user: Go to payment flow
-        toast({
-          title: "Success",
-          description: "Post submitted successfully! Redirecting to payment page...",
-          variant: "default",
-        });
-        
-        // Redirect to payment page
-        setTimeout(() => {
-          router.push(`/post-payment/${post.id}`);
-        }, 1000);
-      }
-    } catch (err) {
-      console.error("Error submitting form:", err);
-      setError("An unexpected error occurred");
+      // Redirect based on user type
+      setTimeout(() => {
+        router.push(isAdmin ? "/admin/posts" : `/post-payment/${post?.id}`);
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred while creating your post",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
     }
   };
-
-  const pageTitle = formData.post_type === "employer" 
-    ? "Post a Job Requirement" 
-    : "Create Your Work Profile";
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
-          {pageTitle}
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8">
+          {form.watch("post_type") === "employer" ? "Post a Job Requirement" : "Create Your Work Profile"}
         </h1>
+
         {isAdmin && (
           <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <div className="flex items-center gap-3">
@@ -180,208 +158,265 @@ export default function PostPage() {
             </div>
           </div>
         )}
-        
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">{pageTitle}</h1>
-        <p className="text-muted-foreground mb-8 text-sm sm:text-base">
-          {isAdmin 
-            ? "Create posts that will be published instantly on the platform" 
-            : "Fill in the details to create your post"
-          }
-        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Role Toggle */}
-          <div>
-            <label className="block text-sm font-semibold mb-3 text-foreground">I want to</label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => handlePostTypeChange("employer")}
-                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all duration-200 font-medium ${
-                  formData.post_type === "employer"
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
-                    : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
-                }`}
-              >
-                Hire a Worker
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePostTypeChange("employee")}
-                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all duration-200 font-medium ${
-                  formData.post_type === "employee"
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
-                    : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
-                }`}
-              >
-                Find a Job
-              </button>
-            </div>
-            <p className="mt-2.5 text-sm text-muted-foreground">Select your purpose to continue</p>
-          </div>
-
-          {/* Work Dropdown */}
-          <div>
-            <label className="block text-sm font-semibold mb-2.5 text-foreground">
-              Work <span className="text-destructive">*</span>
-            </label>
-            <select
-              value={formData.work}
-              onChange={(e) => setFormData({ ...formData, work: e.target.value })}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
-              required
-            >
-              <option value="">Select work type</option>
-              {getGroupedWorkTypes().map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.types.map((workType) => (
-                    <option key={workType} value={workType}>
-                      {workType}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {isOtherWorkType(formData.work) && (
-              <input
-                type="text"
-                placeholder="Specify work type"
-                value={formData.workOther}
-                onChange={(e) => setFormData({ ...formData, workOther: e.target.value })}
-                className="w-full mt-2.5 px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                required
-              />
-            )}
-          </div>
-
-          {/* Time Dropdown */}
-          <div>
-            <label className="block text-sm font-semibold mb-2.5 text-foreground">
-              Time <span className="text-destructive">*</span>
-            </label>
-            <select
-              value={formData.time}
-              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
-              required
-            >
-              <option value="">Select time</option>
-              {getGroupedTimeOptions().map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.types.map((timeOption) => (
-                    <option key={timeOption} value={timeOption}>
-                      {timeOption}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {isOtherTimeOption(formData.time) && (
-              <input
-                type="text"
-                placeholder="Specify schedule"
-                value={formData.timeOther}
-                onChange={(e) => setFormData({ ...formData, timeOther: e.target.value })}
-                className="w-full mt-2.5 px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-                required
-              />
-            )}
-          </div>
-
-          {/* Place */}
-          <div>
-            <label className="block text-sm font-semibold mb-2.5 text-foreground">
-              Place <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.place}
-              onChange={(e) => setFormData({ ...formData, place: e.target.value })}
-              placeholder="e.g., Kathmandu, Lalitpur"
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-              required
-            />
-          </div>
-
-          {/* Salary */}
-          <div>
-            <label className="block text-sm font-semibold mb-2.5 text-foreground">
-              Salary <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.salary}
-              onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-              placeholder="e.g., 5000, Negotiable"
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-              required
-            />
-          </div>
-
-          {/* Contact */}
-          <div>
-            <label className="block text-sm font-semibold mb-2.5 text-foreground">
-              Contact <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.contact}
-              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-              placeholder="Phone number or contact info"
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
-              required
-            />
-          </div>
-
-          {/* Photo Upload - Only for Employee Posts */}
-          {formData.post_type === "employee" && (
-            <div>
-              <label className="block text-sm font-semibold mb-2.5 text-foreground">Photo (Optional)</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0] || null;
-                  setFormData({ ...formData, photo: file });
-                }}
-                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-              />
-              {formData.photo && (
-                <p className="mt-2.5 text-sm text-muted-foreground">
-                  Selected: {formData.photo.name}
-                </p>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Post Type Toggle */}
+            <FormField
+              control={form.control}
+              name="post_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="block text-sm font-semibold mb-3">I want to</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex gap-3"
+                    >
+                      <div className="flex-1">
+                        <RadioGroupItem
+                          value="employer"
+                          id="employer"
+                          className="peer sr-only"
+                        />
+                        <label
+                          htmlFor="employer"
+                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-3 text-center font-medium transition-all duration-200 cursor-pointer ${
+                            field.value === "employer"
+                              ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
+                              : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
+                          }`}
+                        >
+                          Hire a Worker
+                        </label>
+                      </div>
+                      <div className="flex-1">
+                        <RadioGroupItem
+                          value="employee"
+                          id="employee"
+                          className="peer sr-only"
+                        />
+                        <label
+                          htmlFor="employee"
+                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-3 text-center font-medium transition-all duration-200 cursor-pointer ${
+                            field.value === "employee"
+                              ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
+                              : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
+                          }`}
+                        >
+                          Find a Job
+                        </label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormDescription className="mt-2.5 text-sm">
+                    Select your purpose to continue
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-          )}
+            />
 
-          {/* Error Message */}
-          {error && (
-            <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 text-destructive">
-              <p className="font-semibold mb-1.5">Error</p>
-              <p className="text-sm leading-relaxed">{error}</p>
-            </div>
-          )}
+            {/* Work Type Dropdown */}
+            <FormField
+              control={form.control}
+              name="work"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Work <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select work type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {getGroupedWorkTypes().map((group) => (
+                        <div key={group.label}>
+                          <div className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+                            {group.label}
+                          </div>
+                          {group.types.map((workType) => (
+                            <SelectItem key={workType} value={workType}>
+                              {workType}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Submit Button */}
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push(appConfig.routes.home)}
-              className="flex-1 border-border hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
-              {isSubmitting 
-                ? "Submitting..." 
-                : isAdmin 
-                  ? "Publish Post Instantly" 
-                  : "Submit Post"
-              }
-            </Button>
-          </div>
-        </form>
+            {/* Other Work Type Input */}
+            {isOtherWorkType(workValue) && (
+              <FormField
+                control={form.control}
+                name="workOther"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Specify Work Type <span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter work type" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Time Options */}
+            <FormField
+              control={form.control}
+              name="time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Time <span className="text-destructive">*</span></FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {getGroupedTimeOptions().map((group) => (
+                        <div key={group.label}>
+                          <div className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+                            {group.label}
+                          </div>
+                          {group.types.map((timeOption) => (
+                            <SelectItem key={timeOption} value={timeOption}>
+                              {timeOption}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Other Time Input */}
+            {isOtherTimeOption(timeValue) && (
+              <FormField
+                control={form.control}
+                name="timeOther"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Specify Schedule <span className="text-destructive">*</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter schedule details" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Place Input */}
+            <FormField
+              control={form.control}
+              name="place"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Place <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Kathmandu, Lalitpur" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Salary Input */}
+            <FormField
+              control={form.control}
+              name="salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Salary <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 5000, Negotiable" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Contact Input */}
+            <FormField
+              control={form.control}
+              name="contact"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Phone number or contact info" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Photo Upload - Only for Employee Posts */}
+            {postType === "employee" && (
+              <FormField
+                control={form.control}
+                name="photo"
+                render={({ field: { value, onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel>Photo (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          onChange(file);
+                        }}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Upload a photo of your work (only for employee profiles)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Form Actions */}
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Post'
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );
