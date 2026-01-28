@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
-import { useToast } from "@/components/shared/toast";
+import { useToast } from "@/hooks/use-toast";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
 import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
 import { uploadPhoto } from "@/lib/storage";
@@ -14,7 +14,7 @@ export default function PostPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { addToast } = useToast();
+  const { toast } = useToast();
   
   // Check if current user is admin
   const [isAdmin, setIsAdmin] = useState(false);
@@ -125,11 +125,11 @@ export default function PostPage() {
       
       if (isAdminStatus) {
         // Admin: Instant publishing with success message
-        addToast(
-          "Post published successfully! Your post is now live on the platform.",
-          "success",
-          3000
-        );
+        toast({
+          title: "Success",
+          description: "Your post has been created successfully!",
+          variant: "default",
+        });
         
         // Redirect to admin posts management
         setTimeout(() => {
@@ -137,11 +137,11 @@ export default function PostPage() {
         }, 1000);
       } else {
         // Regular user: Go to payment flow
-        addToast(
-          "Post submitted successfully! Redirecting to payment page...",
-          "success",
-          2000
-        );
+        toast({
+          title: "Success",
+          description: "Post submitted successfully! Redirecting to payment page...",
+          variant: "default",
+        });
         
         // Redirect to payment page
         setTimeout(() => {
