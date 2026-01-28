@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { setSession, type User } from "@/lib/session";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isValidEmail } from "@/lib/validation";
 import { useAuth } from "@/lib/hooks";
-import { Skeleton } from "@/components/shared/skeleton";
-import { Spinner } from "@/components/shared/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 import { appConfig } from "@/lib/config";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { User as UserIcon, Mail, Shield, Calendar } from "lucide-react";
 
 interface ProfileUser extends User {
   updated_at?: string;
@@ -162,11 +167,11 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader user={user} />
-      
-      <main className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        <div className="max-w-3xl mx-auto">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <p className="text-muted-foreground">Manage your admin profile and account settings</p>
+      </div>
           {/* Header */}
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center gap-4 mb-4">
@@ -253,7 +258,7 @@ export default function ProfilePage() {
                   >
                     {isSaving ? (
                       <span className="flex items-center gap-2">
-                        <Spinner size="sm" />
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                         Saving...
                       </span>
                     ) : (
@@ -341,8 +346,7 @@ export default function ProfilePage() {
             Change Password
           </Button>
         </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
