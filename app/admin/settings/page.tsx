@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User as UserIcon, Settings, Bell, Shield, Database } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Settings, Bell, Shield, Database, Mail } from "lucide-react";
 import { type User } from "@/lib/session";
 
 export default function AdminSettingsPage() {
@@ -66,7 +67,7 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
+              <Settings className="h-5 w-5" />
               <CardTitle>Profile Settings</CardTitle>
             </div>
             <CardDescription>
