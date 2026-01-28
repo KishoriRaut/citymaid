@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/shared/button";
-import { Skeleton } from "@/components/shared/skeleton";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getAllPosts, updatePostStatus, deletePost, updatePost } from "@/lib/posts";
 import type { Post } from "@/lib/types";
 import { useRouter } from "next/navigation";
