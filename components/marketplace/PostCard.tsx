@@ -5,9 +5,10 @@ import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Clock, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, Clock, MapPin, DollarSign, Shield, Star } from "lucide-react";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -25,114 +26,112 @@ export function PostCard({ post }: PostCardProps) {
   const isFresh = isFreshPost(post.created_at);
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
-      <CardContent className="p-6">
-        {/* Image Section */}
-        <div className="relative aspect-video mb-4 bg-muted rounded-lg overflow-hidden">
+    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-0 shadow-md hover:shadow-xl hover:-translate-y-1">
+      {/* Header with Image */}
+      <div className="relative">
+        <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
           {post.photo_url && !imageError ? (
             <img
               src={post.photo_url}
               alt={post.work}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={() => setImageError(true)}
               loading="lazy"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
               {isHiring ? (
-                <User className="w-12 h-12 text-muted-foreground" />
+                <div className="text-center">
+                  <User className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground/50">No Photo</p>
+                </div>
               ) : (
-                <MapPin className="w-12 h-12 text-muted-foreground" />
+                <div className="text-center">
+                  <MapPin className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground/50">No Photo</p>
+                </div>
               )}
             </div>
           )}
         </div>
-
-        {/* Content */}
-        <div className="space-y-4">
-          {/* Work Type (Bold) */}
-          <h3 className="font-semibold text-lg text-foreground line-clamp-2 leading-snug">{post.work}</h3>
-
-          {/* Role Badge */}
-          <div className="flex items-center gap-2">
-            <Badge 
-              variant={isHiring ? "default" : "secondary"}
-              className="text-xs"
-            >
-              {isHiring ? "Hiring" : "Looking for Work"}
+        
+        {/* Status Badge Overlay */}
+        <div className="absolute top-3 left-3">
+          <Badge 
+            variant={isHiring ? "default" : "secondary"}
+            className="text-xs font-semibold px-2 py-1"
+          >
+            {isHiring ? "🏢 Hiring" : "👤 Job Seeker"}
+          </Badge>
+        </div>
+        
+        {/* Fresh Badge */}
+        {isFresh && (
+          <div className="absolute top-3 right-3">
+            <Badge variant="secondary" className="bg-green-500 text-white text-xs font-semibold px-2 py-1">
+              🔥 New
             </Badge>
-            
-            {/* Posting Time with Fresh Indicator */}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <CardContent className="p-5">
+        {/* Title */}
+        <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          {post.work}
+        </h3>
+
+        {/* Meta Information */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1">
+            <Clock className="w-4 h-4" />
+            <span>{timeInfo.relative}</span>
+          </div>
+          {post.salary && (
+            <div className="flex items-center gap-1 font-medium text-foreground">
+              <DollarSign className="w-4 h-4" />
+              <span>{formatSalary(post.salary)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Location */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <MapPin className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">{post.place || "Location not specified"}</span>
+        </div>
+
+        {/* Work Schedule */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <Clock className="w-4 h-4 flex-shrink-0" />
+          <span>{post.time}</span>
+        </div>
+
+        {/* Unlock Contact Button */}
+        {!contactVisible && (
+          <div className="mb-4">
+            <UnlockContactButton 
+              postId={post.id}
+              canViewContact={contactVisible}
+              className="w-full"
+            />
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="border-t my-4"></div>
+
+        {/* Trust Indicators */}
+        <div className="border-t mt-4 pt-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-muted-foreground/70" />
-              <span 
-                className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md ${
-                  isFresh 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                    : 'bg-muted/60 text-muted-foreground'
-                }`}
-                title={timeInfo.title}
-              >
-                🕐 {timeInfo.relative}
-              </span>
-              {isFresh && (
-                <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">
-                  🔥 New
-                </Badge>
-              )}
+              <Shield className="w-3 h-3" />
+              <span>Verified Posting</span>
             </div>
-          </div>
-
-          {/* Details */}
-          <div className="space-y-2 flex-1">
-            {/* Work Schedule (Time) */}
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
-              <span className="text-muted-foreground">
-                {post.time}
-              </span>
-            </div>
-            
-            {/* Location */}
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
-              <span className="text-muted-foreground">
-                {post.place || "Location not specified"}
-              </span>
-            </div>
-            
-            {/* Salary (if applicable) */}
-            {post.salary && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">💰</span>
-                <span className="font-medium text-foreground">{formatSalary(post.salary)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Contact Section */}
-          <div className="pt-4 border-t">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Contact Information</p>
-                {contactVisible ? (
-                  <p className="text-sm text-green-600 font-medium">
-                    {post.contact}
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Contact hidden until payment
-                  </p>
-                )}
-              </div>
-              
-              {!contactVisible && (
-                <UnlockContactButton 
-                  postId={post.id}
-                  canViewContact={contactVisible}
-                  className="shrink-0"
-                />
-              )}
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              <span>Trusted Platform</span>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
 import { getOrCreateVisitorId } from "@/lib/visitor-id";
 
