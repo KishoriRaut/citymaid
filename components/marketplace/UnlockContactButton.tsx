@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { createUnlockRequest } from "@/lib/unlock-requests";
+import { createUnlockRequest } from "@/lib/admin-payments";
 
 interface UnlockContactButtonProps {
   postId: string;
