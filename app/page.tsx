@@ -9,6 +9,11 @@ import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
 import { LoadMore } from "@/components/marketplace/LoadMore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 function HomePageContent() {
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
@@ -105,23 +110,23 @@ function HomePageContent() {
   // Show loading skeleton
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="h-10 bg-gray-200 rounded w-full"></div>
+            <Skeleton className="h-8 w-1/4 mb-4" />
+            <Skeleton className="h-10 w-full" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+              <Card key={i} className="p-6">
+                <Skeleton className="h-4 w-3/4 mb-2" />
+                <Skeleton className="h-3 w-1/2 mb-4" />
                 <div className="space-y-2">
-                  <div className="h-3 bg-gray-200 rounded"></div>
-                  <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-                  <div className="h-3 bg-gray-200 rounded w-4/6"></div>
+                  <Skeleton className="h-3" />
+                  <Skeleton className="h-3 w-5/6" />
+                  <Skeleton className="h-3 w-4/6" />
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -132,18 +137,21 @@ function HomePageContent() {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Unable to Load Posts</h2>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <button
-              onClick={loadPosts}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors mr-4"
-            >
-              Try Again
-            </button>
+          <div className="flex justify-center py-12">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <Alert variant="destructive" className="max-w-md">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Unable to Load Posts</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+            <div className="flex justify-center mt-6">
+              <Button onClick={loadPosts} className="mr-4">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Try Again
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -153,7 +161,7 @@ function HomePageContent() {
   // Show empty state
   if (filteredPosts.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
           <FilterBar 
@@ -178,10 +186,14 @@ function HomePageContent() {
 
   // Show posts
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Job Listings</h1>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-3xl">Job Listings</CardTitle>
+          </CardHeader>
+        </Card>
         
         <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
         <FilterBar 
