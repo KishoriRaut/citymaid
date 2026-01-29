@@ -4,9 +4,9 @@ import { uploadPhoto } from '@/lib/storage';
 export async function GET() {
   try {
     const results = {
-      uploadTest: null,
+      uploadTest: null as { url: string | null; error: string | null; accessible?: boolean; status?: number; fetchError?: string } | null,
       storageInfo: null,
-      errors: []
+      errors: [] as string[]
     };
 
     // 1. Test with a simple test image (1x1 pixel PNG)
