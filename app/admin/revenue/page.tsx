@@ -140,7 +140,7 @@ export default function RevenueDashboardPage() {
       const { requests: homepagePayments } = await getAllHomepagePayments();
       
       const contactTransactions = contactPayments || [];
-      const homepageTransactions = homepagePayments?.filter(p => p.homepage_payment_status !== 'none') || [];
+      const homepageTransactions = homepagePayments?.filter(p => p.payment_status) || [];
       
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
@@ -159,10 +159,10 @@ export default function RevenueDashboardPage() {
       const thisMonthRevenue = thisMonthContactTransactions.reduce((sum, t) => sum + t.amount, 0) + (thisMonthHomepageTransactions.length * 500);
       
       const pendingCount = contactTransactions.filter(t => t.status === 'pending').length + 
-                          homepageTransactions.filter(t => t.homepage_payment_status === 'pending').length;
+                          homepageTransactions.filter(t => t.payment_status === 'pending').length;
       
       const approvedCount = contactTransactions.filter(t => t.status === 'approved').length + 
-                           homepageTransactions.filter(t => t.homepage_payment_status === 'approved').length;
+                           homepageTransactions.filter(t => t.payment_status === 'approved').length;
       
       setMetrics({
         totalRevenue,
