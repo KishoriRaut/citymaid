@@ -167,27 +167,24 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        <p className="text-muted-foreground">Manage your admin profile and account settings</p>
-      </div>
-          {/* Header */}
-          <div className="mb-6 sm:mb-8">
-            <div className="flex items-center gap-4 mb-4">
-              <Link href={appConfig.routes.admin}>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="min-h-[44px] sm:min-h-0 transition-all duration-200"
-                >
-                  <span className="hidden sm:inline">← </span>Back to Dashboard
-                </Button>
-              </Link>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">Profile</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage your account information</p>
+    <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Link href={appConfig.routes.admin}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="min-h-[44px] sm:min-h-0 transition-all duration-200"
+              >
+                <span className="hidden sm:inline">← </span>Back to Dashboard
+              </Button>
+            </Link>
           </div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">Profile</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your account information</p>
+        </div>
 
         {/* Profile Card */}
         <div className="rounded-lg border bg-card p-4 sm:p-6 lg:p-8 shadow-sm space-y-5 sm:space-y-6">
