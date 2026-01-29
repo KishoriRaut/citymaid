@@ -1,31 +1,32 @@
 import { NextResponse } from 'next/server';
-import { createPaymentRequestAPI } from '@/lib/unified-payments-client';
-import { getOrCreateVisitorId } from '@/lib/visitor-id';
+import { createPost } from '@/lib/posts';
 
 export async function GET() {
   try {
-    // Test creating a post promotion payment request
-    const visitorId = getOrCreateVisitorId();
-    const testPostId = 'a4ac3da9-4064-4f47-8e32-3f81e3cd9a17'; // Use existing post ID
+    // Test creating a sample post
+    const testPost = {
+      post_type: "employee" as const,
+      work: "Software Developer",
+      time: "Full-time",
+      place: "Kathmandu",
+      salary: "Rs. 50,000 - 80,000",
+      contact: "test@example.com",
+      photo_url: null
+    };
     
-    const { success, requestId, error } = await createPaymentRequestAPI(
-      'post_promotion',
-      testPostId,
-      null, // No user ID for visitor-based flow
-      visitorId
-    );
+    const { post, error } = await createPost(testPost);
 
     return NextResponse.json({ 
-      success,
-      requestId,
+      success: !!post,
+      post,
       error,
-      visitorId,
-      testPostId,
-      paymentUrl: success ? `/payment/post_promotion-${requestId}` : null
+      testData: testPost,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     });
   }
 }
