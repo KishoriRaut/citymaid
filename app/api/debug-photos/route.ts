@@ -23,7 +23,7 @@ export async function GET() {
     const postPhotosBucket = buckets?.find(b => b.name === 'post-photos');
 
     // List recent files in storage
-    let storageFiles = [];
+    let storageFiles: Array<{ name: string; id: string; created_at: string }> = [];
     if (postPhotosBucket) {
       const { data: files } = await supabaseClient.storage
         .from('post-photos')
@@ -41,9 +41,9 @@ export async function GET() {
       },
       analysis: {
         totalPosts: posts?.length || 0,
-        postsWithPhotos: posts?.filter(p => p.photo_url).length || 0,
-        employeePostsWithPhotos: posts?.filter(p => p.post_type === 'employee' && p.photo_url).length || 0,
-        employerPostsWithPhotos: posts?.filter(p => p.post_type === 'employer' && p.photo_url).length || 0,
+        postsWithPhotos: posts?.filter((p: any) => p.photo_url).length || 0,
+        employeePostsWithPhotos: posts?.filter((p: any) => p.post_type === 'employee' && p.photo_url).length || 0,
+        employerPostsWithPhotos: posts?.filter((p: any) => p.post_type === 'employer' && p.photo_url).length || 0,
       }
     });
 
