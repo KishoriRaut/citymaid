@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const results = {
       uploadTest: null as { url: string | null; error: string | null; accessible?: boolean; status?: number; fetchError?: string } | null,
-      storageInfo: null as { bucketExists: boolean; bucketPublic: boolean; bucketDetails: any } | null,
+      storageInfo: null as { bucketExists: boolean; bucketPublic: boolean; bucketDetails: { id: string; name: string; public: boolean } | undefined } | null,
       recentFiles: null as Array<{ name: string; size: number; created_at: string }> | null,
       errors: [] as string[]
     };
@@ -58,7 +58,7 @@ export async function GET() {
       
       results.recentFiles = files?.map(f => ({
         name: f.name,
-        size: (f as any).size || 0,
+        size: (f as { size?: number }).size || 0,
         created_at: f.created_at
       })) || [];
 
