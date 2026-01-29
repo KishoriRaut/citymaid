@@ -330,6 +330,21 @@ export default function NewPostPage() {
               )}
             />
 
+            {/* Salary Input */}
+            <FormField
+              control={form.control}
+              name="salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Salary <span className="text-destructive">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., NPR 15,000 per month, Negotiable" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Contact Input */}
             <FormField
               control={form.control}
@@ -383,16 +398,7 @@ export default function NewPostPage() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                onClick={() => {
-                  console.log('🔍 Submit button clicked');
-                  console.log('🔍 Form values:', form.getValues());
-                  console.log('🔍 Form errors:', form.formState.errors);
-                  console.log('🔍 Form valid:', form.formState.isValid);
-                }}
-              >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
