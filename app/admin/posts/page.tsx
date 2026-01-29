@@ -25,7 +25,10 @@ export default function AdminPostsPage() {
     try {
       const { payments: fetchedPayments, error: fetchError } = await getAllAdminPayments();
       if (!fetchError) {
+        console.log('🔍 Loaded payments:', fetchedPayments);
         setPayments(fetchedPayments);
+      } else {
+        console.error('🔍 Error loading payments:', fetchError);
       }
     } catch (err) {
       console.error("Error loading payments:", err);
@@ -34,7 +37,9 @@ export default function AdminPostsPage() {
 
   // Get payment for a specific post
   const getPaymentForPost = useCallback((postId: string): AdminPayment | null => {
-    return payments.find(payment => payment.post_id === postId) || null;
+    const payment = payments.find(payment => payment.post_id === postId) || null;
+    console.log(`🔍 Looking for payment for post ${postId}:`, payment);
+    return payment;
   }, [payments]);
 
   const loadPosts = useCallback(async () => {
@@ -438,9 +443,14 @@ function PostCard({
                 
                 {/* Payment Information */}
                 {(() => {
+                  console.log(`🔍 Checking payment for post: ${post.id}`);
                   const payment = getPaymentForPost(post.id);
-                  if (!payment) return null;
+                  if (!payment) {
+                    console.log(`🔍 No payment found for post: ${post.id}`);
+                    return null;
+                  }
                   
+                  console.log(`🔍 Payment found for post: ${post.id}`, payment);
                   return (
                     <div className="border-t pt-2 mt-2">
                       <p className="font-medium text-green-600 mb-1">💰 Payment Received</p>
