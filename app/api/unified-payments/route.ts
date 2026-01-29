@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUnifiedPaymentRequests } from '@/lib/unified-payment-requests';
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,26 +12,66 @@ export async function GET(request: NextRequest) {
     
     console.log('🔧 UNIFIED API - Query params:', { postId, type, visitorId });
 
-    // Get payment requests with filters
-    const result = await getUnifiedPaymentRequests({
-      post_id: postId || undefined,
-      type: type as 'post_promotion' | 'contact_unlock' | undefined,
-      visitor_id: visitorId || undefined
-    });
+    const requests: any[] = [];
 
-    if (!result.success) {
-      console.error('❌ UNIFIED API - Error fetching requests:', result.error);
-      return NextResponse.json(
-        { error: result.error, success: false },
-        { status: 500 }
-      );
+    // Get contact unlock requests
+    if (!type || type === 'contact_unlock') {
+      let query = supabase
+        .from('contact_unlock_requests')
+        .select(`
+          *,
+          posts(title, work, place, salary, post_type)
+        `);
+
+      if (postId) {
+        query = query.eq('post_id', postId);
+      }
+      if (visitorId) {
+        query = query.eq('visitor_id', visitorId);
+      }
+
+      const { data: unlockRequests, error: unlockError } = await query;
+
+      if (!unlockError && unlockRequests) {
+        const formattedRequests = unlockRequests.map(req => ({
+          ...req,
+          type: 'contact_unlock'
+        }));
+        requests.push(...formattedRequests);
+      }
     }
 
-    console.log('✅ UNIFIED API - Successfully fetched requests:', result.requests?.length);
+    // Get post promotion requests
+    if (!type || type === 'post_promotion') {
+      let query = supabase
+        .from('posts')
+        .select(`
+          *,
+          users(email)
+        `)
+        .eq('is_promoted', true);
+
+      if (postId) {
+        query = query.eq('id', postId);
+      }
+
+      const { data: promotedPosts, error: promoError } = await query;
+
+      if (!promoError && promotedPosts) {
+        const formattedRequests = promotedPosts.map(post => ({
+          ...post,
+          type: 'post_promotion',
+          status: 'approved'
+        }));
+        requests.push(...formattedRequests);
+      }
+    }
+
+    console.log('✅ UNIFIED API - Successfully fetched requests:', requests.length);
     return NextResponse.json({
       success: true,
-      requests: result.requests,
-      total: result.requests?.length || 0
+      requests,
+      total: requests.length
     });
 
   } catch (error) {
