@@ -447,11 +447,12 @@ function PostCard({
                       <div className="text-xs space-y-1">
                         <p><span className="font-medium">Amount:</span> NPR {payment.amount}</p>
                         <p><span className="font-medium">Method:</span> {payment.method}</p>
-                        <p><span className="font-medium">Status:</span> 
+                        <div className="flex items-center">
+                          <span className="font-medium">Status:</span> 
                           <Badge variant={payment.status === "approved" ? "default" : "secondary"} className="ml-1">
                             {payment.status}
                           </Badge>
-                        </p>
+                        </div>
                         {payment.reference_id && (
                           <p><span className="font-medium">Reference:</span> {payment.reference_id}</p>
                         )}
