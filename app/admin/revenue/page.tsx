@@ -103,7 +103,7 @@ export default function RevenueDashboardPage() {
       
       // Add homepage feature payments
       homepagePayments?.forEach(payment => {
-        if (payment.payment_status && payment.payment_status !== 'none') {
+        if (payment.payment_status) {
           unifiedTransactions.push({
             id: `hp_${payment.id}`,
             type: "homepage_feature",
