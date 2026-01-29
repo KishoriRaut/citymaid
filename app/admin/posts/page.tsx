@@ -3,17 +3,39 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { getAllPosts, updatePostStatus, deletePost, updatePost } from "@/lib/posts";
+import { getAllAdminPayments, type AdminPayment } from "@/lib/admin-payments";
 import type { Post } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
+import { Eye, Download } from "lucide-react";
 
 export default function AdminPostsPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "hidden">("all");
+
+  // Load payments data
+  const loadPayments = useCallback(async () => {
+    try {
+      const { payments: fetchedPayments, error: fetchError } = await getAllAdminPayments();
+      if (!fetchError) {
+        setPayments(fetchedPayments);
+      }
+    } catch (err) {
+      console.error("Error loading payments:", err);
+    }
+  }, []);
+
+  // Get payment for a specific post
+  const getPaymentForPost = useCallback((postId: string): AdminPayment | null => {
+    return payments.find(payment => payment.post_id === postId) || null;
+  }, [payments]);
 
   const loadPosts = useCallback(async () => {
     setIsLoading(true);
@@ -41,7 +63,8 @@ export default function AdminPostsPage() {
 
   useEffect(() => {
     loadPosts();
-  }, [filter, loadPosts]);
+    loadPayments();
+  }, [filter, loadPosts, loadPayments]);
 
   const handleStatusChange = async (postId: string, newStatus: "approved" | "hidden") => {
     try {
@@ -157,6 +180,7 @@ export default function AdminPostsPage() {
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
+                getPaymentForPost={getPaymentForPost}
               />
             ))}
           </div>
@@ -171,20 +195,13 @@ function PostCard({
   onStatusChange,
   onDelete,
   onEdit,
+  getPaymentForPost,
 }: {
   post: Post;
-  onStatusChange: (postId: string, status: "approved" | "hidden") => void;
-  onDelete: (postId: string) => void;
-  onEdit: (postId: string, updates: {
-    post_type?: "employer" | "employee";
-    work?: string;
-    time?: string;
-    place?: string;
-    salary?: string;
-    contact?: string;
-    photo_url?: string | null;
-    status?: "pending" | "approved" | "hidden";
-  }) => void;
+  onStatusChange: (id: string, status: "approved" | "hidden") => void;
+  onDelete: (id: string) => void;
+  onEdit: (post: Post) => void;
+  getPaymentForPost: (postId: string) => AdminPayment | null;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -418,6 +435,93 @@ function PostCard({
                 <p>
                   <span className="font-medium">Contact:</span> {post.contact}
                 </p>
+                
+                {/* Payment Information */}
+                {(() => {
+                  const payment = getPaymentForPost(post.id);
+                  if (!payment) return null;
+                  
+                  return (
+                    <div className="border-t pt-2 mt-2">
+                      <p className="font-medium text-green-600 mb-1">💰 Payment Received</p>
+                      <div className="text-xs space-y-1">
+                        <p><span className="font-medium">Amount:</span> NPR {payment.amount}</p>
+                        <p><span className="font-medium">Method:</span> {payment.method}</p>
+                        <p><span className="font-medium">Status:</span> 
+                          <Badge variant={payment.status === "approved" ? "default" : "secondary"} className="ml-1">
+                            {payment.status}
+                          </Badge>
+                        </p>
+                        {payment.reference_id && (
+                          <p><span className="font-medium">Reference:</span> {payment.reference_id}</p>
+                        )}
+                        {payment.customer_name && (
+                          <p><span className="font-medium">Customer:</span> {payment.customer_name}</p>
+                        )}
+                        {payment.receipt_url && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  View Receipt
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Payment Receipt</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <p className="font-medium">Amount:</p>
+                                      <p>NPR {payment.amount}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium">Method:</p>
+                                      <p>{payment.method}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium">Status:</p>
+                                      <Badge variant={payment.status === "approved" ? "default" : "secondary"}>
+                                        {payment.status}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <p className="font-medium">Date:</p>
+                                      <p>{new Date(payment.created_at).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div>
+                                    <p className="font-medium mb-2">Receipt Image:</p>
+                                    <div className="border rounded-lg overflow-hidden">
+                                      <img 
+                                        src={payment.receipt_url} 
+                                        alt="Payment receipt" 
+                                        className="w-full h-auto max-h-96 object-contain"
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex gap-2">
+                                    <Button asChild>
+                                      <a href={payment.receipt_url} download="receipt.jpg" target="_blank" rel="noopener noreferrer">
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Download Receipt
+                                      </a>
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
                 <p>
                   <span className="font-medium">Created:</span>{" "}
                   {new Date(post.created_at).toLocaleString()}
