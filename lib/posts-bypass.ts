@@ -17,7 +17,6 @@ export async function createDirectDataBypass() {
       contact: "hiring@techcompany.com",
       photo_url: null,
       status: "approved",
-      homepage_payment_status: "none",
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -31,7 +30,6 @@ export async function createDirectDataBypass() {
       contact: "designer@creative.com",
       photo_url: null,
       status: "approved",
-      homepage_payment_status: "none",
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -45,7 +43,6 @@ export async function createDirectDataBypass() {
       contact: "marketing@agency.com",
       photo_url: null,
       status: "approved",
-      homepage_payment_status: "none",
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -59,7 +56,6 @@ export async function createDirectDataBypass() {
       contact: "writer@content.com",
       photo_url: null,
       status: "approved",
-      homepage_payment_status: "none",
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -73,7 +69,6 @@ export async function createDirectDataBypass() {
       contact: "design@studio.com",
       photo_url: null,
       status: "approved",
-      homepage_payment_status: "none",
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -87,7 +82,6 @@ export async function createDirectDataBypass() {
       contact: "mobile@dev.com",
       photo_url: null,
       status: "approved",
-      homepage_payment_status: "none",
       created_at: new Date().toISOString(),
       can_view_contact: true
     }
