@@ -25,11 +25,26 @@ export async function getPendingHomepagePayments(): Promise<{
   error?: string 
 }> {
   try {
-    const { data: requests, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("homepage_payment_status", "pending")
-      .eq("status", "approved") // Only approved posts can request homepage feature
+    const { data: payments, error } = await supabase
+      .from("payments")
+      .select(`
+        *,
+        posts (
+          id,
+          post_type,
+          work,
+          time,
+          place,
+          salary,
+          contact,
+          photo_url,
+          status,
+          created_at
+        )
+      `)
+      .eq("payment_type", "post_promotion")
+      .eq("status", "pending")
+      .eq("posts.status", "approved") // Only approved posts can request homepage feature
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -37,7 +52,15 @@ export async function getPendingHomepagePayments(): Promise<{
       return { error: "Failed to get pending homepage payments" };
     }
 
-    return { requests: requests || [] };
+    // Transform the data to match the expected interface
+    const requests = payments?.map(payment => ({
+      ...payment.posts,
+      homepage_payment_status: 'pending',
+      payment_proof: payment.receipt_url,
+      updated_at: payment.created_at
+    })) || [];
+
+    return { requests };
   } catch (error) {
     console.error("Error in getPendingHomepagePayments:", error);
     return { error: "Failed to get pending homepage payments" };
@@ -53,22 +76,45 @@ export async function getAllHomepagePayments(
 }> {
   try {
     let query = supabase
-      .from("posts")
-      .select("*")
+      .from("payments")
+      .select(`
+        *,
+        posts (
+          id,
+          post_type,
+          work,
+          time,
+          place,
+          salary,
+          contact,
+          photo_url,
+          status,
+          created_at
+        )
+      `)
+      .eq("payment_type", "post_promotion")
       .order("created_at", { ascending: false });
 
-    if (status) {
-      query = query.eq("homepage_payment_status", status);
+    if (status && status !== 'none') {
+      query = query.eq("status", status);
     }
 
-    const { data: requests, error } = await query;
+    const { data: payments, error } = await query;
 
     if (error) {
       console.error("Error getting homepage payments:", error);
       return { error: "Failed to get homepage payments" };
     }
 
-    return { requests: requests || [] };
+    // Transform the data to match the expected interface
+    const requests = payments?.map(payment => ({
+      ...payment.posts,
+      homepage_payment_status: payment.status,
+      payment_proof: payment.receipt_url,
+      updated_at: payment.created_at
+    })) || [];
+
+    return { requests };
   } catch (error) {
     console.error("Error in getAllHomepagePayments:", error);
     return { error: "Failed to get homepage payments" };
@@ -80,15 +126,27 @@ export async function approveHomepagePayment(
   postId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Update post homepage payment status
+    // Update payment status to approved
     const { error } = await supabase
-      .from("posts")
-      .update({ homepage_payment_status: 'approved' })
-      .eq("id", postId);
+      .from("payments")
+      .update({ status: 'approved', approved_at: new Date().toISOString() })
+      .eq("post_id", postId)
+      .eq("payment_type", "post_promotion");
 
     if (error) {
       console.error("Error approving homepage payment:", error);
       return { success: false, error: "Failed to approve homepage payment" };
+    }
+
+    // Update post status to approved
+    const { error: postError } = await supabase
+      .from("posts")
+      .update({ status: 'approved' })
+      .eq("id", postId);
+
+    if (postError) {
+      console.error("Error updating post status:", postError);
+      return { success: false, error: "Failed to update post status" };
     }
 
     return { success: true };
@@ -103,11 +161,12 @@ export async function rejectHomepagePayment(
   postId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Update post homepage payment status
+    // Update payment status to rejected
     const { error } = await supabase
-      .from("posts")
-      .update({ homepage_payment_status: 'rejected' })
-      .eq("id", postId);
+      .from("payments")
+      .update({ status: 'rejected' })
+      .eq("post_id", postId)
+      .eq("payment_type", "post_promotion");
 
     if (error) {
       console.error("Error rejecting homepage payment:", error);
@@ -129,20 +188,25 @@ export async function updateHomepagePaymentProof(
   try {
     console.log("Updating homepage payment proof:", { postId, paymentProofUrl });
     
-    // Update post with payment proof and set status to pending
+    // Create payment record in unified payments table
     const { data, error } = await supabase
-      .from("posts")
-      .update({ 
-        homepage_payment_status: 'pending',
-        payment_proof: paymentProofUrl
+      .from("payments")
+      .insert({
+        payment_type: 'post_promotion',
+        post_id: postId,
+        user_id: null, // Anonymous for post promotion
+        visitor_id: null, // Can add visitor tracking if needed
+        amount: 299,
+        method: 'qr',
+        receipt_url: paymentProofUrl,
+        status: 'pending'
       })
-      .eq("id", postId)
       .select();
 
-    console.log("Update result:", { data, error });
+    console.log("Payment creation result:", { data, error });
 
     if (error) {
-      console.error("Error updating homepage payment proof:", error);
+      console.error("Error creating payment record:", error);
       return { success: false, error: `Database error: ${error.message || error.code || JSON.stringify(error)}` };
     }
 
