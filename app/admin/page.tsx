@@ -18,8 +18,7 @@ import {
   Plus, 
   BarChart3,
   TrendingUp,
-  Users,
-  CreditCard
+  Users
 } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -216,20 +215,6 @@ export default function AdminDashboardPage() {
               </Button>
             </CardContent>
           </Card>
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-yellow-600" />
-                <CardTitle className="text-base">Payment Management</CardTitle>
-              </div>
-              <CardDescription className="text-sm">View and process payments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" size="sm" className="w-full" onClick={() => window.location.href = appConfig.routes.adminPayments}>
-                Manage Payments
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
@@ -261,7 +246,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-yellow-600" />
+                  <DollarSign className="h-4 w-4 text-yellow-600" />
                   <span className="text-sm font-medium">Revenue Today</span>
                 </div>
                 <Badge variant="outline">NRs 1,250</Badge>

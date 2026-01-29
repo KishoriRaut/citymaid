@@ -81,7 +81,6 @@ export async function createPost(post: {
     
     // Determine status based on server-side admin check
     const postStatus: "pending" | "approved" = isAdmin ? "approved" : "pending";
-    const homepagePaymentStatus: "none" | "pending" | "approved" | "rejected" = isAdmin ? "approved" : "none";
 
     // ========================================================================
     // VALIDATION 1: Check for duplicate posts (applies to all users)
@@ -169,7 +168,6 @@ export async function createPost(post: {
       ...post,
       photo_url: post.post_type === "employer" ? null : post.photo_url || null,
       status: postStatus, // 'approved' for admins, 'pending' for regular users
-      homepage_payment_status: homepagePaymentStatus, // 'approved' for admins, 'none' for regular users
     };
 
     const { data, error } = await supabase

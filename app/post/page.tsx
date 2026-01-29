@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +37,6 @@ export default function NewPostPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -51,6 +50,7 @@ export default function NewPostPage() {
       place: "",
       salary: "",
       contact: "",
+      photo: undefined,
     },
   });
 
@@ -59,38 +59,32 @@ export default function NewPostPage() {
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
 
-  // Check admin status - this is optional and won't block the form
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          const data = await response.json();
-          setIsAdmin(!!data.isAdmin);
-        }
-        // Silently handle 401 (not logged in) or other errors
-      } catch (error) {
-        console.debug("Not logged in or error checking admin status:", error);
-      }
-    };
-    
-    // Only check if we're in a browser environment
-    if (typeof window !== 'undefined') {
-      checkAdminStatus();
-    }
-  }, []);
-
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsSubmitting(true);
       
+      console.log("📝 Form values submitted:", values);
+      console.log("📸 Photo value:", values.photo);
+      console.log("📸 Photo type:", typeof values.photo);
+      console.log("📸 Photo is File:", values.photo instanceof File);
+      
       // Handle photo upload for employee posts
       let photoUrl: string | null = null;
       if (values.post_type === "employee" && values.photo?.[0]) {
+        console.log("📸 Uploading photo:", values.photo[0].name, values.photo[0].size);
         const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
-        if (uploadError) throw new Error(uploadError);
+        if (uploadError) {
+          console.error("❌ Photo upload error:", uploadError);
+          throw new Error(uploadError);
+        }
         photoUrl = url;
+        console.log("✅ Photo uploaded successfully:", photoUrl);
+      } else {
+        console.log("📷 No photo to upload or not employee post");
+        console.log("📷 Post type:", values.post_type);
+        console.log("📷 Photo exists:", !!values.photo);
+        console.log("📷 Photo array length:", values.photo?.length);
       }
 
       // Create post data
@@ -111,14 +105,12 @@ export default function NewPostPage() {
       // Show success message
       toast({
         title: "Success",
-        description: isAdmin 
-          ? "Your post has been created and published!" 
-          : "Post submitted successfully! Redirecting to payment page...",
+        description: "Post submitted successfully! Redirecting to payment page...",
       });
 
-      // Redirect based on user type
+      // Redirect to payment page
       setTimeout(() => {
-        router.push(isAdmin ? "/admin/posts" : `/post-payment/${post?.id}`);
+        router.push(`/post-payment/${post?.id}`);
       }, 1000);
 
     } catch (error) {
@@ -139,22 +131,6 @@ export default function NewPostPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8">
           {form.watch("post_type") === "employer" ? "Post a Job Requirement" : "Create Your Work Profile"}
         </h1>
-
-        {isAdmin && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.586-4L12 3l-4.586 4.414M3 7h6l4-4 4 4h6" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-green-800 dark:text-green-200">🎉 Admin Mode Active</p>
-                <p className="text-sm text-green-700 dark:text-green-300">Your posts will be published instantly and featured on homepage.</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -365,7 +341,7 @@ export default function NewPostPage() {
               <FormField
                 control={form.control}
                 name="photo"
-                render={({ field: { onChange, ...field } }) => (
+                render={({ field: { onChange, ref } }) => (
                   <FormItem>
                     <FormLabel>Photo (Optional)</FormLabel>
                     <FormControl>
@@ -376,7 +352,7 @@ export default function NewPostPage() {
                           const file = e.target.files?.[0];
                           if (file) onChange(file);
                         }}
-                        {...field}
+                        ref={ref}
                       />
                     </FormControl>
                     <FormDescription>
