@@ -82,12 +82,14 @@ export default function NewPostPage() {
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log('🔍 Form submission started with values:', values);
     try {
       setIsSubmitting(true);
       
       // Handle photo upload for employee posts
       let photoUrl: string | null = null;
       if (values.post_type === "employee" && values.photo?.[0]) {
+        console.log('🔍 Uploading photo for employee post');
         const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
         if (uploadError) throw new Error(uploadError);
         photoUrl = url;
@@ -104,8 +106,12 @@ export default function NewPostPage() {
         photo_url: photoUrl,
       };
 
+      console.log('🔍 Creating post with data:', postData);
+
       // Submit post
       const { post, error } = await createPost(postData);
+      console.log('🔍 Post creation result:', { post, error });
+      
       if (error) throw new Error(error);
 
       // Show success message
@@ -122,7 +128,7 @@ export default function NewPostPage() {
       }, 1000);
 
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("❌ Error submitting form:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "An error occurred while creating your post",
@@ -157,7 +163,10 @@ export default function NewPostPage() {
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={(e) => {
+            console.log('🔍 Form submit event triggered');
+            form.handleSubmit(onSubmit)(e);
+          }} className="space-y-6">
             {/* Post Type Toggle */}
             <FormField
               control={form.control}
