@@ -168,7 +168,7 @@ export default function NewPostPage() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      value={field.value}
+                      defaultValue={field.value}
                       className="flex gap-3"
                     >
                       <div className="flex-1">
@@ -383,7 +383,16 @@ export default function NewPostPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                onClick={() => {
+                  console.log('🔍 Submit button clicked');
+                  console.log('🔍 Form values:', form.getValues());
+                  console.log('🔍 Form errors:', form.formState.errors);
+                  console.log('🔍 Form valid:', form.formState.isValid);
+                }}
+              >
                 {isSubmitting ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
