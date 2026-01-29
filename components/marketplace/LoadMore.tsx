@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 
 interface LoadMoreProps {
   hasMore: boolean;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 
 interface Post {

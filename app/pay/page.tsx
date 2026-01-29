@@ -2,8 +2,8 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/shared/button";
-import { useToast } from "@/components/shared/toast";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 function PaymentPageContent() {
   const router = useRouter();
@@ -14,7 +14,7 @@ function PaymentPageContent() {
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { addToast } = useToast();
+  const { toast } = useToast();
 
   // Get parameters from URL query string
   const type = searchParams.get('type');
@@ -96,14 +96,21 @@ function PaymentPageContent() {
 
       if (result.success) {
         setShowSuccess(true);
-        addToast("Payment submitted successfully! Our team will verify it within 24 hours.", "success", 5000);
+        toast({
+        title: "Payment submitted successfully!",
+        description: "Our team will verify it within 24 hours.",
+      });
       } else {
         setError(result.error || 'Failed to submit payment');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit payment';
       setError(errorMessage);
-      addToast(errorMessage, "error", 3000);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

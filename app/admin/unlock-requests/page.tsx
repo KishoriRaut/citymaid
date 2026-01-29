@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest } from "@/lib/unlock-requests";
 
 interface UnlockRequest {

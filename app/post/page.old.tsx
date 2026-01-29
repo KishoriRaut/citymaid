@@ -1,0 +1,388 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { appConfig } from "@/lib/config";
+import { createPost } from "@/lib/posts";
+import { useToast } from "@/hooks/use-toast";
+import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
+import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
+import { uploadPhoto } from "@/lib/storage";
+
+export default function PostPage() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  
+  // Check if current user is admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    // Check admin status from server
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.ok) {
+          const data = await response.json();
+          setIsAdmin(data.isAdmin);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  const [formData, setFormData] = useState({
+    post_type: "employer" as "employer" | "employee",
+    work: "",
+    workOther: "",
+    time: "",
+    timeOther: "",
+    place: "",
+    salary: "",
+    contact: "",
+    photo: null as File | null,
+  });
+
+  // Clear photo when switching to employer
+  const handlePostTypeChange = (newType: "employer" | "employee") => {
+    setFormData({
+      ...formData,
+      post_type: newType,
+      photo: newType === "employer" ? null : formData.photo, // Clear photo for employer
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    // Get fresh admin status from server
+    let isAdminStatus = false;
+    try {
+      const response = await fetch("/api/auth/me");
+      if (response.ok) {
+        const data = await response.json();
+        isAdminStatus = data.isAdmin;
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
+
+    try {
+      // Upload photo only for employee posts
+      let photoUrl: string | null = null;
+      if (formData.post_type === "employee" && formData.photo) {
+        const { url, error: uploadError } = await uploadPhoto(formData.photo);
+        if (uploadError) {
+          setError(uploadError);
+          setIsSubmitting(false);
+          return;
+        }
+        photoUrl = url;
+      }
+
+      // Determine work and time values
+      const work = formData.work === "Other" ? formData.workOther : formData.work;
+      const time = formData.time === "Other" ? formData.timeOther : formData.time;
+
+      // Validate required fields
+      if (!work || !time || !formData.place || !formData.salary || !formData.contact) {
+        setError("Please fill in all required fields");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Create post (server will determine admin status)
+      const postData = {
+        post_type: formData.post_type,
+        work,
+        time,
+        place: formData.place,
+        salary: formData.salary,
+        contact: formData.contact,
+        photo_url: photoUrl
+      };
+
+      const { post, error: createError } = await createPost(postData);
+
+      if (createError || !post) {
+        setError(createError || "Failed to create post");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Show success toast and handle redirect based on user type
+      setIsSubmitting(false);
+      
+      if (isAdminStatus) {
+        // Admin: Instant publishing with success message
+        toast({
+          title: "Success",
+          description: "Your post has been created successfully!",
+          variant: "default",
+        });
+        
+        // Redirect to admin posts management
+        setTimeout(() => {
+          router.push("/admin/posts");
+        }, 1000);
+      } else {
+        // Regular user: Go to payment flow
+        toast({
+          title: "Success",
+          description: "Post submitted successfully! Redirecting to payment page...",
+          variant: "default",
+        });
+        
+        // Redirect to payment page
+        setTimeout(() => {
+          router.push(`/post-payment/${post.id}`);
+        }, 1000);
+      }
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      setError("An unexpected error occurred");
+      setIsSubmitting(false);
+    }
+  };
+
+  const pageTitle = formData.post_type === "employer" 
+    ? "Post a Job Requirement" 
+    : "Create Your Work Profile";
+
+  return (
+    <div className="container mx-auto px-4 py-8 sm:py-12">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
+          {pageTitle}
+        </h1>
+        {isAdmin && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.586-4L12 3l-4.586 4.414M3 7h6l4-4 4 4h6" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-green-800 dark:text-green-200">🎉 Admin Mode Active</p>
+                <p className="text-sm text-green-700 dark:text-green-300">Your posts will be published instantly and featured on homepage.</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2 tracking-tight">{pageTitle}</h1>
+        <p className="text-muted-foreground mb-8 text-sm sm:text-base">
+          {isAdmin 
+            ? "Create posts that will be published instantly on the platform" 
+            : "Fill in the details to create your post"
+          }
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Role Toggle */}
+          <div>
+            <label className="block text-sm font-semibold mb-3 text-foreground">I want to</label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => handlePostTypeChange("employer")}
+                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all duration-200 font-medium ${
+                  formData.post_type === "employer"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
+                    : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
+                }`}
+              >
+                Hire a Worker
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePostTypeChange("employee")}
+                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all duration-200 font-medium ${
+                  formData.post_type === "employee"
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
+                    : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
+                }`}
+              >
+                Find a Job
+              </button>
+            </div>
+            <p className="mt-2.5 text-sm text-muted-foreground">Select your purpose to continue</p>
+          </div>
+
+          {/* Work Dropdown */}
+          <div>
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
+              Work <span className="text-destructive">*</span>
+            </label>
+            <select
+              value={formData.work}
+              onChange={(e) => setFormData({ ...formData, work: e.target.value })}
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
+              required
+            >
+              <option value="">Select work type</option>
+              {getGroupedWorkTypes().map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.types.map((workType) => (
+                    <option key={workType} value={workType}>
+                      {workType}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {isOtherWorkType(formData.work) && (
+              <input
+                type="text"
+                placeholder="Specify work type"
+                value={formData.workOther}
+                onChange={(e) => setFormData({ ...formData, workOther: e.target.value })}
+                className="w-full mt-2.5 px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                required
+              />
+            )}
+          </div>
+
+          {/* Time Dropdown */}
+          <div>
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
+              Time <span className="text-destructive">*</span>
+            </label>
+            <select
+              value={formData.time}
+              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
+              required
+            >
+              <option value="">Select time</option>
+              {getGroupedTimeOptions().map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.types.map((timeOption) => (
+                    <option key={timeOption} value={timeOption}>
+                      {timeOption}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {isOtherTimeOption(formData.time) && (
+              <input
+                type="text"
+                placeholder="Specify schedule"
+                value={formData.timeOther}
+                onChange={(e) => setFormData({ ...formData, timeOther: e.target.value })}
+                className="w-full mt-2.5 px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+                required
+              />
+            )}
+          </div>
+
+          {/* Place */}
+          <div>
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
+              Place <span className="text-destructive">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.place}
+              onChange={(e) => setFormData({ ...formData, place: e.target.value })}
+              placeholder="e.g., Kathmandu, Lalitpur"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              required
+            />
+          </div>
+
+          {/* Salary */}
+          <div>
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
+              Salary <span className="text-destructive">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.salary}
+              onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+              placeholder="e.g., 5000, Negotiable"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              required
+            />
+          </div>
+
+          {/* Contact */}
+          <div>
+            <label className="block text-sm font-semibold mb-2.5 text-foreground">
+              Contact <span className="text-destructive">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.contact}
+              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+              placeholder="Phone number or contact info"
+              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              required
+            />
+          </div>
+
+          {/* Photo Upload - Only for Employee Posts */}
+          {formData.post_type === "employee" && (
+            <div>
+              <label className="block text-sm font-semibold mb-2.5 text-foreground">Photo (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setFormData({ ...formData, photo: file });
+                }}
+                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+              />
+              {formData.photo && (
+                <p className="mt-2.5 text-sm text-muted-foreground">
+                  Selected: {formData.photo.name}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 text-destructive">
+              <p className="font-semibold mb-1.5">Error</p>
+              <p className="text-sm leading-relaxed">{error}</p>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(appConfig.routes.home)}
+              className="flex-1 border-border hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting} size="lg" className="flex-1 shadow-sm hover:shadow transition-shadow duration-200">
+              {isSubmitting 
+                ? "Submitting..." 
+                : isAdmin 
+                  ? "Publish Post Instantly" 
+                  : "Submit Post"
+              }
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

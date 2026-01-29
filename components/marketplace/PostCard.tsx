@@ -5,6 +5,9 @@ import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { User, Clock, MapPin, DollarSign, Shield, Star } from "lucide-react";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -22,178 +25,116 @@ export function PostCard({ post }: PostCardProps) {
   const isFresh = isFreshPost(post.created_at);
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200 flex flex-col transform hover:-translate-y-0.5 h-full">
-      {/* Role Badge at Top */}
-      <div className="mb-3">
-        <span
-          className={`inline-block px-3 py-1.5 text-xs font-semibold rounded-full uppercase tracking-wide ${
-            isHiring
-              ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary"
-              : "bg-accent/10 text-accent dark:bg-accent/20 dark:text-accent"
-          }`}
-        >
-          {isHiring ? "HIRE A WORKER" : "FIND A JOB"}
-        </span>
-      </div>
-
-      {/* Photo or Placeholder - Only for Employee Posts */}
-      {!isHiring && (
-        <div className="relative w-full mb-4 rounded-lg overflow-hidden bg-muted aspect-[4/3] flex items-center justify-center">
+    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-0 shadow-md hover:shadow-xl hover:-translate-y-1">
+      {/* Header with Image */}
+      <div className="relative">
+        <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
           {post.photo_url && !imageError ? (
-            // Employee posts: Show photo if available
             <img
               src={post.photo_url}
               alt={post.work}
-              className="w-full h-full object-cover"
-              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={() => setImageError(true)}
+              loading="lazy"
             />
           ) : (
-            // Employee posts: Show user icon if no photo
-            <div className="flex items-center justify-center text-muted-foreground">
-              <svg
-                className="w-12 h-12 opacity-40"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+            <div className="flex items-center justify-center h-full">
+              {isHiring ? (
+                <div className="text-center">
+                  <User className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground/50">No Photo</p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <MapPin className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground/50">No Photo</p>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
-
-      {/* Work Type (Bold) */}
-      <h3 className="font-semibold text-lg mb-3 text-foreground line-clamp-2 leading-snug">{post.work}</h3>
-
-      {/* Posting Time with Fresh Indicator */}
-      <div className="mb-4 flex items-center gap-2">
-        <span 
-          className={`inline-block px-2.5 py-1 text-xs font-medium rounded-md ${
-            isFresh 
-              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-              : 'bg-muted/60 text-muted-foreground'
-          }`}
-          title={timeInfo.title}
-        >
-          🕐 {timeInfo.relative}
-        </span>
+        
+        {/* Status Badge Overlay */}
+        <div className="absolute top-3 left-3">
+          <Badge 
+            variant={isHiring ? "default" : "secondary"}
+            className="text-xs font-semibold px-2 py-1"
+          >
+            {isHiring ? "🏢 Hiring" : "👤 Job Seeker"}
+          </Badge>
+        </div>
+        
+        {/* Fresh Badge */}
         {isFresh && (
-          <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-            🔥 New
-          </span>
+          <div className="absolute top-3 right-3">
+            <Badge variant="secondary" className="bg-green-500 text-white text-xs font-semibold px-2 py-1">
+              🔥 New
+            </Badge>
+          </div>
         )}
       </div>
 
-      {/* Details */}
-      <div className="space-y-3 mb-5 flex-1">
-        {/* Work Schedule (Time) */}
-        <div className="flex items-center gap-2.5 text-sm">
-          <svg
-            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span className="text-muted-foreground leading-relaxed">{post.time}</span>
+      {/* Content */}
+      <CardContent className="p-5">
+        {/* Title */}
+        <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          {post.work}
+        </h3>
+
+        {/* Meta Information */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1">
+            <Clock className="w-4 h-4" />
+            <span>{timeInfo.relative}</span>
+          </div>
+          {post.salary && (
+            <div className="flex items-center gap-1 font-medium text-foreground">
+              <DollarSign className="w-4 h-4" />
+              <span>{formatSalary(post.salary)}</span>
+            </div>
+          )}
         </div>
 
         {/* Location */}
-        <div className="flex items-center gap-2.5 text-sm">
-          <svg
-            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          <span className="text-muted-foreground leading-relaxed">{post.place}</span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <MapPin className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">{post.place || "Location not specified"}</span>
         </div>
 
-        {/* Salary (Formatted) */}
-        <div className="flex items-center gap-2.5 text-sm">
-          <svg
-            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span className="font-semibold text-foreground leading-relaxed">{formatSalary(post.salary)}</span>
+        {/* Work Schedule */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <Clock className="w-4 h-4 flex-shrink-0" />
+          <span>{post.time}</span>
         </div>
 
-        {/* Contact */}
-        <div className="flex items-center gap-2.5 text-sm pt-3 border-t border-border/50">
-          <svg
-            className="w-4 h-4 text-muted-foreground/70 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-            />
-          </svg>
-          {contactVisible ? (
-            <span className="text-foreground font-medium">{post.contact}</span>
-          ) : (
-            <span className="font-mono text-muted-foreground">{post.contact || "****"}</span>
-          )}
-        </div>
-      </div>
-
-      {/* CTA Buttons */}
-      <div className="mt-auto space-y-2.5 pt-2">
-        {/* Contact Unlock Button */}
+        {/* Unlock Contact Button */}
         {!contactVisible && (
-          <>
+          <div className="mb-4">
             <UnlockContactButton 
               postId={post.id}
               canViewContact={contactVisible}
-              className="font-medium shadow-sm hover:shadow transition-shadow duration-200"
-            >
-              🔓 Unlock Contact — Rs. 50
-            </UnlockContactButton>
-            <p className="text-xs text-center text-muted-foreground leading-relaxed">
-              Small verification fee to protect workers from spam and misuse.
-            </p>
-          </>
+              className="w-full"
+            />
+          </div>
         )}
-      </div>
-    </div>
+
+        {/* Divider */}
+        <div className="border-t my-4"></div>
+
+        {/* Trust Indicators */}
+        <div className="border-t mt-4 pt-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Shield className="w-3 h-3" />
+              <span>Verified Posting</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              <span>Trusted Platform</span>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

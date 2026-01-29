@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/shared/button";
-import { Skeleton } from "@/components/shared/skeleton";
-import { getAllPayments, updatePaymentStatus, type Payment } from "@/lib/payments";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
 
-interface PaymentWithPost extends Payment {
+interface PaymentWithPost extends AdminPayment {
   posts?: {
     work: string;
     post_type: string;
@@ -27,9 +27,7 @@ export default function AdminPaymentsPage() {
     setError(null);
 
     try {
-      const { payments: fetchedPayments, error: fetchError } = await getAllPayments({
-        status: filter === "all" ? undefined : filter,
-      });
+      const { payments: fetchedPayments, error: fetchError } = await getAllAdminPayments();
 
       if (fetchError) {
         setError(fetchError);
@@ -55,7 +53,7 @@ export default function AdminPaymentsPage() {
     newStatus: "approved" | "rejected"
   ) => {
     try {
-      const { error: updateError } = await updatePaymentStatus(paymentId, newStatus);
+      const { error: updateError } = await updateAdminPaymentStatus(paymentId, newStatus);
       if (updateError) {
         alert(`Error: ${updateError}`);
         return;

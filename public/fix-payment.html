@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Payment</title>
+</head>
+<body>
+    <h1>Fix Payment for Post</h1>
+    <button onclick="createPayment()">Create Payment for ab6875a4-33d6-43d5-83a3-af9ea2d1d233</button>
+    <div id="result"></div>
+    
+    <script>
+        async function createPayment() {
+            try {
+                const response = await fetch('/api/fix/create-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        postId: 'ab6875a4-33d6-43d5-83a3-af9ea2d1d233'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = JSON.stringify(result, null, 2);
+                console.log('Result:', result);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

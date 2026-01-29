@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/shared/button";
-import { Skeleton } from "@/components/shared/skeleton";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  getAllPayments, 
-  updatePaymentStatus, 
-  type Payment
-} from "@/lib/payments";
+  getAllAdminPayments, 
+  updateAdminPaymentStatus, 
+  type AdminPayment
+} from "@/lib/admin-payments";
 import {
   getAllHomepagePayments,
   approveHomepagePayment,
@@ -15,7 +15,7 @@ import {
 } from "@/lib/homepage-payments";
 
 // Extended Payment interface with post data
-interface PaymentWithPost extends Payment {
+interface PaymentWithPost extends AdminPayment {
   posts?: {
     work: string;
     post_type: string;
@@ -70,7 +70,7 @@ export default function RevenueDashboardPage() {
     setIsLoading(true);
     try {
       // Load contact unlock payments
-      const { payments: contactPayments, error: contactError } = await getAllPayments() as { payments?: PaymentWithPost[], error?: string };
+      const { payments: contactPayments, error: contactError } = await getAllAdminPayments() as { payments?: PaymentWithPost[], error?: string };
       
       // Load homepage feature payments
       const { requests: homepagePayments, error: homepageError } = await getAllHomepagePayments();
@@ -136,7 +136,7 @@ export default function RevenueDashboardPage() {
 
   const loadMetrics = async () => {
     try {
-      const { payments: contactPayments } = await getAllPayments() as { payments?: PaymentWithPost[] };
+      const { payments: contactPayments } = await getAllAdminPayments() as { payments?: PaymentWithPost[] };
       const { requests: homepagePayments } = await getAllHomepagePayments();
       
       const contactTransactions = contactPayments || [];
@@ -180,7 +180,7 @@ export default function RevenueDashboardPage() {
     setProcessing(transaction.id);
     try {
       if (transaction.type === "contact_unlock") {
-        await updatePaymentStatus(transaction.id, "approved");
+        await updateAdminPaymentStatus(transaction.id, "approved");
       } else {
         await approveHomepagePayment(transaction.id.replace("hp_", ""));
       }
@@ -202,7 +202,7 @@ export default function RevenueDashboardPage() {
     setProcessing(transaction.id);
     try {
       if (transaction.type === "contact_unlock") {
-        await updatePaymentStatus(transaction.id, "rejected");
+        await updateAdminPaymentStatus(transaction.id, "rejected");
       } else {
         await rejectHomepagePayment(transaction.id.replace("hp_", ""));
       }

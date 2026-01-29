@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { setSession, type User } from "@/lib/session";
-import { Button } from "@/components/shared/button";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isValidEmail } from "@/lib/validation";
 import { useAuth } from "@/lib/hooks";
-import { Skeleton } from "@/components/shared/skeleton";
-import { Spinner } from "@/components/shared/spinner";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 import { appConfig } from "@/lib/config";
-import { AdminHeader } from "@/components/admin/AdminHeader";
 
 interface ProfileUser extends User {
   updated_at?: string;
@@ -162,27 +160,24 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader user={user} />
-      
-      <main className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="mb-6 sm:mb-8">
-            <div className="flex items-center gap-4 mb-4">
-              <Link href={appConfig.routes.admin}>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="min-h-[44px] sm:min-h-0 transition-all duration-200"
-                >
-                  <span className="hidden sm:inline">← </span>Back to Dashboard
-                </Button>
-              </Link>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">Profile</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">Manage your account information</p>
+    <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Link href={appConfig.routes.admin}>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="min-h-[44px] sm:min-h-0 transition-all duration-200"
+              >
+                <span className="hidden sm:inline">← </span>Back to Dashboard
+              </Button>
+            </Link>
           </div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">Profile</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your account information</p>
+        </div>
 
         {/* Profile Card */}
         <div className="rounded-lg border bg-card p-4 sm:p-6 lg:p-8 shadow-sm space-y-5 sm:space-y-6">
@@ -253,7 +248,7 @@ export default function ProfilePage() {
                   >
                     {isSaving ? (
                       <span className="flex items-center gap-2">
-                        <Spinner size="sm" />
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                         Saving...
                       </span>
                     ) : (
@@ -341,8 +336,7 @@ export default function ProfilePage() {
             Change Password
           </Button>
         </div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
