@@ -246,7 +246,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-yellow-600" />
+                  <DollarSign className="h-4 w-4 text-yellow-600" />
                   <span className="text-sm font-medium">Revenue Today</span>
                 </div>
                 <Badge variant="outline">NRs 1,250</Badge>
