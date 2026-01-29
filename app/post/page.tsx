@@ -116,22 +116,6 @@ export default function NewPostPage() {
           {form.watch("post_type") === "employer" ? "Post a Job Requirement" : "Create Your Work Profile"}
         </h1>
 
-        {isAdmin && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.586-4L12 3l-4.586 4.414M3 7h6l4-4 4 4h6" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-green-800 dark:text-green-200">🎉 Admin Mode Active</p>
-                <p className="text-sm text-green-700 dark:text-green-300">Your posts will be published instantly and featured on homepage.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Post Type Toggle */}
