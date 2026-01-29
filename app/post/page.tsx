@@ -50,6 +50,7 @@ export default function NewPostPage() {
       place: "",
       salary: "",
       contact: "",
+      photo: undefined,
     },
   });
 
@@ -62,6 +63,11 @@ export default function NewPostPage() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsSubmitting(true);
+      
+      console.log("📝 Form values submitted:", values);
+      console.log("📸 Photo value:", values.photo);
+      console.log("📸 Photo type:", typeof values.photo);
+      console.log("📸 Photo is File:", values.photo instanceof File);
       
       // Handle photo upload for employee posts
       let photoUrl: string | null = null;
@@ -76,6 +82,9 @@ export default function NewPostPage() {
         console.log("✅ Photo uploaded successfully:", photoUrl);
       } else {
         console.log("📷 No photo to upload or not employee post");
+        console.log("📷 Post type:", values.post_type);
+        console.log("📷 Photo exists:", !!values.photo);
+        console.log("📷 Photo array length:", values.photo?.length);
       }
 
       // Create post data
