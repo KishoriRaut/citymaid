@@ -37,7 +37,6 @@ export default function NewPostPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialize form
   const form = useForm<z.infer<typeof formSchema>>({
@@ -58,27 +57,6 @@ export default function NewPostPage() {
   const postType = form.watch("post_type");
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
-
-  // Check admin status - this is optional and won't block the form
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          const data = await response.json();
-          setIsAdmin(!!data.isAdmin);
-        }
-        // Silently handle 401 (not logged in) or other errors
-      } catch (error) {
-        console.debug("Not logged in or error checking admin status:", error);
-      }
-    };
-    
-    // Only check if we're in a browser environment
-    if (typeof window !== 'undefined') {
-      checkAdminStatus();
-    }
-  }, []);
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -111,14 +89,12 @@ export default function NewPostPage() {
       // Show success message
       toast({
         title: "Success",
-        description: isAdmin 
-          ? "Your post has been created and published!" 
-          : "Post submitted successfully! Redirecting to payment page...",
+        description: "Post submitted successfully! Redirecting to payment page...",
       });
 
-      // Redirect based on user type
+      // Redirect to payment page
       setTimeout(() => {
-        router.push(isAdmin ? "/admin/posts" : `/post-payment/${post?.id}`);
+        router.push(`/post-payment/${post?.id}`);
       }, 1000);
 
     } catch (error) {
