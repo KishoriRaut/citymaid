@@ -163,25 +163,7 @@ export default function NewPostPage() {
         )}
 
         <Form {...form}>
-          <form onSubmit={(e) => {
-            console.log('🔍 Form submit event triggered');
-            e.preventDefault();
-            
-            // Check form validation
-            const validationResult = form.trigger();
-            console.log('🔍 Form validation result:', validationResult);
-            
-            // Get form values
-            const formValues = form.getValues();
-            console.log('🔍 Current form values:', formValues);
-            
-            // Get form errors
-            const formErrors = form.formState.errors;
-            console.log('🔍 Form validation errors:', formErrors);
-            
-            // Try to submit
-            form.handleSubmit(onSubmit)(e);
-          }} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Post Type Toggle */}
             <FormField
               control={form.control}
@@ -192,7 +174,7 @@ export default function NewPostPage() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex gap-3"
                     >
                       <div className="flex-1">
@@ -407,6 +389,26 @@ export default function NewPostPage() {
               >
                 Cancel
               </Button>
+              
+              {/* Test button to check onSubmit function */}
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={async () => {
+                  console.log('🧪 Testing onSubmit function directly');
+                  const testValues = form.getValues();
+                  console.log('🧪 Form values:', testValues);
+                  console.log('🧪 Form errors:', form.formState.errors);
+                  try {
+                    await onSubmit(testValues);
+                  } catch (error) {
+                    console.error('🧪 Test error:', error);
+                  }
+                }}
+              >
+                Test Submit
+              </Button>
+              
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
