@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
-import type { Post } from "@/lib/types";
+import type { PostWithMaskedContact } from "@/lib/types";
 import { EnvironmentCheck } from "@/components/EnvironmentCheck";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
@@ -15,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 function HomePageContent() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
