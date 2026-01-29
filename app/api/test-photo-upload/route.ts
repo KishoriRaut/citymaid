@@ -5,7 +5,8 @@ export async function GET() {
   try {
     const results = {
       uploadTest: null as { url: string | null; error: string | null; accessible?: boolean; status?: number; fetchError?: string } | null,
-      storageInfo: null,
+      storageInfo: null as { bucketExists: boolean; bucketPublic: boolean; bucketDetails: any } | null,
+      recentFiles: null as Array<{ name: string; size: number; created_at: string }> | null,
       errors: [] as string[]
     };
 
@@ -31,13 +32,16 @@ export async function GET() {
         results.uploadTest.status = response.status;
       } catch (fetchError) {
         results.uploadTest.accessible = false;
-        results.uploadTest.fetchError = fetchError.message;
+        results.uploadTest.fetchError = fetchError instanceof Error ? fetchError.message : 'Unknown fetch error';
       }
     }
 
     // 4. Check storage bucket info
     try {
       const { supabaseClient } = await import('@/lib/supabase-client');
+      if (!supabaseClient) {
+        throw new Error('Supabase client not initialized');
+      }
       const { data: buckets } = await supabaseClient.storage.listBuckets();
       const postPhotosBucket = buckets?.find(b => b.name === 'post-photos');
       
@@ -54,12 +58,12 @@ export async function GET() {
       
       results.recentFiles = files?.map(f => ({
         name: f.name,
-        size: f.size,
+        size: (f as any).size || 0,
         created_at: f.created_at
-      }));
+      })) || [];
 
     } catch (storageError) {
-      results.errors.push(`Storage error: ${storageError.message}`);
+      results.errors.push(`Storage error: ${storageError instanceof Error ? storageError.message : 'Unknown error'}`);
     }
 
     return NextResponse.json({
