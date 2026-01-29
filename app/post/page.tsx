@@ -325,7 +325,7 @@ export default function NewPostPage() {
               <FormField
                 control={form.control}
                 name="photo"
-                render={({ field: { onChange, ...field } }) => (
+                render={({ field: { onChange, ref } }) => (
                   <FormItem>
                     <FormLabel>Photo (Optional)</FormLabel>
                     <FormControl>
@@ -336,7 +336,7 @@ export default function NewPostPage() {
                           const file = e.target.files?.[0];
                           if (file) onChange(file);
                         }}
-                        {...field}
+                        ref={ref}
                       />
                     </FormControl>
                     <FormDescription>
