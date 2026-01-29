@@ -163,21 +163,7 @@ export default function NewPostPage() {
         )}
 
         <Form {...form}>
-          <form onSubmit={async (e) => {
-            console.log('🔍 Regular form submit triggered');
-            e.preventDefault();
-            
-            const isValid = await form.trigger();
-            console.log('🔍 Regular submit validation result:', isValid);
-            console.log('🔍 Regular submit errors:', form.formState.errors);
-            
-            if (isValid) {
-              console.log('🔍 Validation passed, calling onSubmit');
-              form.handleSubmit(onSubmit)(e);
-            } else {
-              console.log('🔍 Validation failed, onSubmit not called');
-            }
-          }} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Post Type Toggle */}
             <FormField
               control={form.control}
@@ -242,7 +228,7 @@ export default function NewPostPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Work <span className="text-destructive">*</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select work type" />
@@ -292,7 +278,7 @@ export default function NewPostPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Time <span className="text-destructive">*</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select time" />
@@ -452,6 +438,31 @@ export default function NewPostPage() {
             </div>
           </form>
         </Form>
+        
+        {/* External submit button for testing */}
+        <div className="max-w-2xl mx-auto mt-4">
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={async () => {
+              console.log('🔥 External submit attempt');
+              const isValid = await form.trigger();
+              console.log('🔥 External validation result:', isValid);
+              console.log('🔥 External form errors:', form.formState.errors);
+              console.log('🔥 External form values:', form.getValues());
+              
+              if (isValid) {
+                console.log('🔥 External validation passed, calling onSubmit');
+                const values = form.getValues();
+                await onSubmit(values);
+              } else {
+                console.log('🔥 External validation failed');
+              }
+            }}
+          >
+            External Submit Test
+          </Button>
+        </div>
       </div>
     </div>
   );
