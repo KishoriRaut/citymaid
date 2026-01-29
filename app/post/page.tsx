@@ -66,9 +66,16 @@ export default function NewPostPage() {
       // Handle photo upload for employee posts
       let photoUrl: string | null = null;
       if (values.post_type === "employee" && values.photo?.[0]) {
+        console.log("📸 Uploading photo:", values.photo[0].name, values.photo[0].size);
         const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
-        if (uploadError) throw new Error(uploadError);
+        if (uploadError) {
+          console.error("❌ Photo upload error:", uploadError);
+          throw new Error(uploadError);
+        }
         photoUrl = url;
+        console.log("✅ Photo uploaded successfully:", photoUrl);
+      } else {
+        console.log("📷 No photo to upload or not employee post");
       }
 
       // Create post data
