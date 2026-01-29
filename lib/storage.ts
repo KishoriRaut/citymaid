@@ -154,6 +154,12 @@ export async function uploadPhoto(file: File): Promise<{ url: string | null; err
     if (!supabaseClient) {
       throw new Error("Supabase client not initialized");
     }
+    
+    console.log("📤 Uploading to bucket:", BUCKET_NAME);
+    console.log("📤 File path:", filePath);
+    console.log("📤 File size:", optimizedFile.size);
+    console.log("📤 Content type:", optimizedFile.type);
+    
     const { error: uploadError } = await supabaseClient.storage
       .from(BUCKET_NAME)
       .upload(filePath, optimizedFile, {
@@ -163,16 +169,21 @@ export async function uploadPhoto(file: File): Promise<{ url: string | null; err
       });
 
     if (uploadError) {
+      console.error("❌ Upload error details:", uploadError);
       if (process.env.NODE_ENV === "development") {
         console.error("Error uploading file:", uploadError);
       }
       return { url: null, error: uploadError.message };
     }
 
+    console.log("✅ Upload successful!");
+
     // Get public URL
     const {
       data: { publicUrl },
     } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+
+    console.log("🔗 Public URL generated:", publicUrl);
 
     return { url: publicUrl, error: null };
   } catch (error) {
