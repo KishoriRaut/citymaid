@@ -103,7 +103,7 @@ export default function RevenueDashboardPage() {
       
       // Add homepage feature payments
       homepagePayments?.forEach(payment => {
-        if (payment.homepage_payment_status !== 'none') {
+        if (payment.payment_status && payment.payment_status !== 'none') {
           unifiedTransactions.push({
             id: `hp_${payment.id}`,
             type: "homepage_feature",
@@ -111,7 +111,7 @@ export default function RevenueDashboardPage() {
             postType: payment.post_type,
             work: payment.work,
             amount: 500, // Fixed homepage feature price
-            status: payment.homepage_payment_status as "pending" | "approved" | "rejected",
+            status: payment.payment_status as "pending" | "approved" | "rejected",
             visitorId: null,
             customerName: null,
             receiptUrl: null,
