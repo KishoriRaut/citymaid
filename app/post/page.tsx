@@ -82,14 +82,12 @@ export default function NewPostPage() {
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log('🔍 Form submission started with values:', values);
     try {
       setIsSubmitting(true);
       
       // Handle photo upload for employee posts
       let photoUrl: string | null = null;
       if (values.post_type === "employee" && values.photo?.[0]) {
-        console.log('🔍 Uploading photo for employee post');
         const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
         if (uploadError) throw new Error(uploadError);
         photoUrl = url;
@@ -106,12 +104,8 @@ export default function NewPostPage() {
         photo_url: photoUrl,
       };
 
-      console.log('🔍 Creating post with data:', postData);
-
       // Submit post
       const { post, error } = await createPost(postData);
-      console.log('🔍 Post creation result:', { post, error });
-      
       if (error) throw new Error(error);
 
       // Show success message
@@ -128,7 +122,7 @@ export default function NewPostPage() {
       }, 1000);
 
     } catch (error) {
-      console.error("❌ Error submitting form:", error);
+      console.error("Error submitting form:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "An error occurred while creating your post",
@@ -389,39 +383,6 @@ export default function NewPostPage() {
               >
                 Cancel
               </Button>
-              
-              {/* Test button to check onSubmit function */}
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={async () => {
-                  console.log('🧪 Testing onSubmit function directly');
-                  const testValues = form.getValues();
-                  console.log('🧪 Form values:', testValues);
-                  console.log('🧪 Form errors:', form.formState.errors);
-                  
-                  // Test validation
-                  const isValid = await form.trigger();
-                  console.log('🧪 Form validation result:', isValid);
-                  
-                  // Check each field individually
-                  const fields = ['post_type', 'work', 'time', 'place', 'salary', 'contact'];
-                  for (const field of fields) {
-                    const fieldError = form.formState.errors[field as keyof typeof form.formState.errors];
-                    const fieldValue = testValues[field as keyof typeof testValues];
-                    console.log(`🧪 Field ${field}:`, { value: fieldValue, error: fieldError?.message });
-                  }
-                  
-                  try {
-                    await onSubmit(testValues);
-                  } catch (error) {
-                    console.error('🧪 Test error:', error);
-                  }
-                }}
-              >
-                Test Submit
-              </Button>
-              
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
@@ -438,31 +399,6 @@ export default function NewPostPage() {
             </div>
           </form>
         </Form>
-        
-        {/* External submit button for testing */}
-        <div className="max-w-2xl mx-auto mt-4">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={async () => {
-              console.log('🔥 External submit attempt');
-              const isValid = await form.trigger();
-              console.log('🔥 External validation result:', isValid);
-              console.log('🔥 External form errors:', form.formState.errors);
-              console.log('🔥 External form values:', form.getValues());
-              
-              if (isValid) {
-                console.log('🔥 External validation passed, calling onSubmit');
-                const values = form.getValues();
-                await onSubmit(values);
-              } else {
-                console.log('🔥 External validation failed');
-              }
-            }}
-          >
-            External Submit Test
-          </Button>
-        </div>
       </div>
     </div>
   );
