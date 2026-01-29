@@ -15,7 +15,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 
 // Libs
-import { appConfig } from "@/lib/config";
 import { createPost } from "@/lib/posts";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
 import { getGroupedTimeOptions, isOtherTimeOption } from "@/lib/work-time";
@@ -23,9 +22,7 @@ import { uploadPhoto } from "@/lib/storage";
 
 // Form Schema
 const formSchema = z.object({
-  post_type: z.enum(["employer", "employee"] as const, {
-    required_error: "Please select a post type",
-  }),
+  post_type: z.enum(["employer", "employee"]),
   work: z.string().min(1, "Please select a work type"),
   workOther: z.string().optional(),
   time: z.string().min(1, "Please select a time option"),
@@ -327,21 +324,6 @@ export default function NewPostPage() {
                   <FormLabel>Place <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., Kathmandu, Lalitpur" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Salary Input */}
-            <FormField
-              control={form.control}
-              name="salary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Salary <span className="text-destructive">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 5000, Negotiable" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

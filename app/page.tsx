@@ -2,20 +2,20 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
+import type { Post } from "@/lib/types";
 import { EnvironmentCheck } from "@/components/EnvironmentCheck";
-import type { PostWithMaskedContact } from "@/lib/types";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 function HomePageContent() {
-  const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     
     console.log('🔧 UNIFIED API - Query params:', { postId, type, visitorId });
 
-    const requests: any[] = [];
+    const requests: unknown[] = [];
 
     // Get contact unlock requests
     if (!type || type === 'contact_unlock') {

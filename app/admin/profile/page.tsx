@@ -5,18 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { setSession, type User } from "@/lib/session";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isValidEmail } from "@/lib/validation";
 import { useAuth } from "@/lib/hooks";
 import { fetchWithTimeout, parseJSONResponse, handleAPIError } from "@/lib/api";
 import { appConfig } from "@/lib/config";
-import { User as UserIcon, Mail, Shield, Calendar } from "lucide-react";
 
 interface ProfileUser extends User {
   updated_at?: string;

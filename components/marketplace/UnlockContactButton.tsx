@@ -4,20 +4,18 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { createUnlockRequest } from "@/lib/admin-payments";
-import { Lock, CreditCard } from "lucide-react";
+import { Lock } from "lucide-react";
 
 interface UnlockContactButtonProps {
   postId: string;
   canViewContact: boolean;
   className?: string;
-  children?: React.ReactNode;
 }
 
 export default function UnlockContactButton({ 
   postId, 
   canViewContact, 
-  className = "",
-  children 
+  className = ""
 }: UnlockContactButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();

@@ -24,8 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { appConfig } from "@/lib/config";
 import { clearSession, type User } from "@/lib/session";
 
 interface AdminLayoutProps {
