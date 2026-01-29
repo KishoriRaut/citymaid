@@ -137,6 +137,16 @@ export default function AdminPostsPage() {
           </Button>
         </div>
 
+        {/* Debug Section - Remove later */}
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h3 className="font-semibold text-yellow-800 mb-2">🔍 Debug Info</h3>
+          <div className="text-sm text-yellow-700">
+            <p><strong>Loaded payments count:</strong> {payments.length}</p>
+            <p><strong>Payment IDs:</strong> {payments.map(p => p.id).join(', ') || 'None'}</p>
+            <p><strong>Post IDs with payments:</strong> {payments.map(p => p.post_id).join(', ') || 'None'}</p>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="mb-6 flex gap-2 border rounded-md p-1 bg-background w-fit">
           {(["all", "pending", "approved", "hidden"] as const).map((status) => (
@@ -426,6 +436,7 @@ function PostCard({
             <>
               <h3 className="font-semibold text-lg mb-2">{post.work}</h3>
               <div className="text-sm text-muted-foreground space-y-1 mb-4">
+                <p className="text-xs text-gray-500"><strong>Post ID:</strong> {post.id}</p>
                 <p>
                   <span className="font-medium">Time:</span> {post.time}
                 </p>
