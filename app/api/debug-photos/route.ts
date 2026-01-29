@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabaseClient } from '@/lib/supabase-client';
 
+interface PostWithPhoto {
+  id: string;
+  post_type: string;
+  work: string;
+  photo_url: string | null;
+  created_at: string;
+  status: string;
+}
+
 export async function GET() {
   try {
     if (!supabaseClient) {
@@ -41,9 +50,9 @@ export async function GET() {
       },
       analysis: {
         totalPosts: posts?.length || 0,
-        postsWithPhotos: posts?.filter((p: any) => p.photo_url).length || 0,
-        employeePostsWithPhotos: posts?.filter((p: any) => p.post_type === 'employee' && p.photo_url).length || 0,
-        employerPostsWithPhotos: posts?.filter((p: any) => p.post_type === 'employer' && p.photo_url).length || 0,
+        postsWithPhotos: posts?.filter((p: PostWithPhoto) => p.photo_url).length || 0,
+        employeePostsWithPhotos: posts?.filter((p: PostWithPhoto) => p.post_type === 'employee' && p.photo_url).length || 0,
+        employerPostsWithPhotos: posts?.filter((p: PostWithPhoto) => p.post_type === 'employer' && p.photo_url).length || 0,
       }
     });
 
