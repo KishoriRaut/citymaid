@@ -350,7 +350,7 @@ export default function NewPostPage() {
               <FormField
                 control={form.control}
                 name="photo"
-                render={({ field: { value, onChange, ...field } }) => (
+                render={({ field: { onChange, ...field } }) => (
                   <FormItem>
                     <FormLabel>Photo (Optional)</FormLabel>
                     <FormControl>

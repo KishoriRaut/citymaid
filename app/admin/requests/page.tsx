@@ -205,7 +205,7 @@ export default function RequestsPage() {
           <Button
             key={tab.key}
             variant={filter === tab.key ? "default" : "outline"}
-            onClick={() => setFilter(tab.key as any)}
+            onClick={() => setFilter(tab.key as typeof filter)}
             className="rounded-full"
           >
             {tab.label}
