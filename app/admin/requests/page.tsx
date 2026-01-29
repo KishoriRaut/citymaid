@@ -77,10 +77,10 @@ export default function RequestsPage() {
         unifiedRequests.push({
           id: unlock.id,
           type: "Contact Unlock",
-          reference: unlock.post_title || "Unknown Post",
+          reference: unlock.post_id || "Unknown Post",
           user: unlock.visitor_id || "",
-          paymentProof: unlock.payment_proof || undefined,
-          transactionId: unlock.transaction_id || undefined,
+          paymentProof: unlock.payment_proof,
+          transactionId: null, // Not available in ContactUnlockRequest
           submittedAt: unlock.created_at,
           status: unlock.status as "pending" | "approved" | "rejected" | "hidden",
           originalData: unlock
