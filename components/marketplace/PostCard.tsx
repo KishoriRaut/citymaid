@@ -5,7 +5,7 @@ import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
-import { CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Clock, MapPin, DollarSign, Shield, Star } from "lucide-react";
 

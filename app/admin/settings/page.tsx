@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Bell, Shield, Database, Mail } from "lucide-react";
+import { Settings, Bell, Shield, Database } from "lucide-react";
 import { type User } from "@/lib/session";
 
 export default function AdminSettingsPage() {

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Eye, CheckCircle, XCircle, FileText, Unlock } from "lucide-react";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
-import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest } from "@/lib/unlock-requests";
+import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
 
 // Define the unified request interface
 interface UnifiedRequest {
@@ -33,7 +33,7 @@ interface UnifiedRequest {
   transactionId: string | null;
   submittedAt: string;
   status: "pending" | "approved" | "rejected" | "hidden";
-  originalData: AdminPayment | any;
+  originalData: AdminPayment | ContactUnlockRequest;
 }
 
 export default function RequestsPage() {
@@ -73,16 +73,16 @@ export default function RequestsPage() {
       });
       
       // Add unlock requests as "Contact Unlock" type
-      unlockData?.forEach((unlock: any) => {
+      unlockData?.forEach((unlock: ContactUnlockRequest) => {
         unifiedRequests.push({
           id: unlock.id,
           type: "Contact Unlock",
           reference: unlock.post_title || "Unknown Post",
           user: unlock.visitor_id || "",
-          paymentProof: unlock.payment_proof,
-          transactionId: unlock.transaction_id,
+          paymentProof: unlock.payment_proof || undefined,
+          transactionId: unlock.transaction_id || undefined,
           submittedAt: unlock.created_at,
-          status: unlock.status,
+          status: unlock.status as "pending" | "approved" | "rejected" | "hidden",
           originalData: unlock
         });
       });
@@ -219,7 +219,7 @@ export default function RequestsPage() {
       {/* Filters */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Select value={typeFilter} onValueChange={(value: any) => setTypeFilter(value)}>
+          <Select value={typeFilter} onValueChange={(value: "all" | "post" | "contact-unlock") => setTypeFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by Type" />
             </SelectTrigger>

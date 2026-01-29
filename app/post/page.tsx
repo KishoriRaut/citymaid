@@ -359,7 +359,7 @@ export default function NewPostPage() {
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          onChange(file);
+                          if (file) onChange(file);
                         }}
                         {...field}
                       />
