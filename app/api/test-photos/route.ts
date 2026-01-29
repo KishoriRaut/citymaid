@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const results = {
       databasePosts: [] as Array<{ id: string; work: string; post_type: string; photo_url: string | null; created_at: string }>,
-      storageInfo: null as { buckets: Array<{ name: string; id: string }> | undefined; postPhotosExists: boolean; postPhotosBucket: any } | null,
+      storageInfo: null as { buckets: Array<{ name: string; id: string }> | undefined; postPhotosExists: boolean; postPhotosBucket: { id: string; name: string; public: boolean } | undefined } | null,
       photoTest: null as { url: string; status: number; statusText: string; accessible: boolean } | { url: string; error: string; accessible: boolean } | null,
       storageFiles: null as Array<{ name: string; size: number; created_at: string }> | null,
       errors: [] as string[]
@@ -44,7 +44,7 @@ export async function GET() {
     }
 
     // 3. Test a specific photo URL if available
-    const postWithPhoto = results.databasePosts?.find((p: any) => p.photo_url);
+    const postWithPhoto = results.databasePosts?.find((p: { photo_url: string | null }) => p.photo_url);
     if (postWithPhoto?.photo_url) {
       try {
         const response = await fetch(postWithPhoto.photo_url, { method: 'HEAD' });
@@ -70,7 +70,7 @@ export async function GET() {
           .from('post-photos')
           .list('', { limit: 10 });
         
-        results.storageFiles = files?.map((f: any) => ({
+        results.storageFiles = files?.map((f: { name: string; size?: number; created_at: string }) => ({
           name: f.name,
           size: f.size || 0,
           created_at: f.created_at
