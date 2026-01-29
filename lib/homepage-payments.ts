@@ -13,6 +13,7 @@ export interface HomepagePaymentRequest {
   contact: string;
   photo_url: string | null;
   status: "pending" | "approved" | "hidden";
+  payment_status?: 'pending' | 'approved' | 'rejected'; // From unified payments table
   payment_proof?: string | null;
   created_at: string;
   updated_at: string;
@@ -54,6 +55,7 @@ export async function getPendingHomepagePayments(): Promise<{
     // Transform the data to match the expected interface
     const requests = payments?.map(payment => ({
       ...payment.posts,
+      payment_status: payment.status,
       payment_proof: payment.receipt_url,
       updated_at: payment.created_at
     })) || [];
@@ -107,6 +109,7 @@ export async function getAllHomepagePayments(
     // Transform the data to match the expected interface
     const requests = payments?.map(payment => ({
       ...payment.posts,
+      payment_status: payment.status,
       payment_proof: payment.receipt_url,
       updated_at: payment.created_at
     })) || [];

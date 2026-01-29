@@ -199,12 +199,12 @@ export default function HomepagePaymentsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            request.homepage_payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            request.homepage_payment_status === 'approved' ? 'bg-green-100 text-green-800' :
-                            request.homepage_payment_status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            request.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            request.payment_status === 'approved' ? 'bg-green-100 text-green-800' :
+                            request.payment_status === 'rejected' ? 'bg-red-100 text-red-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {request.homepage_payment_status}
+                            {request.payment_status || 'unknown'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -222,7 +222,7 @@ export default function HomepagePaymentsPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {request.homepage_payment_status === 'pending' && (
+                          {request.payment_status === 'pending' && (
                             <div className="flex space-x-2">
                               <Button
                                 onClick={() => handleApprove(request.id)}
@@ -242,13 +242,13 @@ export default function HomepagePaymentsPage() {
                               </Button>
                             </div>
                           )}
-                          {request.homepage_payment_status === 'approved' && (
+                          {request.payment_status === 'approved' && (
                             <span className="text-green-600">Approved</span>
                           )}
-                          {request.homepage_payment_status === 'rejected' && (
+                          {request.payment_status === 'rejected' && (
                             <span className="text-red-600">Rejected</span>
                           )}
-                          {request.homepage_payment_status === 'none' && (
+                          {!request.payment_status && (
                             <span className="text-gray-400">No request</span>
                           )}
                         </td>
