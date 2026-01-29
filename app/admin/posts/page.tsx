@@ -213,7 +213,16 @@ function PostCard({
   post: Post;
   onStatusChange: (id: string, status: "approved" | "hidden") => void;
   onDelete: (id: string) => void;
-  onEdit: (post: Post) => void;
+  onEdit: (postId: string, updates: {
+    post_type?: "employer" | "employee";
+    work?: string;
+    time?: string;
+    place?: string;
+    salary?: string;
+    contact?: string;
+    photo_url?: string | null;
+    status?: "pending" | "approved" | "hidden";
+  }) => Promise<void>;
   getPaymentForPost: (postId: string) => AdminPayment | null;
 }) {
   const [isEditing, setIsEditing] = useState(false);
