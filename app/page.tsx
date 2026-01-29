@@ -46,6 +46,11 @@ function HomePageContent() {
       
       setPosts(fetchedPosts);
       console.log(`✅ Loaded ${fetchedPosts.length} posts from Supabase`);
+      
+      // Debug photo URLs
+      fetchedPosts.forEach((post, index) => {
+        console.log(`Post ${index + 1}: photo_url =`, post.photo_url);
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
