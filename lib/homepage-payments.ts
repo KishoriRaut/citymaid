@@ -13,7 +13,6 @@ export interface HomepagePaymentRequest {
   contact: string;
   photo_url: string | null;
   status: "pending" | "approved" | "hidden";
-  homepage_payment_status: 'none' | 'pending' | 'approved' | 'rejected';
   payment_proof?: string | null;
   created_at: string;
   updated_at: string;
@@ -55,7 +54,6 @@ export async function getPendingHomepagePayments(): Promise<{
     // Transform the data to match the expected interface
     const requests = payments?.map(payment => ({
       ...payment.posts,
-      homepage_payment_status: 'pending',
       payment_proof: payment.receipt_url,
       updated_at: payment.created_at
     })) || [];
@@ -109,7 +107,6 @@ export async function getAllHomepagePayments(
     // Transform the data to match the expected interface
     const requests = payments?.map(payment => ({
       ...payment.posts,
-      homepage_payment_status: payment.status,
       payment_proof: payment.receipt_url,
       updated_at: payment.created_at
     })) || [];

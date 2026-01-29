@@ -113,7 +113,6 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
       contact: isContactLocked ? maskContact(postData.contact) : postData.contact,
       photo_url: postData.photo_url,
       status: postData.status,
-      homepage_payment_status: postData.homepage_payment_status,
       created_at: postData.created_at,
       can_view_contact: !isContactLocked, // Always false for now
     };
