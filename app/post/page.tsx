@@ -165,6 +165,21 @@ export default function NewPostPage() {
         <Form {...form}>
           <form onSubmit={(e) => {
             console.log('🔍 Form submit event triggered');
+            e.preventDefault();
+            
+            // Check form validation
+            const validationResult = form.trigger();
+            console.log('🔍 Form validation result:', validationResult);
+            
+            // Get form values
+            const formValues = form.getValues();
+            console.log('🔍 Current form values:', formValues);
+            
+            // Get form errors
+            const formErrors = form.formState.errors;
+            console.log('🔍 Form validation errors:', formErrors);
+            
+            // Try to submit
             form.handleSubmit(onSubmit)(e);
           }} className="space-y-6">
             {/* Post Type Toggle */}
