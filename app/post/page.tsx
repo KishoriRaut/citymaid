@@ -163,7 +163,21 @@ export default function NewPostPage() {
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={async (e) => {
+            console.log('🔍 Regular form submit triggered');
+            e.preventDefault();
+            
+            const isValid = await form.trigger();
+            console.log('🔍 Regular submit validation result:', isValid);
+            console.log('🔍 Regular submit errors:', form.formState.errors);
+            
+            if (isValid) {
+              console.log('🔍 Validation passed, calling onSubmit');
+              form.handleSubmit(onSubmit)(e);
+            } else {
+              console.log('🔍 Validation failed, onSubmit not called');
+            }
+          }} className="space-y-6">
             {/* Post Type Toggle */}
             <FormField
               control={form.control}
@@ -399,6 +413,19 @@ export default function NewPostPage() {
                   const testValues = form.getValues();
                   console.log('🧪 Form values:', testValues);
                   console.log('🧪 Form errors:', form.formState.errors);
+                  
+                  // Test validation
+                  const isValid = await form.trigger();
+                  console.log('🧪 Form validation result:', isValid);
+                  
+                  // Check each field individually
+                  const fields = ['post_type', 'work', 'time', 'place', 'salary', 'contact'];
+                  for (const field of fields) {
+                    const fieldError = form.formState.errors[field as keyof typeof form.formState.errors];
+                    const fieldValue = testValues[field as keyof typeof testValues];
+                    console.log(`🧪 Field ${field}:`, { value: fieldValue, error: fieldError?.message });
+                  }
+                  
                   try {
                     await onSubmit(testValues);
                   } catch (error) {
