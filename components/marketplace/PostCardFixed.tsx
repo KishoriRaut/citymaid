@@ -13,14 +13,14 @@ interface PostCardProps {
   post: PostWithMaskedContact;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCardFixed({ post }: PostCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
-  // Debug: Log photo URL for employee posts
-  if (post.post_type === 'employee') {
-    console.log(`👤 Employee Post: ${post.work}`);
-    console.log(`📸 Photo URL: ${post.photo_url || 'No photo'}`);
-  }
+  // Debug: Log photo URL when component renders
+  console.log(`🖼️ PostCardFixed rendering - photo_url:`, post.photo_url);
+  console.log(`🖼️ PostCardFixed rendering - post_type:`, post.post_type);
+  console.log(`🖼️ PostCardFixed rendering - work:`, post.work);
   
   // Use the new can_view_contact flag from the database
   const contactVisible = post.can_view_contact && post.contact !== null;
@@ -36,29 +36,43 @@ export function PostCard({ post }: PostCardProps) {
       <div className="relative">
         <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
           {post.photo_url && !imageError ? (
-            <img
-              src={post.photo_url}
-              alt={post.work}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={() => {
-                console.log(`❌ Photo failed to load: ${post.photo_url}`);
-                setImageError(true);
-              }}
-              onLoad={() => {
-                console.log(`✅ Photo loaded successfully: ${post.photo_url}`);
-              }}
-              crossOrigin="anonymous"
-            />
+            <div className="relative w-full h-full">
+              <img
+                src={post.photo_url}
+                alt={post.work}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={() => {
+                  console.log(`❌ Image failed to load: ${post.photo_url}`);
+                  setImageError(true);
+                }}
+                onLoad={() => {
+                  console.log(`✅ Image loaded successfully: ${post.photo_url}`);
+                  setImageLoaded(true);
+                }}
+                crossOrigin="anonymous"
+              />
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p className="text-xs text-muted-foreground">Loading...</p>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                {isHiring ? (
+              {isHiring ? (
+                <div className="text-center">
                   <User className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
-                ) : (
+                  <p className="text-xs text-muted-foreground/50">No Photo</p>
+                </div>
+              ) : (
+                <div className="text-center">
                   <MapPin className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
-                )}
-                <p className="text-xs text-muted-foreground/50">No Photo</p>
-              </div>
+                  <p className="text-xs text-muted-foreground/50">No Photo</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -78,6 +92,15 @@ export function PostCard({ post }: PostCardProps) {
           <div className="absolute top-3 right-3">
             <Badge variant="secondary" className="bg-green-500 text-white text-xs font-semibold px-2 py-1">
               🔥 New
+            </Badge>
+          </div>
+        )}
+        
+        {/* Photo Status Badge */}
+        {post.photo_url && (
+          <div className="absolute bottom-3 right-3">
+            <Badge variant="outline" className="text-xs bg-white/90">
+              {imageLoaded ? "📷 Photo" : "⏳ Loading"}
             </Badge>
           </div>
         )}
@@ -114,6 +137,12 @@ export function PostCard({ post }: PostCardProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <Clock className="w-4 h-4 flex-shrink-0" />
           <span>{post.time}</span>
+        </div>
+
+        {/* Debug Info */}
+        <div className="text-xs text-muted-foreground mb-2 p-2 bg-gray-50 rounded">
+          <div>Photo URL: {post.photo_url ? "✅ Present" : "❌ Missing"}</div>
+          <div>Image Status: {imageLoaded ? "✅ Loaded" : imageError ? "❌ Error" : "⏳ Loading"}</div>
         </div>
 
         {/* Unlock Contact Button */}

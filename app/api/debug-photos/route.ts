@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseClient } from '@/lib/supabase-client';
+import { supabaseClientServer } from '@/lib/supabase-client-server';
 
 interface PostWithPhoto {
   id: string;
@@ -12,12 +12,12 @@ interface PostWithPhoto {
 
 export async function GET() {
   try {
-    if (!supabaseClient) {
+    if (!supabaseClientServer) {
       return NextResponse.json({ error: 'Supabase client not initialized' }, { status: 500 });
     }
 
     // Get recent posts with photo URLs
-    const { data: posts, error } = await supabaseClient
+    const { data: posts, error } = await supabaseClientServer
       .from('posts')
       .select('id, post_type, work, photo_url, created_at, status')
       .order('created_at', { ascending: false })
@@ -28,13 +28,13 @@ export async function GET() {
     }
 
     // Check storage bucket
-    const { data: buckets } = await supabaseClient.storage.listBuckets();
-    const postPhotosBucket = buckets?.find(b => b.name === 'post-photos');
+    const { data: buckets } = await supabaseClientServer.storage.listBuckets();
+    const postPhotosBucket = buckets?.find((b: any) => b.name === 'post-photos');
 
     // List recent files in storage
     let storageFiles: Array<{ name: string; id: string; created_at: string }> = [];
     if (postPhotosBucket) {
-      const { data: files } = await supabaseClient.storage
+      const { data: files } = await supabaseClientServer.storage
         .from('post-photos')
         .list('', { limit: 10 });
       storageFiles = files || [];

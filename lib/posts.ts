@@ -163,10 +163,10 @@ export async function createPost(post: {
     // ========================================================================
     // VALIDATION PASSED: Create the post
     // ========================================================================
-    // Force photo_url = NULL for employer posts (security: prevent client manipulation)
+    // Allow photos for both employer and employee posts
     const postData = {
       ...post,
-      photo_url: post.post_type === "employer" ? null : post.photo_url || null,
+      photo_url: post.photo_url || null, // Allow photos for all post types
       status: postStatus, // 'approved' for admins, 'pending' for regular users
     };
 
@@ -329,26 +329,9 @@ export async function updatePost(
     if (updates.contact !== undefined) updateData.contact = updates.contact;
     if (updates.status !== undefined) updateData.status = updates.status;
 
-    // Handle photo_url: force NULL for employer posts
+    // Handle photo_url: allow photos for all post types
     if (updates.photo_url !== undefined) {
-      const postType = updates.post_type !== undefined ? updates.post_type : undefined;
-      // If we're updating post_type to employer, or if it's already employer, set photo_url to null
-      if (postType === "employer") {
-        updateData.photo_url = null;
-      } else {
-        // If we don't know the post_type, check the existing post
-        const { data: existingPost } = await supabase
-          .from("posts")
-          .select("post_type")
-          .eq("id", postId)
-          .single();
-
-        if (existingPost?.post_type === "employer") {
-          updateData.photo_url = null;
-        } else {
-          updateData.photo_url = updates.photo_url;
-        }
-      }
+      updateData.photo_url = updates.photo_url; // Allow photos for all post types
     }
 
     // Update the post

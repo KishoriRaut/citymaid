@@ -73,6 +73,9 @@ export default function NewPostPage() {
       let photoUrl: string | null = null;
       if (values.post_type === "employee" && values.photo?.[0]) {
         console.log("📸 Uploading photo:", values.photo[0].name, values.photo[0].size);
+        console.log("📸 Photo type:", values.photo[0].type);
+        console.log("📸 Photo last modified:", values.photo[0].lastModified);
+        
         const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
         if (uploadError) {
           console.error("❌ Photo upload error:", uploadError);
@@ -80,11 +83,26 @@ export default function NewPostPage() {
         }
         photoUrl = url;
         console.log("✅ Photo uploaded successfully:", photoUrl);
+        
+        // Verify the uploaded URL format
+        if (photoUrl) {
+          console.log("🔍 Uploaded URL analysis:");
+          console.log("  - Contains 'receipt-':", photoUrl.includes('receipt-'));
+          console.log("  - Contains 'post-photos':", photoUrl.includes('post-photos'));
+          console.log("  - URL format:", photoUrl);
+        }
       } else {
         console.log("📷 No photo to upload or not employee post");
         console.log("📷 Post type:", values.post_type);
         console.log("📷 Photo exists:", !!values.photo);
         console.log("📷 Photo array length:", values.photo?.length);
+        if (values.photo?.[0]) {
+          console.log("📷 Photo details:", {
+            name: values.photo[0].name,
+            size: values.photo[0].size,
+            type: values.photo[0].type
+          });
+        }
       }
 
       // Create post data
