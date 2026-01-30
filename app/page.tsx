@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { EnvironmentCheck } from "@/components/EnvironmentCheck";
-import { FrontendPhotoTest } from "@/components/debug/FrontendPhotoTest";
 import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
@@ -194,9 +193,6 @@ function HomePageContent() {
     <div className="min-h-screen bg-background">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Frontend Test Panel */}
-        <FrontendPhotoTest />
-        
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl">Job Listings</CardTitle>
