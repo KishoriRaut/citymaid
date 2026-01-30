@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { supabase } from '@/lib/supabase';
+import { uploadPaymentReceipt } from '@/lib/storage';
 import { 
   PaymentType, 
   PaymentStatus, 
@@ -350,11 +351,45 @@ export async function updateUnifiedPayment(
   try {
     console.log('🔧 UNIFIED - Updating payment:', { requestId, type, fileName, transactionId });
 
-    // Create data URL
-    const dataUrl = `data:${fileType};base64,${base64String}`;
-    const paymentProof = transactionId 
-      ? `${dataUrl}?tx=${encodeURIComponent(transactionId)}`
-      : dataUrl;
+    let paymentProof: string;
+
+    // If we have a base64 file, upload it to Supabase Storage
+    if (base64String && fileName && fileType) {
+      // Convert base64 back to File for upload
+      const base64Data = base64String.includes(',') ? base64String.split(',')[1] : base64String;
+      const byteCharacters = atob(base64Data);
+      const byteArrays = [];
+      
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+      
+      const blob = new Blob(byteArrays, { type: fileType });
+      const file = new File([blob], fileName, { type: fileType });
+      
+      // Upload to Supabase Storage
+      const uploadResult = await uploadPaymentReceipt(file);
+      
+      if (uploadResult.error || !uploadResult.url) {
+        console.error('❌ UNIFIED - Failed to upload receipt:', uploadResult.error);
+        return { success: false, error: `Failed to upload receipt: ${uploadResult.error}` };
+      }
+      
+      paymentProof = uploadResult.url;
+      console.log('✅ UNIFIED - Receipt uploaded to storage:', paymentProof);
+    } else if (transactionId) {
+      // Fallback to transaction ID placeholder
+      paymentProof = `transaction_${requestId}_${transactionId}_${Date.now()}`;
+      console.log('📝 UNIFIED - Using transaction ID placeholder:', paymentProof);
+    } else {
+      return { success: false, error: 'Either payment proof file or transaction ID is required' };
+    }
 
     if (type === 'post_promotion') {
       return updatePostPromotionPayment(requestId, paymentProof);

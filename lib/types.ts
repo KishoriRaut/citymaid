@@ -10,7 +10,22 @@ export interface Post {
   contact: string;
   photo_url: string | null;
   status: "pending" | "approved" | "hidden";
+  homepage_payment_status: "none" | "pending" | "approved" | "rejected";
+  payment_proof: string | null;
   created_at: string;
+  // Payment data from joined tables
+  payments?: Array<{
+    id: string;
+    status: string;
+    receipt_url: string | null;
+    created_at: string;
+  }>;
+  contact_unlock_requests?: Array<{
+    id: string;
+    status: string;
+    payment_proof: string | null;
+    created_at: string;
+  }>;
 }
 
 export interface PostWithMaskedContact extends Omit<Post, "contact"> {

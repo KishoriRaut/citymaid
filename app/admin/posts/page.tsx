@@ -4,10 +4,14 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAllPosts, updatePostStatus, deletePost, updatePost } from "@/lib/posts";
+import { usePaymentInfo } from "@/lib/payment-utils";
+import { approvePayment, rejectPayment, approvePostWithPaymentCheck } from "@/lib/payment-management";
 import type { Post } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { appConfig } from "@/lib/config";
-import { AdminPhotoDebug } from "@/components/debug/AdminPhotoDebug";
+import { PaymentReceiptModal } from "@/components/admin/PaymentReceiptModal";
+import { MissingReceiptModal } from "@/components/admin/MissingReceiptModal";
+import { TestPaymentReceiptUpload } from "@/components/admin/TestPaymentReceiptUpload";
 
 export default function AdminPostsPage() {
   const router = useRouter();
@@ -15,6 +19,11 @@ export default function AdminPostsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "hidden">("all");
+  
+  // Payment modal state
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isMissingReceiptModalOpen, setIsMissingReceiptModalOpen] = useState(false);
 
   const loadPosts = useCallback(async () => {
     setIsLoading(true);
@@ -56,6 +65,43 @@ export default function AdminPostsPage() {
       console.error("Error updating post:", err);
       alert("Failed to update post");
     }
+  };
+
+  // Payment management functions
+  const handleViewReceipt = (post: Post) => {
+    setSelectedPost(post);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleMissingReceipt = (post: Post) => {
+    setSelectedPost(post);
+    setIsMissingReceiptModalOpen(true);
+  };
+
+  const handleApprovePayment = async () => {
+    if (!selectedPost) return;
+    
+    const { success, error } = await approvePayment(selectedPost.id);
+    if (error) {
+      alert(`Error approving payment: ${error}`);
+      return;
+    }
+    
+    loadPosts();
+    alert("Payment approved successfully!");
+  };
+
+  const handleRejectPayment = async (reason: string) => {
+    if (!selectedPost) return;
+    
+    const { success, error } = await rejectPayment(selectedPost.id, reason);
+    if (error) {
+      alert(`Error rejecting payment: ${error}`);
+      return;
+    }
+    
+    loadPosts();
+    alert("Payment rejected successfully!");
   };
 
   const handleDelete = async (postId: string) => {
@@ -102,8 +148,6 @@ export default function AdminPostsPage() {
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-6xl mx-auto">
-        {/* Debug Panel */}
-        <AdminPhotoDebug />
         
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
@@ -139,6 +183,9 @@ export default function AdminPostsPage() {
           </div>
         )}
 
+        {/* Test Upload Component */}
+        <TestPaymentReceiptUpload />
+
         {/* Posts List */}
         {isLoading ? (
           <div className="space-y-4">
@@ -161,11 +208,39 @@ export default function AdminPostsPage() {
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
+                onViewReceipt={handleViewReceipt}
+                onMissingReceipt={handleMissingReceipt}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Payment Receipt Modal */}
+      {selectedPost && (
+        <PaymentReceiptModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+          onApprovePayment={handleApprovePayment}
+          onRejectPayment={handleRejectPayment}
+        />
+      )}
+
+      {/* Missing Receipt Modal */}
+      {selectedPost && (
+        <MissingReceiptModal
+          isOpen={isMissingReceiptModalOpen}
+          onClose={() => {
+            setIsMissingReceiptModalOpen(false);
+            setSelectedPost(null);
+          }}
+          post={selectedPost}
+        />
+      )}
     </div>
   );
 }
@@ -175,6 +250,8 @@ function PostCard({
   onStatusChange,
   onDelete,
   onEdit,
+  onViewReceipt,
+  onMissingReceipt,
 }: {
   post: Post;
   onStatusChange: (postId: string, status: "approved" | "hidden") => void;
@@ -189,6 +266,8 @@ function PostCard({
     photo_url?: string | null;
     status?: "pending" | "approved" | "hidden";
   }) => void;
+  onViewReceipt: (post: Post) => void;
+  onMissingReceipt: (post: Post) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -202,6 +281,9 @@ function PostCard({
     status: post.status,
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Use memoized payment info to prevent excessive calls
+  const paymentInfo = usePaymentInfo(post);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -243,12 +325,6 @@ function PostCard({
   const isHiring = post.post_type === "employer";
   const [imageError, setImageError] = useState(false);
 
-  // Debug: Log photo data for admin
-  console.log(`🔍 Admin Post: ${post.work}`);
-  console.log(`📸 Admin Photo URL: ${post.photo_url || 'NULL'}`);
-  console.log(`🏷️ Admin Post Type: ${post.post_type}`);
-  console.log(`✅ Admin Status: ${post.status}`);
-
   return (
     <div className="rounded-lg border bg-card p-4 sm:p-6">
       <div className="flex flex-col lg:flex-row gap-4">
@@ -261,11 +337,7 @@ function PostCard({
               alt={post.work}
               className="w-full h-full object-cover"
               onError={() => {
-                console.log(`❌ Admin: Photo failed to load: ${post.photo_url}`);
                 setImageError(true);
-              }}
-              onLoad={() => {
-                console.log(`✅ Admin: Photo loaded successfully: ${post.photo_url}`);
               }}
             />
           ) : (
@@ -335,6 +407,28 @@ function PostCard({
             >
               {post.status}
             </span>
+            {/* Payment Status Badge */}
+            {(() => {
+              return (
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded ${
+                    paymentInfo.status === "approved"
+                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                      : paymentInfo.status === "pending" || paymentInfo.status === "paid"
+                        ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                        : paymentInfo.status === "rejected"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+                  }`}
+                >
+                  {paymentInfo.status === "none" ? "No Payment" : 
+                   paymentInfo.status === "pending" ? "Payment Pending" :
+                   paymentInfo.status === "paid" ? "Payment Paid" :
+                   paymentInfo.status === "approved" ? "Payment Approved" :
+                   paymentInfo.status === "rejected" ? "Payment Rejected" : paymentInfo.status}
+                </span>
+              );
+            })()}
           </div>
 
           {isEditing ? (
@@ -469,6 +563,36 @@ function PostCard({
                 >
                   Edit
                 </Button>
+                
+                {/* Payment Actions */}
+                {(() => {
+                  if (paymentInfo.status === "pending" || paymentInfo.status === "paid") {
+                    if (paymentInfo.receiptUrl) {
+                      return (
+                        <Button
+                          onClick={() => onViewReceipt(post)}
+                          size="sm"
+                          variant="outline"
+                          className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                        >
+                          🧾 View Receipt
+                        </Button>
+                      );
+                    } else {
+                      return (
+                        <Button
+                          onClick={() => onMissingReceipt(post)}
+                          size="sm"
+                          variant="outline"
+                          className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                        >
+                          📄 Receipt Missing
+                        </Button>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
                 {post.status === "pending" && (
                   <Button
                     onClick={() => onStatusChange(post.id, "approved")}

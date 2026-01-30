@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
+import { uploadPaymentReceipt } from "@/lib/storage";
 import { getOrCreateVisitorId } from "@/lib/visitor-id";
+
+// Check if Supabase is configured
+const isSupabaseConfigured = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 interface Post {
   id: string;
@@ -22,6 +26,31 @@ export default function PostPaymentPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const postId = params.postId as string;
+  const isContactUnlock = searchParams.get("type") === "contact_unlock";
+  const unlockRequestId = searchParams.get("requestId");
+
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
+          <p className="text-gray-700 mb-4">
+            Supabase is not configured. Please set up your environment variables:
+          </p>
+          <div className="bg-gray-100 p-4 rounded text-sm">
+            <p><strong>NEXT_PUBLIC_SUPABASE_URL</strong></p>
+            <p><strong>NEXT_PUBLIC_SUPABASE_ANON_KEY</strong></p>
+          </div>
+          <p className="text-gray-600 text-sm mt-4">
+            Copy these from your Supabase project settings and add them to your .env.local file.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,10 +58,6 @@ export default function PostPaymentPage() {
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  
-  // Check if this is a contact unlock payment
-  const unlockRequestId = searchParams.get('unlock_request');
-  const isContactUnlock = !!unlockRequestId;
 
   useEffect(() => {
     if (params.postId) {
@@ -97,7 +122,7 @@ export default function PostPaymentPage() {
       const visitorId = getOrCreateVisitorId();
       
       if (isContactUnlock && unlockRequestId) {
-        // Handle contact unlock payment
+        // Handle contact unlock payment using server-side function
         const base64String = paymentProof ? await fileToBase64(paymentProof) : '';
         
         const formData = new FormData();
@@ -125,14 +150,30 @@ export default function PostPaymentPage() {
           setError(result.error || 'Failed to submit payment');
         }
       } else {
-        // Handle post promotion payment (existing logic)
-        const paymentProofUrl = paymentProof 
-          ? `payment_proof_${post.id}_${visitorId}_${Date.now()}.${paymentProof.type.split('/')[1]}`
-          : `transaction_${post.id}_${transactionId}_${Date.now()}`;
+        // Handle post promotion payment with actual file upload
+        let receiptUrl = null;
+        
+        if (paymentProof) {
+          // Upload file to Supabase Storage first
+          const uploadResult = await uploadPaymentReceipt(paymentProof);
+          
+          if (uploadResult.error || !uploadResult.url) {
+            throw new Error(`Failed to upload receipt: ${uploadResult.error}`);
+          }
+          
+          receiptUrl = uploadResult.url;
+          console.log("✅ Receipt uploaded to storage:", receiptUrl);
+        } else if (transactionId.trim()) {
+          // For transaction ID only, create a placeholder
+          receiptUrl = `transaction_${post.id}_${transactionId.trim()}_${Date.now()}`;
+          console.log("📝 Using transaction ID placeholder:", receiptUrl);
+        } else {
+          throw new Error("Either payment proof file or transaction ID is required");
+        }
 
         console.log("Submitting payment proof:", {
           postId: post.id,
-          paymentProofUrl,
+          receiptUrl,
           visitorId,
           hasFile: !!paymentProof,
           transactionId
@@ -140,7 +181,7 @@ export default function PostPaymentPage() {
 
         const { success, error } = await updateHomepagePaymentProof(
           post.id,
-          paymentProofUrl
+          receiptUrl
         );
 
         console.log("Payment proof submission result:", { success, error });

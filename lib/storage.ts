@@ -68,6 +68,15 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
       return { url: null, error: validation.error || "Invalid file" };
     }
 
+    // Additional defensive checks
+    if (!file || file.size === 0) {
+      return { url: null, error: "Invalid file: File is empty or undefined" };
+    }
+
+    if (!file.name || file.name.trim() === '') {
+      return { url: null, error: "Invalid file: File name is empty" };
+    }
+
     // Optimize image if it's an image (not PDF)
     let fileToUpload: File = file;
     if (file.type.startsWith("image/")) {
@@ -82,10 +91,20 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
       }
     }
 
-    // Generate unique filename
+    // Generate unique filename with timestamp and random string
     const fileExt = fileToUpload.name.split(".").pop();
-    const fileName = `receipt-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(7);
+    const fileName = `receipt-${timestamp}-${randomString}.${fileExt}`;
     const filePath = `${fileName}`;
+
+    console.log("📤 Uploading payment receipt:", {
+      originalName: file.name,
+      fileName,
+      filePath,
+      fileSize: fileToUpload.size,
+      fileType: fileToUpload.type
+    });
 
     // Upload file to payment-receipts bucket
     if (!supabaseClient) {
@@ -104,22 +123,30 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
       });
 
     if (uploadError) {
+      console.error("❌ Storage upload error:", uploadError);
       if (process.env.NODE_ENV === "development") {
         console.error("Error uploading file:", uploadError);
       }
       return { url: null, error: uploadError.message };
     }
 
-    // Get public URL
+    // Get public URL - this will be the exact path stored in database
     const {
       data: { publicUrl },
     } = supabaseClient.storage.from(PAYMENT_RECEIPTS_BUCKET).getPublicUrl(filePath);
 
+    console.log("✅ Receipt uploaded successfully:", publicUrl);
+
+    // Validate the returned URL
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!publicUrl || !supabaseUrl || !publicUrl.startsWith(supabaseUrl)) {
+      console.error("❌ Invalid public URL generated:", publicUrl);
+      return { url: null, error: "Failed to generate valid public URL" };
+    }
+
     return { url: publicUrl, error: null };
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error in uploadPaymentReceipt:", error);
-    }
+    console.error("❌ Error in uploadPaymentReceipt:", error);
     return { url: null, error: "Failed to upload receipt" };
   }
 }

@@ -243,13 +243,25 @@ export async function getPostById(postId: string) {
   }
 }
 
-// Get all posts (admin only)
+// Get all posts (admin only) with payment data
 export async function getAllPosts(filters?: {
   status?: "pending" | "approved" | "hidden";
   post_type?: "employer" | "employee";
 }) {
   try {
-    let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
+    let query = supabase
+      .from("posts")
+      .select(`
+        id, post_type, work, time, place, salary, contact, photo_url, status, 
+        homepage_payment_status, payment_proof, created_at,
+        payments!left(
+          id, status, receipt_url, created_at
+        ),
+        contact_unlock_requests!left(
+          id, status, payment_proof, created_at
+        )
+      `)
+      .order("created_at", { ascending: false });
 
     if (filters?.status) {
       query = query.eq("status", filters.status);
@@ -267,7 +279,33 @@ export async function getAllPosts(filters?: {
       return { posts: [], error: error.message };
     }
 
-    return { posts: (data || []) as Post[], error: null };
+    // Process the data to get only the latest contact unlock request per post
+    const processedData = (data || []).map((post: Post & { 
+      payments?: { id: string; status: string; receipt_url?: string; created_at: string }[];
+      contact_unlock_requests?: { id: string; status: string; payment_proof?: string; created_at: string }[];
+    }) => {
+      // Get the latest payment (if multiple)
+      const latestPayment = post.payments && post.payments.length > 0 
+        ? post.payments.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0]
+        : null;
+
+      // Get the latest contact unlock request (if multiple)
+      const latestUnlock = post.contact_unlock_requests && post.contact_unlock_requests.length > 0
+        ? post.contact_unlock_requests.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0]
+        : null;
+
+      return {
+        ...post,
+        payments: latestPayment ? [latestPayment] : [],
+        contact_unlock_requests: latestUnlock ? [latestUnlock] : []
+      };
+    });
+
+    return { posts: processedData as Post[], error: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error in getAllPosts:", error);
