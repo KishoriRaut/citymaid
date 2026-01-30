@@ -71,12 +71,12 @@ export default function NewPostPage() {
       
       // Handle photo upload for employee posts
       let photoUrl: string | null = null;
-      if (values.post_type === "employee" && values.photo?.[0]) {
-        console.log("📸 Uploading photo:", values.photo[0].name, values.photo[0].size);
-        console.log("📸 Photo type:", values.photo[0].type);
-        console.log("📸 Photo last modified:", values.photo[0].lastModified);
+      if (values.post_type === "employee" && values.photo) {
+        console.log("📸 Uploading photo:", values.photo.name, values.photo.size);
+        console.log("📸 Photo type:", values.photo.type);
+        console.log("📸 Photo last modified:", values.photo.lastModified);
         
-        const { url, error: uploadError } = await uploadPhoto(values.photo[0]);
+        const { url, error: uploadError } = await uploadPhoto(values.photo);
         if (uploadError) {
           console.error("❌ Photo upload error:", uploadError);
           throw new Error(uploadError);
@@ -95,12 +95,11 @@ export default function NewPostPage() {
         console.log("📷 No photo to upload or not employee post");
         console.log("📷 Post type:", values.post_type);
         console.log("📷 Photo exists:", !!values.photo);
-        console.log("📷 Photo array length:", values.photo?.length);
-        if (values.photo?.[0]) {
+        if (values.photo) {
           console.log("📷 Photo details:", {
-            name: values.photo[0].name,
-            size: values.photo[0].size,
-            type: values.photo[0].type
+            name: values.photo.name,
+            size: values.photo.size,
+            type: values.photo.type
           });
         }
       }
@@ -368,7 +367,7 @@ export default function NewPostPage() {
                         accept="image/*"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) onChange(file);
+                          onChange(file || null);
                         }}
                         ref={ref}
                       />
