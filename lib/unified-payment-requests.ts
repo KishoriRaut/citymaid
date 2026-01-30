@@ -346,7 +346,11 @@ export async function updateUnifiedPayment(
   base64String: string,
   fileName: string,
   fileType: string,
-  transactionId?: string
+  transactionId?: string,
+  userName?: string,
+  userPhone?: string,
+  userEmail?: string,
+  contactPreference?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log('🔧 UNIFIED - Updating payment:', { requestId, type, fileName, transactionId });
@@ -394,7 +398,7 @@ export async function updateUnifiedPayment(
     if (type === 'post_promotion') {
       return updatePostPromotionPayment(requestId, paymentProof);
     } else if (type === 'contact_unlock') {
-      return updateContactUnlockPayment(requestId, paymentProof);
+      return updateContactUnlockPayment(requestId, paymentProof, userName, userPhone, userEmail, contactPreference);
     }
 
     return { success: false, error: "Invalid payment type" };
@@ -445,7 +449,11 @@ async function updatePostPromotionPayment(
 
 async function updateContactUnlockPayment(
   requestId: string,
-  paymentProof: string
+  paymentProof: string,
+  userName?: string,
+  userPhone?: string,
+  userEmail?: string,
+  contactPreference?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // First get the post_id from the unlock request
@@ -460,13 +468,21 @@ async function updateContactUnlockPayment(
       return { success: false, error: "Failed to find unlock request" };
     }
 
-    // Update the unlock request
+    // Update the unlock request with contact information
+    const updateData: any = {
+      payment_proof: paymentProof,
+      status: 'paid'
+    };
+
+    // Add contact information if provided
+    if (userName) updateData.user_name = userName;
+    if (userPhone) updateData.user_phone = userPhone;
+    if (userEmail) updateData.user_email = userEmail;
+    if (contactPreference) updateData.contact_preference = contactPreference;
+
     const { error } = await supabase
       .from('contact_unlock_requests')
-      .update({ 
-        payment_proof: paymentProof,
-        status: 'paid'
-      })
+      .update(updateData)
       .eq('id', requestId);
 
     if (error) {

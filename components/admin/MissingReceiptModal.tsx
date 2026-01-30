@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getPaymentInfo } from "@/lib/payment-utils";
+import { ContactInfoDisplay } from "@/components/admin/ContactInfoDisplay";
 
 interface MissingReceiptModalProps {
   isOpen: boolean;
@@ -147,6 +148,11 @@ export function MissingReceiptModal({
                   <strong>Phone:</strong> {post.contact}
                 </p>
               </div>
+            )}
+
+            {/* User Contact Information for Contact Unlock */}
+            {paymentInfo?.type === 'contact_unlock' && (
+              <ContactInfoDisplay postId={post.id} />
             )}
 
             {/* Storage Info */}

@@ -43,6 +43,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Extract contact information from form data
+    const userName = formData.get('userName') as string;
+    const userPhone = formData.get('userPhone') as string;
+    const userEmail = formData.get('userEmail') as string;
+    const contactPreference = formData.get('contactPreference') as string;
+
+    console.log('🔧 UNIFIED API - Contact info:', { 
+      userName, 
+      userPhone, 
+      userEmail, 
+      contactPreference 
+    });
+
     // Call the unified server function
     console.log('🔧 UNIFIED API - Calling updateUnifiedPayment...');
     const result = await updateUnifiedPayment(
@@ -51,7 +64,11 @@ export async function POST(request: NextRequest) {
       paymentProofBase64,
       fileName,
       fileType,
-      transactionId
+      transactionId,
+      userName,
+      userPhone,
+      userEmail,
+      contactPreference
     );
 
     console.log('🔧 UNIFIED API - Result from updateUnifiedPayment:', result);
