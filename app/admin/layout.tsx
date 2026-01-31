@@ -214,46 +214,74 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {/* Right side icons */}
             <div className="flex items-center gap-x-4">
               {/* Notification bell */}
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 hover:bg-accent/50 transition-colors">
                 <Bell className="h-5 w-5" />
-                <span className="sr-only">Notifications</span>
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="sr-only">View notifications</span>
+                {/* Notification badge */}
+                <span className="absolute -top-0.5 -right-0.5 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center ring-2 ring-background">
                   <span className="text-xs text-white font-medium">3</span>
                 </span>
+                {/* Pulse animation for new notifications */}
+                <span className="absolute -top-0.5 -right-0.5 h-5 w-5 bg-red-500 rounded-full animate-ping opacity-75"></span>
               </Button>
               
               {/* User profile dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent/50 transition-colors">
+                    <Avatar className="h-10 w-10 border-2 border-border">
                       <AvatarImage src="" alt={user.email} />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                         {user.email?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.email}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        Administrator
-                      </p>
+                <DropdownMenuContent className="w-64" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal p-4">
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-10 w-10 border-2 border-border">
+                          <AvatarImage src="" alt={user.email} />
+                          <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                            {user.email?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col space-y-1 leading-none">
+                          <p className="text-sm font-medium">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Administrator
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/admin/settings" className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      Settings
+                    <Link href="/admin/profile" className="flex items-center cursor-pointer">
+                      <UserIcon className="mr-3 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Profile</span>
+                        <span className="text-xs text-muted-foreground">Account settings</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/settings" className="flex items-center cursor-pointer">
+                      <Settings className="mr-3 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Settings</span>
+                        <span className="text-xs text-muted-foreground">System configuration</span>
+                      </div>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-red-600 focus:text-red-600">
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <div className="flex flex-col">
+                      <span>Logout</span>
+                      <span className="text-xs text-muted-foreground">Sign out of account</span>
+                    </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
