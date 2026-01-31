@@ -84,7 +84,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const handleLogout = async () => {
     try {
       clearSession();
-      router.push("/admin/login");
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
     }
