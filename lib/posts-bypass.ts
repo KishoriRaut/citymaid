@@ -16,7 +16,10 @@ export async function createDirectDataBypass() {
       salary: "NPR 80,000 - 120,000",
       contact: "hiring@techcompany.com",
       photo_url: null,
+      employee_photo: null,
       status: "approved",
+      homepage_payment_status: "none",
+      payment_proof: null,
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -29,7 +32,10 @@ export async function createDirectDataBypass() {
       salary: "NPR 40,000 - 60,000",
       contact: "designer@creative.com",
       photo_url: null,
+      employee_photo: null,
       status: "approved",
+      homepage_payment_status: "none",
+      payment_proof: null,
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -42,7 +48,10 @@ export async function createDirectDataBypass() {
       salary: "NPR 50,000 - 80,000",
       contact: "marketing@agency.com",
       photo_url: null,
+      employee_photo: null,
       status: "approved",
+      homepage_payment_status: "none",
+      payment_proof: null,
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -55,7 +64,10 @@ export async function createDirectDataBypass() {
       salary: "NPR 25,000 - 40,000",
       contact: "writer@content.com",
       photo_url: null,
+      employee_photo: null,
       status: "approved",
+      homepage_payment_status: "none",
+      payment_proof: null,
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -68,7 +80,10 @@ export async function createDirectDataBypass() {
       salary: "NPR 30,000 - 50,000",
       contact: "design@studio.com",
       photo_url: null,
+      employee_photo: null,
       status: "approved",
+      homepage_payment_status: "none",
+      payment_proof: null,
       created_at: new Date().toISOString(),
       can_view_contact: true
     },
@@ -81,7 +96,10 @@ export async function createDirectDataBypass() {
       salary: "NPR 70,000 - 100,000",
       contact: "mobile@dev.com",
       photo_url: null,
+      employee_photo: null,
       status: "approved",
+      homepage_payment_status: "none",
+      payment_proof: null,
       created_at: new Date().toISOString(),
       can_view_contact: true
     }

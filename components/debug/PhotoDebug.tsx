@@ -58,10 +58,10 @@ export function PhotoDebug() {
 
           if (postsError) {
             info.errors.push(`Posts query error: ${postsError.message}`);
-          } else {
-            info.samplePosts = posts || [];
-            const postsWithPhotos = posts?.filter(p => p.photo_url).length || 0;
-            console.log(`Found ${postsWithPhotos} posts with photos out of ${posts?.length || 0}`);
+          } else if (posts && Array.isArray(posts)) {
+            info.samplePosts = posts;
+            const postsWithPhotos = (posts as any[]).filter((p: any) => p.photo_url).length || 0;
+            console.log(`Found ${postsWithPhotos} posts with photos out of ${(posts as any[]).length}`);
           }
         }
       } catch (error) {
