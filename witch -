@@ -1,0 +1,96 @@
+[33m58346d8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/final-post-checking[m[33m)[m feat: implement search functionality for admin requests
+[33m1675999[m feat: remove loading spinner for instant admin access
+[33m332bea6[m feat: optimize admin loading times for better UX
+[33m4af18d4[m fix: resolve admin button redirect loops and flickering issues
+[33mfab37b3[m feat: clean up admin requests table styling and layout
+[33m5e1d917[m feat: implement realistic loading times for admin pages
+[33m201f453[m fix: Profile page not showing - missing user state
+[33m1ab68e8[m fix: resolve Profile page navigation blocking issue
+[33m8eb3f95[m fix: comprehensive navigation fix for Profile tab blocking issue
+[33m14a4898[m fix: resolve navigation issues when Profile tab is clicked
+[33mba98243[m fix: resolve duplicate loading and flickering issues in admin dashboard
+[33mbf261a8[m feat: enhance avatar and bell notification to modern standards
+[33mf1980c1[m feat: enhance admin device responsiveness across all pages
+[33m691e0b1[m feat: enhance admin navigation with descriptions and Profile page
+[33m4537f02[m feat: replace Reports page mock data with real analytics
+[33md94d13c[m feat: add mini stats cards to Requests page
+[33m7d3dd3d[m chore: remove legacy admin directories (69,000+ bytes of dead code)
+[33m7a2de2a[m[33m ([m[1;33mtag: [m[1;33mv0.1.0[m[33m, [m[1;31morigin/feature/admin-post-management[m[33m, [m[1;32mfeature/admin-post-management[m[33m)[m feat: add Create Post button to Requests page
+[33meb148b1[m chore: clean up production debug logging for better performance
+[33m12030e7[m feat: remove redundant dashboard and make requests default admin page
+[33m207a09f[m feat: remove redundant posts tab and unify admin management
+[33m4092459[m[33m ([m[1;33mtag: [m[1;33mcitymaid-photo-payment-stable[m[33m, [m[1;32mcontact[m[33m)[m Fix homepage photo rendering, unlock flow, admin checks
+[33m520241e[m Add comprehensive contact collection system with name field
+[33m35720ee[m[33m ([m[1;33mtag: [m[1;33mstep3-payment-receipt-fix[m[33m, [m[1;32munlock-contact[m[33m, [m[1;32mstep2-branch[m[33m, [m[1;32mcontact-fix[m[33m)[m Fix payment receipt 404 root cause - implement storage-first upload system
+[33mc111f05[m[33m ([m[1;33mtag: [m[1;33mstep2[m[33m, [m[1;32mphoto-showing[m[33m)[m Remove Frontend Photo Test debug component from homepage
+[33mf71efd0[m[33m ([m[1;33mtag: [m[1;33mstep1[m[33m, [m[1;32mpost-management[m[33m)[m Fix photo upload for new employee posts
+[33mdb094a2[m Fix photo fetching in PostCard components
+[33ma771d0d[m[33m ([m[1;31morigin/post-management[m[33m)[m Fix ESLint any type errors by adding PostWithPhoto interface
+[33m3f4e508[m Fix TypeScript errors in debug-photos API
+[33m564f757[m Add photo debugging API and enhanced upload logging
+[33mb516d28[m Remove homepage_payment_status from posts-bypass.ts
+[33m8f65924[m Fix final ESLint any type errors in test-photos API
+[33mb6208d9[m Fix TypeScript errors in test-photos API with proper type definitions
+[33m3292918[m Fix ESLint errors: remove any types from test-photo-upload API
+[33maa16379[m Fix all TypeScript errors in test-photo-upload API
+[33m9884afb[m Fix TypeScript error in test-photo-upload API
+[33mdc8a413[m Fix final TypeScript errors in revenue page
+[33mb50e6db[m Fix photo upload: add photo to form defaultValues and add comprehensive debugging
+[33m38258fc[m Add photo upload debugging and test API
+[33mb831988[m Add comprehensive photo debugging test API
+[33m159c028[m Add test API for post creation to verify Supabase saving
+[33md0e68e8[m Fix TypeScript error: remove invalid 'none' comparison for payment_status
+[33mced8440[m Fix revenue page TypeScript error: update to use payment_status
+[33m5295e22[m Fix TypeScript errors: update homepage payments to use unified payment status
+[33me53bcaa[m Fix build error: remove unused useEffect import
+[33m5a6ee68[m Add debugging for photo URLs in homepage
+[33m93cf3eb[m Remove homepage_payment_status references from types and transforms
+[33m7c7a93e[m Fix file input controlled/uncontrolled error in photo upload
+[33m8650dac[m Update homepage-payments.ts to work with unified payment system
+[33m8b12066[m Remove admin banner to fix isAdmin reference error
+[33m82605bc[m Remove admin status check from post creation to fix 401 errors
+[33ma7a3d29[m Fix homepage_payment_status references in createPost function
+[33mc0936d6[m Fix CreditCard reference error in admin dashboard
+[33md2410e9[m Remove Payment Management page while keeping payment functionality for posts and contact unlock
+[33mad9820d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #6 from KishoriRaut/admin-edit
+[33m5fd2144[m[33m ([m[1;31morigin/admin-edit[m[33m, [m[1;32madmin-edit[m[33m)[m Fix submit button: add missing salary field that was causing validation error
+[33m82f9e27[m Fix RadioGroup defaultValue and add debugging for submit button
+[33m960d149[m Clean up: remove test buttons and debugging code, fix Select components
+[33m30805d2[m Fix Select components and add external submit test for deep debugging
+[33ma7b2fc5[m Add detailed validation debugging for both submit buttons
+[33m96026e5[m Fix RadioGroup and add test button for debugging
+[33m8b95422[m Add form validation debugging to identify validation errors
+[33md877825[m Add debugging to post submission to identify the issue
+[33m75cd922[m Fix type error: use PostWithMaskedContact type for posts state
+[33m726d48b[m Fix TypeScript error: use correct ContactUnlockRequest properties
+[33m34665e2[m Fix final ESLint errors: remove remaining any types and unused variables
+[33md111e47[m Fix remaining ESLint errors: remove unused imports, fix any types, and resolve type issues
+[33m3a4e21d[m Fix ESLint errors: remove unused imports, fix types, and resolve syntax issues
+[33md0b4cfa[m Fix unified-payments API by replacing missing import with direct database queries
+[33m68131e5[m Remove getUnifiedPaymentRequests function
+[33mac9f8cf[m Add missing getUnifiedPaymentRequests function and fix TypeScript errors
+[33me21b3a3[m Fix build errors: correct button imports and JSX syntax
+[33m6703d26[m Add payment debugging and testing endpoints
+[33m08b67ba[m refactor: improve post form and fix auth checks
+[33mb919f52[m feat: add shadcn form components and new post page
+[33ma329e8f[m fix: update toast implementation in post page\n\n- Fixed import path for useToast hook to use @/hooks/use-toast\n- Updated toast usage to match the correct API\n- Replaced addToast calls with the correct toast function
+[33md8dc3c8[m fix: update Button import path and enhance PostCard component
+[33m9689977[m feat: modernize homepage with shadcn/ui components
+[33mdd787ae[m feat: implement complete modern CityMaid admin dashboard
+[33mfbeedc3[m fix: resolve remaining component import errors and integrate shadcn/ui toast
+[33m37f54ce[m feat: remove dead admin components and fix imports
+[33md02b09f[m fix: update admin profile page to use shadcn/ui components
+[33m32eea79[m feat: implement modern shadcn/ui admin dashboard with user profile
+[33md173a51[m Merge pull request #4 from KishoriRaut/feature/unlock-system
+[33m81dc2f0[m fix: remove unused imports and variables to resolve ESLint build errors
+[33m3ad9eff[m fix: resolve admin page flickering issue
+[33m251addf[m fix: create admin login redirect and fix routing
+[33me39eb1e[m fix: remove MagicLinkLogin dependency and fix admin 404
+[33mc5b805f[m fix: restore original working admin authentication system
+[33m014a29b[m debug: add comprehensive logging to admin authentication flow
+[33m170a816[m fix: match auth API response with User interface
+[33me74b028[m fix: restore multiple admin credentials and fix admin system
+[33mcf7b726[m fix: recreate auth login API route using echo command
+[33mdcbd28d[m fix: recreate admin login page using echo command
+[33m7d8bb73[m fix: trigger deployment with admin login fix
+[33mcfd5c6b[m trigger: force new deployment 
