@@ -26,7 +26,7 @@ function LoginContent() {
           if (redirectTo) {
             router.push(redirectTo);
           } else {
-            router.push('/admin');
+            router.push('/admin/requests');
           }
           return;
         }
@@ -70,7 +70,7 @@ function LoginContent() {
           if (redirectTo) {
             router.push(redirectTo);
           } else {
-            router.push('/admin');
+            router.push('/admin/requests');
           }
         }, 1000);
       } else {

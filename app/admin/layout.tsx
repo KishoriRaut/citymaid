@@ -122,9 +122,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="flex items-center justify-between h-16 px-6 border-b">
-              <Link href="/admin/requests" className="text-xl font-bold text-primary">
+              <div className="text-xl font-bold text-primary">
                 CityMaid Admin
-              </Link>
+              </div>
             </div>
 
             {/* Navigation */}
@@ -168,9 +168,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-card border-r px-6 pb-4 relative z-10">
           {/* Logo */}
           <div className="flex h-16 shrink-0 items-center">
-            <Link href="/admin/requests" className="text-xl font-bold text-primary">
+            <div className="text-xl font-bold text-primary">
               CityMaid Admin
-            </Link>
+            </div>
           </div>
 
           {/* Navigation */}
