@@ -25,7 +25,7 @@ export default function ProfilePage() {
 
   // Use same authentication pattern as layout
   useEffect(() => {
-    // Simulate authentication check with realistic timing
+    // Simulate authentication check with optimized timing
     const timer = setTimeout(() => {
       const mockUser = {
         id: "admin-123",
@@ -35,7 +35,7 @@ export default function ProfilePage() {
       };
       setUser(mockUser);
       setIsLoading(false);
-    }, 2000); // 2 seconds for realistic loading
+    }, 500); // 500ms for better user experience
 
     return () => clearTimeout(timer);
   }, []);
