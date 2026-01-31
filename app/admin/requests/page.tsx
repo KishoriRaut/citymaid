@@ -338,14 +338,14 @@ export default function RequestsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Type</TableHead>
+                  <TableHead className="w-[100px]">Type</TableHead>
                   <TableHead>Reference</TableHead>
-                  <TableHead>Photo</TableHead>
-                  <TableHead>Contact Information</TableHead>
-                  <TableHead>Payment Proof</TableHead>
-                  <TableHead>Post Contact (To Deliver)</TableHead>
-                  <TableHead>Submitted At</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead className="w-[80px]">Photo</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead className="w-[120px]">Payment</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[140px]">Submitted</TableHead>
+                  <TableHead className="w-[120px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
             <TableBody>
@@ -361,15 +361,12 @@ export default function RequestsPage() {
                       ) : (
                         <Unlock className="h-4 w-4 text-green-600" />
                       )}
-                      <span className="font-medium">
-                        {request.type === "Contact Unlock" && (
-                          <span>Contact<br />Unlock</span>
-                        )}
-                        {request.type === "Post" && "Post"}
+                      <span className="font-medium text-sm">
+                        {request.type === "Contact Unlock" ? "Contact" : request.type}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium text-sm max-w-[200px] truncate" title={request.reference}>
                     {request.reference}
                   </TableCell>
                   <TableCell>
@@ -423,28 +420,22 @@ export default function RequestsPage() {
                       }
                     })()}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-[200px]">
                     {request.type === "Contact Unlock" && request.contactInfo ? (
                       <div className="space-y-1 text-sm">
                         {request.contactInfo.user_name && (
-                          <div><strong>Name:</strong> {request.contactInfo.user_name}</div>
+                          <div className="truncate" title={request.contactInfo.user_name}>
+                            <strong>{request.contactInfo.user_name}</strong>
+                          </div>
                         )}
                         {request.contactInfo.user_phone && (
-                          <div className="flex items-center gap-1">
-                            <strong>Phone:</strong> {request.contactInfo.user_phone}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => copyToClipboard(request.contactInfo!.user_phone!)}
-                              className="h-4 w-4 p-0"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          <div className="text-muted-foreground">{request.contactInfo.user_phone}</div>
                         )}
                         {request.contactInfo.user_email && (
                           <div className="flex items-center gap-1">
-                            <strong>Email:</strong> {request.contactInfo.user_email}
+                            <div className="text-muted-foreground text-xs truncate" title={request.contactInfo.user_email}>
+                              {request.contactInfo.user_email}
+                            </div>
                             <Button
                               size="sm"
                               variant="ghost"
@@ -454,9 +445,6 @@ export default function RequestsPage() {
                               <Copy className="h-3 w-3" />
                             </Button>
                           </div>
-                        )}
-                        {request.contactInfo.contact_preference && (
-                          <div><strong>Preference:</strong> {request.contactInfo.contact_preference}</div>
                         )}
                       </div>
                     ) : (
