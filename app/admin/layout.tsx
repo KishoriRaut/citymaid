@@ -94,6 +94,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   };
 
+  // Handle navigation to ensure proper state management
+  const handleNavigation = (href: string) => {
+    router.push(href);
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -142,7 +147,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
                       }
                     `}
-                    onClick={() => setSidebarOpen(false)}
+                    onClick={() => {
+                      setSidebarOpen(false);
+                      handleNavigation(item.href);
+                    }}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="h-4 w-4" />
@@ -189,6 +197,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         }
                       `}
+                      onClick={() => handleNavigation(item.href)}
                     >
                       <div className="flex items-center gap-x-3">
                         <Icon className="h-5 w-5 shrink-0" />
@@ -254,7 +263,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64" align="end" forceMount>
+                <DropdownMenuContent className="w-64" align="end">
                   <DropdownMenuLabel className="font-normal p-4">
                     <div className="flex flex-col space-y-2">
                       <div className="flex items-center space-x-3">
