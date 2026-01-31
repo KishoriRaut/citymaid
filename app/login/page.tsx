@@ -20,12 +20,12 @@ function LoginContent() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       try {
         // Check if user is already logged in via localStorage
         const userStr = localStorage.getItem("user");
         if (userStr) {
-          JSON.parse(userStr);
+          const user = JSON.parse(userStr);
           // User is already logged in, redirect to intended destination
           const redirectTo = searchParams.get('redirect');
           if (redirectTo) {
@@ -35,11 +35,9 @@ function LoginContent() {
           }
           return;
         }
-
-        setLoading(false);
-        
       } catch (error) {
         console.error("Error checking auth:", error);
+      } finally {
         setLoading(false);
       }
     };
