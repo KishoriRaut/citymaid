@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
 // Libs
@@ -163,15 +166,23 @@ export default function NewPostPage() {
           {form.watch("post_type") === "employer" ? "Post a Job Requirement" : "Create Your Work Profile"}
         </h1>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Post Information</CardTitle>
+            <CardDescription>
+              Fill in the details below to {form.watch("post_type") === "employer" ? "post your job requirement" : "create your work profile"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Post Type Toggle */}
             <FormField
               control={form.control}
               name="post_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="block text-sm font-semibold mb-3">I want to</FormLabel>
+                  <FormLabel className="text-base font-semibold">I want to</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -186,13 +197,17 @@ export default function NewPostPage() {
                         />
                         <label
                           htmlFor="employer"
-                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-3 text-center font-medium transition-all duration-200 cursor-pointer ${
+                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-4 text-center font-medium transition-all duration-200 cursor-pointer ${
                             field.value === "employer"
                               ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
                               : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
                           }`}
                         >
-                          Hire a Worker
+                          <div className="space-y-1">
+                            <div className="text-lg">💼</div>
+                            <div>Hire a Worker</div>
+                            <div className="text-xs opacity-75">Post a job requirement</div>
+                          </div>
                         </label>
                       </div>
                       <div className="flex-1">
@@ -203,13 +218,17 @@ export default function NewPostPage() {
                         />
                         <label
                           htmlFor="employee"
-                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-3 text-center font-medium transition-all duration-200 cursor-pointer ${
+                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-4 text-center font-medium transition-all duration-200 cursor-pointer ${
                             field.value === "employee"
                               ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
                               : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
                           }`}
                         >
-                          Find a Job
+                          <div className="space-y-1">
+                            <div className="text-lg">👤</div>
+                            <div>Find a Job</div>
+                            <div className="text-xs opacity-75">Create your work profile</div>
+                          </div>
                         </label>
                       </div>
                     </RadioGroup>
@@ -322,6 +341,8 @@ export default function NewPostPage() {
               />
             )}
 
+            <Separator />
+
             {/* Place Input */}
             <FormField
               control={form.control}
@@ -360,12 +381,21 @@ export default function NewPostPage() {
                 <FormItem>
                   <FormLabel>Contact <span className="text-destructive">*</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone number or contact info" {...field} />
+                    <Textarea 
+                      placeholder="Phone number, email, or other contact information" 
+                      className="min-h-[80px]"
+                      {...field} 
+                    />
                   </FormControl>
+                  <FormDescription>
+                    Provide your contact information so interested parties can reach you
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <Separator />
 
             {/* Photo Upload - Mandatory for Employee, Optional for Employer */}
             <FormField
@@ -425,6 +455,8 @@ export default function NewPostPage() {
             </div>
           </form>
         </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
