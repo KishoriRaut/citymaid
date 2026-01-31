@@ -226,9 +226,17 @@ export default function RequestsPage() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Requests</h1>
-        <p className="text-muted-foreground">Manage post and contact unlock requests</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Requests</h1>
+          <p className="text-muted-foreground">Manage post and contact unlock requests</p>
+        </div>
+        <Button 
+          onClick={() => window.location.href = "/post"}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          Create New Post
+        </Button>
       </div>
 
       {/* Combined Filters */}
