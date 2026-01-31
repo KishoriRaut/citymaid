@@ -36,17 +36,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // For development/testing - bypass authentication
-    // In production, you would check for actual admin session here
-    const mockUser = {
-      id: "admin-123",
-      email: "admin@test.com",
-      role: "admin",
-      created_at: new Date().toISOString()
-    };
-    setUser(mockUser);
+    // Simulate authentication check
+    const timer = setTimeout(() => {
+      const mockUser = {
+        id: "admin-123",
+        email: "admin@test.com",
+        role: "admin",
+        created_at: new Date().toISOString()
+      };
+      setUser(mockUser);
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const navigation = [
@@ -93,6 +98,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show loading state while authenticating
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading admin dashboard...</p>
+        </div>
       </div>
     );
   }

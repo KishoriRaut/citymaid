@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,28 +52,21 @@ export default function RequestsPage() {
   const [processing, setProcessing] = useState<string | null>(null);
 
   // Load all requests
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       setLoading(true);
       
-      // Get payments (post requests)
-      const { payments: paymentData, error: paymentError } = await getAllAdminPayments();
+      // Use Promise.all to fetch data in parallel
+      const [paymentData, unlockData] = await Promise.all([
+        getAllAdminPayments(),
+        getAllUnlockRequests()
+      ]);
       
-      if (paymentError) {
-        console.error('Payment error:', paymentError);
-      }
-      
-      // Get unlock requests
-      const { requests: unlockData, error: unlockError } = await getAllUnlockRequests();
-      
-      if (unlockError) {
-        console.error('Unlock error:', unlockError);
-      }
-      
+      // Process data only after both calls complete
       const unifiedRequests: UnifiedRequest[] = [];
       
       // Add post payments as "Post" type
-      paymentData?.forEach((payment: AdminPayment) => {
+      paymentData?.payments?.forEach((payment: AdminPayment) => {
         unifiedRequests.push({
           id: payment.id,
           type: "Post",
@@ -89,14 +82,14 @@ export default function RequestsPage() {
       });
       
       // Add unlock requests as "Contact Unlock" type
-      unlockData?.forEach((unlock: ContactUnlockRequest) => {
+      unlockData?.requests?.forEach((unlock: ContactUnlockRequest) => {
         unifiedRequests.push({
           id: unlock.id,
           type: "Contact Unlock",
           reference: unlock.posts?.work || "Unknown Post",
           user: unlock.visitor_id || "",
           paymentProof: unlock.payment_proof,
-          transactionId: null, // Not available in ContactUnlockRequest
+          transactionId: null,
           submittedAt: unlock.created_at,
           status: unlock.status as "pending" | "approved" | "rejected" | "hidden",
           originalData: unlock,
@@ -110,38 +103,39 @@ export default function RequestsPage() {
         });
       });
       
+      // Set all data at once to prevent multiple re-renders
       setRequests(unifiedRequests);
     } catch (error) {
       console.error('Error loading requests:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadRequests();
   }, []);
 
-  // Filter requests
-  const filteredRequests = requests.filter(request => {
-    const statusMatch = filter === "all" || request.status === filter;
-    const typeMatch = typeFilter === "all" || 
-      (typeFilter === "post" && request.type === "Post") ||
-      (typeFilter === "contact-unlock" && request.type === "Contact Unlock");
-    
-    return statusMatch && typeMatch;
-  });
+  // Filter requests with useMemo to prevent unnecessary re-renders
+  const filteredRequests = useMemo(() => {
+    return requests.filter(request => {
+      const statusMatch = filter === "all" || request.status === filter;
+      const typeMatch = typeFilter === "all" || 
+        (typeFilter === "post" && request.type === "Post") ||
+        (typeFilter === "contact-unlock" && request.type === "Contact Unlock");
+      
+      return statusMatch && typeMatch;
+    });
+  }, [requests, filter, typeFilter]);
 
-  // Get counts for tabs
-  const getCounts = () => ({
+  // Get counts for tabs with useMemo for performance
+  const counts = useMemo(() => ({
     all: requests.length,
     pending: requests.filter(r => r.status === "pending").length,
     approved: requests.filter(r => r.status === "approved").length,
     rejected: requests.filter(r => r.status === "rejected").length,
     hidden: requests.filter(r => r.status === "hidden").length,
-  });
-
-  const counts = getCounts();
+  }), [requests]);
 
   // Handle approve/reject
   const handleApprove = async (request: UnifiedRequest) => {
