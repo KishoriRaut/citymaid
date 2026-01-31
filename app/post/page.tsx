@@ -56,7 +56,22 @@ export default function NewPostPage() {
     setMounted(true);
   }, []);
 
-  // Initialize form only on client side
+  // Don't render until mounted to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="h-12 bg-muted rounded"></div>
+            <div className="h-64 bg-muted rounded"></div>
+            <div className="h-96 bg-muted rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Initialize form only on client side after mounting
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -76,21 +91,6 @@ export default function NewPostPage() {
   const postType = form.watch("post_type");
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
-
-  // Don't render until mounted to avoid hydration issues
-  if (!mounted) {
-    return (
-      <div className="container mx-auto px-4 py-8 sm:py-12">
-        <div className="max-w-3xl mx-auto">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-muted rounded"></div>
-            <div className="h-64 bg-muted rounded"></div>
-            <div className="h-96 bg-muted rounded"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
