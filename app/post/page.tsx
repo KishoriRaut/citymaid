@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -49,8 +49,14 @@ export default function NewPostPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Initialize form
+  // Prevent SSR issues with react-hook-form
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Initialize form only on client side
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,6 +76,21 @@ export default function NewPostPage() {
   const postType = form.watch("post_type");
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
+
+  // Don't render until mounted to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="max-w-3xl mx-auto">
+          <div className="animate-pulse space-y-8">
+            <div className="h-12 bg-muted rounded"></div>
+            <div className="h-64 bg-muted rounded"></div>
+            <div className="h-96 bg-muted rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -161,35 +182,46 @@ export default function NewPostPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8">
-          {form.watch("post_type") === "employer" ? "Post a Job Requirement" : "Create Your Work Profile"}
-        </h1>
+      <div className="max-w-3xl mx-auto">
+        {/* Dynamic Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+            {postType === "employer" ? (
+              <>
+                <span className="text-primary">💼</span> Post a Job Requirement
+              </>
+            ) : (
+              <>
+                <span className="text-primary">👤</span> Create Your Work Profile
+              </>
+            )}
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            {postType === "employer" 
+              ? "Find the perfect worker for your needs"
+              : "Showcase your skills and find opportunities"
+            }
+          </p>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Post Information</CardTitle>
-            <CardDescription>
-              Fill in the details below to {form.watch("post_type") === "employer" ? "post your job requirement" : "create your work profile"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Post Type Toggle */}
+        {/* Role Toggle Card */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
             <FormField
               control={form.control}
               name="post_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-semibold">I want to</FormLabel>
+                  <FormLabel className="text-base font-semibold text-center block mb-4">
+                    I want to
+                  </FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="flex gap-3"
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
                     >
-                      <div className="flex-1">
+                      <div className="relative">
                         <RadioGroupItem
                           value="employer"
                           id="employer"
@@ -197,20 +229,20 @@ export default function NewPostPage() {
                         />
                         <label
                           htmlFor="employer"
-                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-4 text-center font-medium transition-all duration-200 cursor-pointer ${
+                          className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
                             field.value === "employer"
-                              ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
-                              : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
+                              ? "border-primary bg-primary/5 shadow-lg scale-105"
+                              : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
                           }`}
                         >
-                          <div className="space-y-1">
-                            <div className="text-lg">💼</div>
-                            <div>Hire a Worker</div>
-                            <div className="text-xs opacity-75">Post a job requirement</div>
+                          <div className="space-y-3">
+                            <div className="text-4xl">💼</div>
+                            <div className="text-lg font-semibold">Hire a Worker</div>
+                            <div className="text-sm text-muted-foreground">Post a job requirement and find talent</div>
                           </div>
                         </label>
                       </div>
-                      <div className="flex-1">
+                      <div className="relative">
                         <RadioGroupItem
                           value="employee"
                           id="employee"
@@ -218,28 +250,54 @@ export default function NewPostPage() {
                         />
                         <label
                           htmlFor="employee"
-                          className={`flex flex-1 items-center justify-center rounded-lg border-2 p-4 text-center font-medium transition-all duration-200 cursor-pointer ${
+                          className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
                             field.value === "employee"
-                              ? "border-primary bg-primary text-primary-foreground shadow-sm hover:shadow"
-                              : "border-border bg-background hover:bg-primary/10 hover:border-primary/30 text-foreground"
+                              ? "border-primary bg-primary/5 shadow-lg scale-105"
+                              : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
                           }`}
                         >
-                          <div className="space-y-1">
-                            <div className="text-lg">👤</div>
-                            <div>Find a Job</div>
-                            <div className="text-xs opacity-75">Create your work profile</div>
+                          <div className="space-y-3">
+                            <div className="text-4xl">👤</div>
+                            <div className="text-lg font-semibold">Find a Job</div>
+                            <div className="text-sm text-muted-foreground">Create your professional work profile</div>
                           </div>
                         </label>
                       </div>
                     </RadioGroup>
                   </FormControl>
-                  <FormDescription className="mt-2.5 text-sm">
-                    Select your purpose to continue
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </CardContent>
+        </Card>
+
+        {/* Main Form Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {postType === "employer" ? (
+                <>
+                  <span className="text-2xl">📋</span>
+                  Job Details
+                </>
+              ) : (
+                <>
+                  <span className="text-2xl">📝</span>
+                  Profile Information
+                </>
+              )}
+            </CardTitle>
+            <CardDescription>
+              {postType === "employer" 
+                ? "Provide details about the job you're offering"
+                : "Tell us about your skills and what you're looking for"
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
             {/* Work Type Dropdown */}
             <FormField
@@ -247,11 +305,26 @@ export default function NewPostPage() {
               name="work"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Work <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">🔧</span> Job Category
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">💪</span> Skills & Services
+                      </>
+                    )}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select work type" />
+                        <SelectValue placeholder={
+                          postType === "employer" 
+                            ? "Select job category" 
+                            : "Select your skills/services"
+                        } />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -269,6 +342,12 @@ export default function NewPostPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    {postType === "employer" 
+                      ? "Choose the category that best describes the work needed"
+                      : "Select the services you can provide"
+                    }
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -281,10 +360,34 @@ export default function NewPostPage() {
                 name="workOther"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Specify Work Type <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel className="text-base font-medium">
+                      {postType === "employer" ? (
+                        <>
+                          <span className="text-primary">📝</span> Specify Job Type
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-primary">📝</span> Describe Your Skills
+                        </>
+                      )}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter work type" {...field} />
+                      <Input 
+                        placeholder={
+                          postType === "employer" 
+                            ? "e.g., Custom furniture making, Event planning" 
+                            : "e.g., Graphic design, Content writing, Plumbing"
+                        } 
+                        {...field} 
+                      />
                     </FormControl>
+                    <FormDescription>
+                      {postType === "employer" 
+                        ? "Provide a clear description of the specific work needed"
+                        : "Describe your specialized skills and services"
+                      }
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -297,11 +400,26 @@ export default function NewPostPage() {
               name="time"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Time <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">⏰</span> Work Schedule
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">⏰</span> Availability
+                      </>
+                    )}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
+                        <SelectValue placeholder={
+                          postType === "employer" 
+                            ? "Select work schedule" 
+                            : "Select your availability"
+                        } />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -319,6 +437,12 @@ export default function NewPostPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>
+                    {postType === "employer" 
+                      ? "Specify when the work needs to be done"
+                      : "Let employers know when you're available to work"
+                    }
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -331,10 +455,34 @@ export default function NewPostPage() {
                 name="timeOther"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Specify Schedule <span className="text-destructive">*</span></FormLabel>
+                    <FormLabel className="text-base font-medium">
+                      {postType === "employer" ? (
+                        <>
+                          <span className="text-primary">📅</span> Specify Schedule Details
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-primary">📅</span> Describe Your Availability
+                        </>
+                      )}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter schedule details" {...field} />
+                      <Input 
+                        placeholder={
+                          postType === "employer" 
+                            ? "e.g., Weekends only, Evenings after 6 PM, Flexible hours" 
+                            : "e.g., Available weekdays 9-5, Weekend work preferred"
+                        } 
+                        {...field} 
+                      />
                     </FormControl>
+                    <FormDescription>
+                      {postType === "employer" 
+                        ? "Provide specific timing requirements for the work"
+                        : "Describe your preferred working hours and flexibility"
+                      }
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -349,10 +497,34 @@ export default function NewPostPage() {
               name="place"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Place <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">📍</span> Job Location
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">📍</span> Work Location
+                      </>
+                    )}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Kathmandu, Lalitpur" {...field} />
+                    <Input 
+                      placeholder={
+                        postType === "employer" 
+                          ? "e.g., Kathmandu, Lalitpur, Remote work available" 
+                          : "e.g., Kathmandu, Lalitpur, Can work remotely"
+                      } 
+                      {...field} 
+                    />
                   </FormControl>
+                  <FormDescription>
+                    {postType === "employer" 
+                      ? "Where will the work be performed?"
+                      : "Where are you located or willing to work?"
+                    }
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -364,10 +536,34 @@ export default function NewPostPage() {
               name="salary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Salary <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">💰</span> Compensation
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">💰</span> Expected Salary
+                      </>
+                    )}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., NPR 15,000 per month, Negotiable" {...field} />
+                    <Input 
+                      placeholder={
+                        postType === "employer" 
+                          ? "e.g., NPR 15,000 per month, Negotiable, Based on experience" 
+                          : "e.g., NPR 15,000-20,000 per month, Negotiable, Market rate"
+                      } 
+                      {...field} 
+                    />
                   </FormControl>
+                  <FormDescription>
+                    {postType === "employer" 
+                      ? "Specify the salary range or compensation details"
+                      : "Indicate your salary expectations"
+                    }
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -379,16 +575,34 @@ export default function NewPostPage() {
               name="contact"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact <span className="text-destructive">*</span></FormLabel>
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">📞</span> Contact Information
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">📞</span> Contact Details
+                      </>
+                    )}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Phone number, email, or other contact information" 
-                      className="min-h-[80px]"
+                      placeholder={
+                        postType === "employer" 
+                          ? "Phone number, email, and best time to contact you" 
+                          : "Phone number, email, LinkedIn profile, portfolio link"
+                      } 
+                      className="min-h-[100px]"
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Provide your contact information so interested parties can reach you
+                    {postType === "employer" 
+                      ? "Provide multiple ways for interested workers to reach you"
+                      : "Share your professional contact information for employers"
+                    }
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -403,8 +617,19 @@ export default function NewPostPage() {
               name="photo"
               render={({ field: { onChange, ref } }) => (
                 <FormItem>
-                  <FormLabel>
-                    Photo {postType === "employee" ? "(Required)" : "(Optional)"}
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">📷</span> Job Photo
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">📷</span> Professional Photo
+                      </>
+                    )}
+                    <span className="text-muted-foreground">
+                      {postType === "employee" ? " (Required)" : " (Optional)"}
+                    </span>
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -420,8 +645,8 @@ export default function NewPostPage() {
                   </FormControl>
                   <FormDescription>
                     {postType === "employee" 
-                      ? "Upload your photo (required for employee job applications)"
-                      : "Upload a relevant photo for your job posting (optional)"
+                      ? "Upload a professional photo - this helps employers get to know you (required)"
+                      : "Add a relevant photo for your job posting (optional but recommended)"
                     }
                   </FormDescription>
                   <FormMessage />
@@ -430,26 +655,32 @@ export default function NewPostPage() {
             />
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-4 pt-6 border-t">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isSubmitting}
+                size="lg"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                size="lg"
+                className="min-w-[140px]"
+              >
                 {isSubmitting ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Submitting...
+                    {postType === "employer" ? "Posting Job..." : "Creating Profile..."}
                   </>
                 ) : (
-                  'Submit Post'
+                  postType === "employer" ? "Post Job" : "Create Profile"
                 )}
               </Button>
             </div>
