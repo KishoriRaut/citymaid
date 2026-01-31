@@ -94,11 +94,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   };
 
-  // Handle navigation to ensure proper state management
-  const handleNavigation = (href: string) => {
-    router.push(href);
-  };
-
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -147,10 +142,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
                       }
                     `}
-                    onClick={() => {
-                      setSidebarOpen(false);
-                      handleNavigation(item.href);
-                    }}
+                    onClick={() => setSidebarOpen(false)}
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="h-4 w-4" />
@@ -173,7 +165,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-card border-r px-6 pb-4">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-card border-r px-6 pb-4 relative z-10">
           {/* Logo */}
           <div className="flex h-16 shrink-0 items-center">
             <Link href="/admin/requests" className="text-xl font-bold text-primary">
@@ -182,7 +174,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex flex-1 flex-col">
+          <nav className="flex flex-1 flex-col relative z-20">
             <ul role="list" className="flex flex-1 flex-col gap-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
@@ -197,7 +189,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         }
                       `}
-                      onClick={() => handleNavigation(item.href)}
                     >
                       <div className="flex items-center gap-x-3">
                         <Icon className="h-5 w-5 shrink-0" />
@@ -263,7 +254,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64" align="end">
+                <DropdownMenuContent className="w-64" align="end" style={{ zIndex: 40 }}>
                   <DropdownMenuLabel className="font-normal p-4">
                     <div className="flex flex-col space-y-2">
                       <div className="flex items-center space-x-3">
