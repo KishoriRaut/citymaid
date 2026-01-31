@@ -204,14 +204,14 @@ export default function AdminDashboardPage() {
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-purple-600" />
-                <CardTitle className="text-base">Posts Management</CardTitle>
+                <FileText className="h-5 w-5 text-green-600" />
+                <CardTitle className="text-base">Requests Management</CardTitle>
               </div>
-              <CardDescription className="text-sm">Approve and manage posts</CardDescription>
+              <CardDescription className="text-sm">Approve posts and contact unlock requests</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" size="sm" className="w-full" onClick={() => window.location.href = appConfig.routes.adminPosts}>
-                Manage Posts
+              <Button variant="outline" size="sm" className="w-full" onClick={() => window.location.href = "/admin/requests"}>
+                Manage Requests
               </Button>
             </CardContent>
           </Card>

@@ -12,8 +12,7 @@ import {
   Menu,
   User as UserIcon,
   LogOut,
-  Users,
-  FileText as PostsIcon
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -51,12 +50,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, []);
 
   const navigation = [
-    {
-      name: "Posts",
-      href: "/admin/posts",
-      icon: PostsIcon,
-      current: pathname === "/admin/posts",
-    },
     {
       name: "Requests",
       href: "/admin/requests",

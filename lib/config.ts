@@ -36,6 +36,5 @@ export const appConfig = {
     adminProfile: "/admin/profile",
     post: "/post",
     unlock: "/unlock",
-    adminPosts: "/admin/posts",
   },
 } as const;

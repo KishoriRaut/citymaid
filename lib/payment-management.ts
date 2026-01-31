@@ -54,7 +54,7 @@ export async function rejectPayment(
       if (error) throw error;
     }
 
-    revalidatePath("/admin/posts");
+    revalidatePath("/admin/requests");
     return { success: true };
   } catch (error) {
     console.error("Error rejecting payment:", error);
