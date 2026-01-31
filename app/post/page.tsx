@@ -51,6 +51,27 @@ export default function NewPostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Initialize form - always called in same order
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      post_type: "employer",
+      work: "",
+      workOther: "",
+      time: "",
+      timeOther: "",
+      place: "",
+      salary: "",
+      contact: "",
+      photo: undefined,
+    },
+  });
+
+  // Watch post_type to show/hide photo upload - always called in same order
+  const postType = form.watch("post_type");
+  const workValue = form.watch("work");
+  const timeValue = form.watch("time");
+
   // Prevent SSR issues with react-hook-form
   useEffect(() => {
     setMounted(true);
@@ -70,27 +91,6 @@ export default function NewPostPage() {
       </div>
     );
   }
-
-  // Initialize form only on client side after mounting
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      post_type: "employer",
-      work: "",
-      workOther: "",
-      time: "",
-      timeOther: "",
-      place: "",
-      salary: "",
-      contact: "",
-      photo: undefined,
-    },
-  });
-
-  // Watch post_type to show/hide photo upload
-  const postType = form.watch("post_type");
-  const workValue = form.watch("work");
-  const timeValue = form.watch("time");
 
   // Handle form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
