@@ -39,7 +39,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate authentication check
+    // Simulate authentication check with realistic timing
     const timer = setTimeout(() => {
       const mockUser = {
         id: "admin-123",
@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       };
       setUser(mockUser);
       setIsLoading(false);
-    }, 100);
+    }, 2000); // 2 seconds for realistic loading
 
     return () => clearTimeout(timer);
   }, []);
