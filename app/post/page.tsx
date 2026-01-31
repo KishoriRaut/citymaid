@@ -684,8 +684,8 @@ export default function NewPostPage() {
                 )}
               </Button>
             </div>
-          </form>
-        </Form>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       </div>
