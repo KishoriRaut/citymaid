@@ -32,7 +32,7 @@ export const appConfig = {
   routes: {
     home: "/",
     payment: "/payment",
-    admin: "/admin",
+    admin: "/admin/requests", // Default to requests page
     adminProfile: "/admin/profile",
     post: "/post",
     unlock: "/unlock",
