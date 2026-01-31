@@ -9,6 +9,20 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Shared loading component to eliminate duplication
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <Card className="w-full max-w-md">
+      <CardContent className="pt-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold">Loading...</h2>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -67,15 +81,13 @@ function LoginContent() {
         
         setMessage("Login successful! Redirecting...");
         
-        // Redirect to intended destination
+        // Redirect immediately without delay
         const redirectTo = searchParams.get('redirect');
-        setTimeout(() => {
-          if (redirectTo) {
-            router.push(redirectTo);
-          } else {
-            router.push('/admin/requests');
-          }
-        }, 1000);
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else {
+          router.push('/admin/requests');
+        }
       } else {
         setError(data.error || "Login failed");
       }
@@ -88,18 +100,7 @@ function LoginContent() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold">Loading...</h2>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // Regular admin login
@@ -179,18 +180,7 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold">Loading...</h2>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+    <Suspense fallback={<LoadingSpinner />}>
       <LoginContent />
     </Suspense>
   );

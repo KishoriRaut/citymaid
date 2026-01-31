@@ -41,7 +41,7 @@ export function ConditionalHeader() {
                 + Create Post
               </Button>
             </Link>
-            <Link href="/admin/login">
+            <Link href="/login">
               <Button variant="outline" className="text-xs sm:text-sm font-medium hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200 whitespace-nowrap">
                 Admin
               </Button>
@@ -70,7 +70,7 @@ export function ConditionalHeader() {
                         + Create Post
                       </Button>
                     </Link>
-                    <Link href="/admin/login">
+                    <Link href="/login">
                       <Button variant="outline" className="w-full justify-start hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200">
                         Admin
                       </Button>
