@@ -16,28 +16,21 @@ interface ProfileUser extends User {
 export default function ProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<ProfileUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [email, setEmail] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Use same authentication pattern as layout
+  // Set mock user immediately for development
   useEffect(() => {
-    // Simulate authentication check with optimized timing
-    const timer = setTimeout(() => {
-      const mockUser = {
-        id: "admin-123",
-        email: "admin@test.com",
-        role: "admin",
-        created_at: new Date().toISOString()
-      };
-      setUser(mockUser);
-      setIsLoading(false);
-    }, 500); // 500ms for better user experience
-
-    return () => clearTimeout(timer);
+    const mockUser = {
+      id: "admin-123",
+      email: "admin@test.com",
+      role: "admin",
+      created_at: new Date().toISOString()
+    };
+    setUser(mockUser);
   }, []);
 
   useEffect(() => {
@@ -95,27 +88,6 @@ export default function ProfilePage() {
       setIsSaving(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8 sm:py-12 lg:py-16">
-        <div className="max-w-3xl mx-auto">
-          <Skeleton className="h-8 sm:h-10 w-48 mb-6 sm:mb-8" />
-          <div className="rounded-lg border bg-card p-4 sm:p-6 lg:p-8 shadow-sm space-y-5 sm:space-y-6">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <Skeleton className="h-10 w-32" />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (!user) {
     return null; // Will redirect
