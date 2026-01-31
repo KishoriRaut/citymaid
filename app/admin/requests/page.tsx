@@ -55,59 +55,25 @@ export default function RequestsPage() {
   const loadRequests = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Loading requests...');
       
       // Get payments (post requests)
-      console.log('🔍 Fetching admin payments...');
       const { payments: paymentData, error: paymentError } = await getAllAdminPayments();
-      console.log('🔍 Payment data result:', { paymentData, paymentError });
       
       if (paymentError) {
-        console.error('❌ Payment error:', paymentError);
-      } else {
-        console.log('✅ Payments loaded:', paymentData?.length, 'items');
-        paymentData?.forEach((payment, index) => {
-          console.log(`📄 Payment ${index + 1}:`, {
-            id: payment.id,
-            post_id: payment.post_id,
-            work: payment.posts?.work,
-            post_type: payment.posts?.post_type,
-            has_employee_photo: !!payment.posts?.employee_photo,
-            has_photo_url: !!payment.posts?.photo_url
-          });
-        });
+        console.error('Payment error:', paymentError);
       }
       
       // Get unlock requests
-      console.log('🔍 Fetching unlock requests...');
       const { requests: unlockData, error: unlockError } = await getAllUnlockRequests();
-      console.log('🔍 Unlock data result:', { unlockData, unlockError });
       
       if (unlockError) {
-        console.error('❌ Unlock error:', unlockError);
-      } else {
-        console.log('✅ Unlock requests loaded:', unlockData?.length, 'items');
-        unlockData?.forEach((unlock, index) => {
-          console.log(`📄 Unlock ${index + 1}:`, {
-            id: unlock.id,
-            post_id: unlock.post_id,
-            visitor_id: unlock.visitor_id,
-            status: unlock.status,
-            has_payment_proof: !!unlock.payment_proof,
-            payment_proof: unlock.payment_proof,
-            has_user_name: !!unlock.user_name,
-            has_user_phone: !!unlock.user_phone,
-            has_user_email: !!unlock.user_email,
-            post_work: unlock.posts?.work
-          });
-        });
+        console.error('Unlock error:', unlockError);
       }
       
       const unifiedRequests: UnifiedRequest[] = [];
       
       // Add post payments as "Post" type
       paymentData?.forEach((payment: AdminPayment) => {
-        console.log('🔄 Processing payment:', payment.id);
         unifiedRequests.push({
           id: payment.id,
           type: "Post",
@@ -124,16 +90,6 @@ export default function RequestsPage() {
       
       // Add unlock requests as "Contact Unlock" type
       unlockData?.forEach((unlock: ContactUnlockRequest) => {
-        console.log('🔄 Processing unlock request:', {
-          id: unlock.id,
-          original_payment_proof: unlock.payment_proof,
-          payment_proof_length: unlock.payment_proof?.length || 0,
-          status: unlock.status,
-          visitor_id: unlock.visitor_id,
-          has_user_phone: !!unlock.user_phone,
-          user_phone: unlock.user_phone
-        });
-        
         unifiedRequests.push({
           id: unlock.id,
           type: "Contact Unlock",
@@ -154,18 +110,11 @@ export default function RequestsPage() {
         });
       });
       
-      console.log('� Admin - Total unified requests created:', unifiedRequests.length);
-      console.log('🔧 Admin - Request types:', {
-        post: unifiedRequests.filter(r => r.type === 'Post').length,
-        contactUnlock: unifiedRequests.filter(r => r.type === 'Contact Unlock').length
-      });
-      
       setRequests(unifiedRequests);
     } catch (error) {
-      console.error('❌ Admin - Error loading requests:', error);
+      console.error('Error loading requests:', error);
     } finally {
       setLoading(false);
-      console.log('🔧 Admin - Finished loading requests');
     }
   };
 
@@ -317,24 +266,6 @@ export default function RequestsPage() {
           Showing {filteredRequests.length} of {requests.length} requests
         </div>
       </div>
-
-      {/* Debug Info - Remove in production */}
-      <Card className="border-yellow-200 bg-yellow-50">
-        <CardHeader>
-          <CardTitle className="text-sm">Debug Information</CardTitle>
-        </CardHeader>
-        <CardContent className="text-xs space-y-2">
-          <div><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</div>
-          <div><strong>Total Requests:</strong> {requests.length}</div>
-          <div><strong>Filtered Requests:</strong> {filteredRequests.length}</div>
-          <div><strong>Filter:</strong> {filter}</div>
-          <div><strong>Type Filter:</strong> {typeFilter}</div>
-          <div><strong>Counts:</strong> All: {counts.all}, Pending: {counts.pending}, Approved: {counts.approved}</div>
-          <div className="text-red-600 font-bold">
-            {requests.length === 0 && !loading && '❌ No requests loaded - Check console for errors'}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Requests Table */}
       <Card>

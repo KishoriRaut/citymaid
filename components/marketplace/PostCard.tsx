@@ -23,34 +23,6 @@ export function PostCard({ post }: PostCardProps) {
   // Use the correct photo field based on post type
   const displayPhoto = post.post_type === "employee" ? post.employee_photo : post.photo_url;
   
-  // CRITICAL DEBUG: Log exact image source
-  console.log("🖼️ POSTCARD IMAGE SRC:", post.photo_url);
-  console.log("👤 EMPLOYEE PHOTO:", post.employee_photo);
-  console.log("🖼️ POSTCARD DISPLAY PHOTO:", displayPhoto);
-  console.log("🖼️ POSTCARD CONDITION:", { 
-    postType: post.post_type, 
-    displayPhoto: !!displayPhoto, 
-    imageError,
-    hasPhotoUrl: !!post.photo_url,
-    hasEmployeePhoto: !!post.employee_photo
-  });
-  
-  // Test URL accessibility
-  if (displayPhoto) {
-    fetch(displayPhoto, { method: 'HEAD' })
-      .then(response => {
-        console.log("🔥 IMAGE ACCESSIBILITY TEST:", {
-          url: displayPhoto,
-          status: response.status,
-          ok: response.ok,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-      })
-      .catch(error => {
-        console.log("� IMAGE ACCESSIBILITY ERROR:", error);
-      });
-  }
-  
   // Format posting time
   const timeInfo = formatTimeWithDetails(post.created_at);
   const isFresh = isFreshPost(post.created_at);
@@ -65,24 +37,9 @@ export function PostCard({ post }: PostCardProps) {
               src={displayPhoto}
               alt={post.work}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={() => {
-                console.log(`❌ Photo failed to load: ${displayPhoto}`);
-                console.log(`❌ Photo details:`, {
-                  postId: post.id,
-                  postType: post.post_type,
-                  photoUrl: displayPhoto,
-                  urlType: typeof displayPhoto,
-                  urlLength: displayPhoto?.length
-                });
-                setImageError(true);
-              }}
+              onError={() => setImageError(true)}
               onLoad={() => {
-                console.log(`✅ Photo loaded successfully: ${displayPhoto}`);
-                console.log(`✅ Photo details:`, {
-                  postId: post.id,
-                  postType: post.post_type,
-                  photoUrl: displayPhoto
-                });
+                // Image loaded successfully
               }}
               crossOrigin="anonymous"
             />
