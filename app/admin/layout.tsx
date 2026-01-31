@@ -55,18 +55,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: "/admin/requests",
       icon: FileText,
       current: pathname === "/admin/requests",
+      description: "Manage posts and contact unlocks"
     },
     {
       name: "Reports",
       href: "/admin/reports",
       icon: BarChart3,
       current: pathname === "/admin/reports",
+      description: "View analytics and insights"
     },
     {
       name: "Settings",
       href: "/admin/settings",
       icon: Settings,
       current: pathname === "/admin/settings",
+      description: "System configuration"
+    },
+    {
+      name: "Profile",
+      href: "/admin/profile",
+      icon: UserIcon,
+      current: pathname === "/admin/profile",
+      description: "Account settings"
     },
   ];
 
@@ -109,7 +119,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={`
-                      flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                      flex flex-col gap-y-1 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${item.current
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -117,8 +127,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     `}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <Icon className="h-4 w-4" />
-                    {item.name}
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4" />
+                      <span className="font-medium">{item.name}</span>
+                    </div>
+                    <p className={`text-xs ml-7 ${
+                      item.current 
+                        ? "text-primary-foreground/80" 
+                        : "text-muted-foreground"
+                    }`}>
+                      {item.description}
+                    </p>
                   </Link>
                 );
               })}
@@ -139,7 +158,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
+            <ul role="list" className="flex flex-1 flex-col gap-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -147,15 +166,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Link
                       href={item.href}
                       className={`
-                        group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 transition-colors
+                        group flex flex-col gap-y-1 rounded-lg p-3 text-sm font-medium leading-6 transition-all duration-200
                         ${item.current
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         }
                       `}
                     >
-                      <Icon className="h-6 w-6 shrink-0" />
-                      {item.name}
+                      <div className="flex items-center gap-x-3">
+                        <Icon className="h-5 w-5 shrink-0" />
+                        <span className="font-medium">{item.name}</span>
+                      </div>
+                      <p className={`text-xs ml-8 ${
+                        item.current 
+                          ? "text-primary-foreground/80" 
+                          : "text-muted-foreground"
+                      }`}>
+                        {item.description}
+                      </p>
                     </Link>
                   </li>
                 );
