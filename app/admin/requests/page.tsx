@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, CheckCircle, XCircle, FileText, Unlock } from "lucide-react";
+import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy } from "lucide-react";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
 
@@ -34,12 +34,20 @@ interface UnifiedRequest {
   submittedAt: string;
   status: "pending" | "approved" | "rejected" | "hidden";
   originalData: AdminPayment | ContactUnlockRequest;
+  // Contact unlock specific fields
+  contactInfo?: {
+    user_name?: string;
+    user_phone?: string;
+    user_email?: string;
+    contact_preference?: string;
+  };
+  postContact?: string; // Contact to deliver
 }
 
 export default function RequestsPage() {
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "hidden">("pending");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "hidden">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "post" | "contact-unlock">("all");
   const [processing, setProcessing] = useState<string | null>(null);
 
@@ -47,54 +55,117 @@ export default function RequestsPage() {
   const loadRequests = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Loading requests...');
       
       // Get payments (post requests)
-      const { payments: paymentData } = await getAllAdminPayments();
+      console.log('🔍 Fetching admin payments...');
+      const { payments: paymentData, error: paymentError } = await getAllAdminPayments();
+      console.log('🔍 Payment data result:', { paymentData, paymentError });
+      
+      if (paymentError) {
+        console.error('❌ Payment error:', paymentError);
+      } else {
+        console.log('✅ Payments loaded:', paymentData?.length, 'items');
+        paymentData?.forEach((payment, index) => {
+          console.log(`📄 Payment ${index + 1}:`, {
+            id: payment.id,
+            post_id: payment.post_id,
+            work: payment.posts?.work,
+            post_type: payment.posts?.post_type,
+            has_employee_photo: !!payment.posts?.employee_photo,
+            has_photo_url: !!payment.posts?.photo_url
+          });
+        });
+      }
       
       // Get unlock requests
-      const { requests: unlockData } = await getAllUnlockRequests();
+      console.log('🔍 Fetching unlock requests...');
+      const { requests: unlockData, error: unlockError } = await getAllUnlockRequests();
+      console.log('🔍 Unlock data result:', { unlockData, unlockError });
       
-      // Transform to unified format
+      if (unlockError) {
+        console.error('❌ Unlock error:', unlockError);
+      } else {
+        console.log('✅ Unlock requests loaded:', unlockData?.length, 'items');
+        unlockData?.forEach((unlock, index) => {
+          console.log(`📄 Unlock ${index + 1}:`, {
+            id: unlock.id,
+            post_id: unlock.post_id,
+            visitor_id: unlock.visitor_id,
+            status: unlock.status,
+            has_payment_proof: !!unlock.payment_proof,
+            payment_proof: unlock.payment_proof,
+            has_user_name: !!unlock.user_name,
+            has_user_phone: !!unlock.user_phone,
+            has_user_email: !!unlock.user_email,
+            post_work: unlock.posts?.work
+          });
+        });
+      }
+      
       const unifiedRequests: UnifiedRequest[] = [];
       
-      // Add payment requests as "Post" type
+      // Add post payments as "Post" type
       paymentData?.forEach((payment: AdminPayment) => {
+        console.log('🔄 Processing payment:', payment.id);
         unifiedRequests.push({
           id: payment.id,
           type: "Post",
           reference: payment.posts?.work || "Unknown Post",
-          user: "", // No user for post requests
+          user: payment.visitor_id || "",
           paymentProof: payment.receipt_url,
           transactionId: payment.reference_id,
           submittedAt: payment.created_at,
-          status: payment.status,
-          originalData: payment
+          status: payment.status as "pending" | "approved" | "rejected" | "hidden",
+          originalData: payment,
+          postContact: payment.posts?.contact
         });
       });
       
       // Add unlock requests as "Contact Unlock" type
       unlockData?.forEach((unlock: ContactUnlockRequest) => {
+        console.log('🔄 Processing unlock request:', {
+          id: unlock.id,
+          original_payment_proof: unlock.payment_proof,
+          payment_proof_length: unlock.payment_proof?.length || 0,
+          status: unlock.status,
+          visitor_id: unlock.visitor_id,
+          has_user_phone: !!unlock.user_phone,
+          user_phone: unlock.user_phone
+        });
+        
         unifiedRequests.push({
           id: unlock.id,
           type: "Contact Unlock",
-          reference: unlock.post_id || "Unknown Post",
+          reference: unlock.posts?.work || "Unknown Post",
           user: unlock.visitor_id || "",
           paymentProof: unlock.payment_proof,
           transactionId: null, // Not available in ContactUnlockRequest
           submittedAt: unlock.created_at,
           status: unlock.status as "pending" | "approved" | "rejected" | "hidden",
-          originalData: unlock
+          originalData: unlock,
+          contactInfo: {
+            user_name: unlock.user_name || undefined,
+            user_phone: unlock.user_phone || undefined,
+            user_email: unlock.user_email || undefined,
+            contact_preference: unlock.contact_preference || undefined
+          },
+          postContact: unlock.posts?.contact
         });
       });
       
-      // Sort by submitted date (newest first)
-      unifiedRequests.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+      console.log('� Admin - Total unified requests created:', unifiedRequests.length);
+      console.log('🔧 Admin - Request types:', {
+        post: unifiedRequests.filter(r => r.type === 'Post').length,
+        contactUnlock: unifiedRequests.filter(r => r.type === 'Contact Unlock').length
+      });
       
       setRequests(unifiedRequests);
     } catch (error) {
-      console.error("Error loading requests:", error);
+      console.error('❌ Admin - Error loading requests:', error);
     } finally {
       setLoading(false);
+      console.log('🔧 Admin - Finished loading requests');
     }
   };
 
@@ -108,6 +179,7 @@ export default function RequestsPage() {
     const typeMatch = typeFilter === "all" || 
       (typeFilter === "post" && request.type === "Post") ||
       (typeFilter === "contact-unlock" && request.type === "Contact Unlock");
+    
     return statusMatch && typeMatch;
   });
 
@@ -167,6 +239,23 @@ export default function RequestsPage() {
     });
   };
 
+  // Copy to clipboard helper
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
+  };
+
+  // View payment proof
+  const viewPaymentProof = (paymentProof: string | null) => {
+    if (!paymentProof) return;
+    
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const receiptUrl = paymentProof.startsWith('http') 
+      ? paymentProof 
+      : `${supabaseUrl}/storage/v1/object/public/${paymentProof}`;
+    window.open(receiptUrl, '_blank');
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -193,32 +282,24 @@ export default function RequestsPage() {
         <p className="text-muted-foreground">Manage post and contact unlock requests</p>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2">
-        {[
-          { key: "all", label: "All" },
-          { key: "pending", label: "Pending" },
-          { key: "approved", label: "Approved" },
-          { key: "rejected", label: "Rejected" },
-          { key: "hidden", label: "Hidden" },
-        ].map((tab) => (
-          <Button
-            key={tab.key}
-            variant={filter === tab.key ? "default" : "outline"}
-            onClick={() => setFilter(tab.key as typeof filter)}
-            className="rounded-full"
-          >
-            {tab.label}
-            <Badge variant="secondary" className="ml-2">
-              {counts[tab.key as keyof typeof counts]}
-            </Badge>
-          </Button>
-        ))}
-      </div>
-
-      {/* Filters */}
+      {/* Combined Filters */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
+          {/* Status Filter */}
+          <Select value={filter} onValueChange={(value: "all" | "pending" | "approved" | "rejected" | "hidden") => setFilter(value)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Filter by Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status ({counts.all})</SelectItem>
+              <SelectItem value="pending">Pending ({counts.pending})</SelectItem>
+              <SelectItem value="approved">Approved ({counts.approved})</SelectItem>
+              <SelectItem value="rejected">Rejected ({counts.rejected})</SelectItem>
+              <SelectItem value="hidden">Hidden ({counts.hidden})</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {/* Type Filter */}
           <Select value={typeFilter} onValueChange={(value: "all" | "post" | "contact-unlock") => setTypeFilter(value)}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Filter by Type" />
@@ -230,7 +311,30 @@ export default function RequestsPage() {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Results Count */}
+        <div className="text-sm text-muted-foreground">
+          Showing {filteredRequests.length} of {requests.length} requests
+        </div>
       </div>
+
+      {/* Debug Info - Remove in production */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="text-sm">Debug Information</CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs space-y-2">
+          <div><strong>Loading:</strong> {loading ? 'Yes' : 'No'}</div>
+          <div><strong>Total Requests:</strong> {requests.length}</div>
+          <div><strong>Filtered Requests:</strong> {filteredRequests.length}</div>
+          <div><strong>Filter:</strong> {filter}</div>
+          <div><strong>Type Filter:</strong> {typeFilter}</div>
+          <div><strong>Counts:</strong> All: {counts.all}, Pending: {counts.pending}, Approved: {counts.approved}</div>
+          <div className="text-red-600 font-bold">
+            {requests.length === 0 && !loading && '❌ No requests loaded - Check console for errors'}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Requests Table */}
       <Card>
@@ -243,8 +347,10 @@ export default function RequestsPage() {
               <TableRow>
                 <TableHead>Type</TableHead>
                 <TableHead>Reference</TableHead>
-                <TableHead>User</TableHead>
+                <TableHead>Photo</TableHead>
+                <TableHead>Contact Information</TableHead>
                 <TableHead>Payment Proof</TableHead>
+                <TableHead>Post Contact (To Deliver)</TableHead>
                 <TableHead>Submitted At</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
@@ -274,20 +380,147 @@ export default function RequestsPage() {
                     {request.reference}
                   </TableCell>
                   <TableCell>
-                    {request.user || "—"}
+                    {(() => {
+                      if (request.type === "Post") {
+                        const postData = (request.originalData as any)?.posts;
+                        
+                        if (postData?.employee_photo) {
+                          return (
+                            <div>
+                              <img 
+                                src={postData.employee_photo} 
+                                alt="Employee" 
+                                className="w-12 h-12 object-cover rounded"
+                                onError={(e) => {
+                                  console.error('❌ Photo failed to load:', postData.employee_photo);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div className="text-xs text-muted-foreground mt-1">Employee</div>
+                            </div>
+                          );
+                        } else if (postData?.photo_url) {
+                          return (
+                            <div>
+                              <img 
+                                src={postData.photo_url} 
+                                alt="Post" 
+                                className="w-12 h-12 object-cover rounded"
+                                onError={(e) => {
+                                  console.error('❌ Photo failed to load:', postData.photo_url);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div className="text-xs text-muted-foreground mt-1">Post</div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                              <span className="text-xs text-muted-foreground">No Photo</span>
+                            </div>
+                          );
+                        }
+                      } else {
+                        return (
+                          <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">N/A</span>
+                          </div>
+                        );
+                      }
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {request.type === "Contact Unlock" && request.contactInfo ? (
+                      <div className="space-y-1 text-sm">
+                        {request.contactInfo.user_name && (
+                          <div><strong>Name:</strong> {request.contactInfo.user_name}</div>
+                        )}
+                        {request.contactInfo.user_phone && (
+                          <div className="flex items-center gap-1">
+                            <strong>Phone:</strong> {request.contactInfo.user_phone}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(request.contactInfo!.user_phone!)}
+                              className="h-4 w-4 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                        {request.contactInfo.user_email && (
+                          <div className="flex items-center gap-1">
+                            <strong>Email:</strong> {request.contactInfo.user_email}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(request.contactInfo!.user_email!)}
+                              className="h-4 w-4 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                        {request.contactInfo.contact_preference && (
+                          <div><strong>Preference:</strong> {request.contactInfo.contact_preference}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Proof
-                      </Button>
+                      {request.paymentProof ? (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => viewPaymentProof(request.paymentProof)}
+                            className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Proof
+                          </Button>
+                          <Badge className="bg-green-100 text-green-800">
+                            ✅ Uploaded
+                          </Badge>
+                        </>
+                      ) : (
+                        <Badge variant="destructive" className="bg-red-100 text-red-800">
+                          ❌ Missing
+                        </Badge>
+                      )}
                       {request.transactionId && (
                         <Badge variant="secondary" className="text-xs">
                           {request.transactionId}
                         </Badge>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {request.type === "Contact Unlock" && request.postContact ? (
+                      <div className={`space-y-1 ${request.paymentProof ? '' : 'opacity-50'}`}>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm">{request.postContact}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(request.postContact!)}
+                            className="h-4 w-4 p-0"
+                            disabled={!request.paymentProof}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        {!request.paymentProof && (
+                          <div className="text-xs text-red-600">⚠️ Verify payment first</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(request.submittedAt)}

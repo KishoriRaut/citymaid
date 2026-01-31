@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getPaymentInfo } from "@/lib/payment-utils";
 import { ContactInfoDisplay } from "@/components/admin/ContactInfoDisplay";
+import { Button } from "@/components/ui/button";
 
 interface MissingReceiptModalProps {
   isOpen: boolean;
@@ -11,6 +12,18 @@ interface MissingReceiptModalProps {
     id: string;
     work: string;
     contact?: string;
+    contact_unlock_requests?: {
+      id: string;
+      status: string;
+      payment_proof?: string;
+      created_at: string;
+      user_name?: string;
+      user_phone?: string;
+      user_email?: string;
+      contact_preference?: string;
+      delivery_status?: string;
+      delivery_notes?: string;
+    }[];
   };
 }
 
@@ -150,9 +163,56 @@ export function MissingReceiptModal({
               </div>
             )}
 
-            {/* User Contact Information for Contact Unlock */}
+            {/* Payment Receipt Display */}
+            {paymentInfo?.receiptUrl && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="font-medium text-green-900 mb-3">📄 Payment Receipt</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      onClick={() => window.open(paymentInfo.receiptUrl, '_blank')}
+                      size="sm"
+                      variant="outline"
+                      className="border-green-600 text-green-600 hover:bg-green-50"
+                    >
+                      🖼️ View Receipt
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText(paymentInfo.receiptUrl);
+                        alert('Receipt URL copied to clipboard!');
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    >
+                      📋 Copy URL
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Contact Information for Contact Unlock */}
             {paymentInfo?.type === 'contact_unlock' && (
-              <ContactInfoDisplay postId={post.id} />
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-medium text-blue-900 mb-3">👤 Contact Information</h3>
+                <ContactInfoDisplay postId={post.id} />
+              </div>
+            )}
+
+            {/* Debug: Show contact unlock requests even if paymentInfo type is unknown */}
+            {paymentInfo?.type === 'unknown' && post.contact_unlock_requests && post.contact_unlock_requests.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="font-medium text-yellow-900 mb-2">🔍 Debug: Contact Requests Found</h3>
+                <p className="text-sm text-yellow-800">
+                  Found {post.contact_unlock_requests.length} contact unlock requests but paymentInfo.type is 'unknown'
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
+                  <h3 className="font-medium text-blue-900 mb-3">👤 Contact Information</h3>
+                  <ContactInfoDisplay postId={post.id} />
+                </div>
+              </div>
             )}
 
             {/* Storage Info */}

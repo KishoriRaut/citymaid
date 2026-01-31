@@ -264,6 +264,7 @@ function PostCard({
     salary?: string;
     contact?: string;
     photo_url?: string | null;
+    employee_photo?: string | null;
     status?: "pending" | "approved" | "hidden";
   }) => void;
   onViewReceipt: (post: Post) => void;
@@ -278,6 +279,7 @@ function PostCard({
     salary: post.salary,
     contact: post.contact,
     photo_url: post.photo_url || "",
+    employee_photo: post.employee_photo || "",
     status: post.status,
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -296,6 +298,7 @@ function PostCard({
         salary: formData.salary,
         contact: formData.contact,
         photo_url: formData.photo_url || null,
+        employee_photo: formData.employee_photo || null,
         status: formData.status,
       });
       setIsEditing(false);
@@ -315,6 +318,7 @@ function PostCard({
       salary: post.salary,
       contact: post.contact,
       photo_url: post.photo_url || "",
+      employee_photo: post.employee_photo || "",
       status: post.status,
     });
     setIsEditing(false);
@@ -324,16 +328,31 @@ function PostCard({
 
   const isHiring = post.post_type === "employer";
   const [imageError, setImageError] = useState(false);
+  
+  // Determine which photo to display
+  const displayPhoto = isHiring ? post.photo_url : post.employee_photo;
+  
+  // Debug logging
+  console.log(`🔍 Admin PostCard Debug:`, {
+    id: post.id,
+    post_type: post.post_type,
+    work: post.work,
+    photo_url: post.photo_url,
+    employee_photo: post.employee_photo,
+    isHiring,
+    displayPhoto,
+    hasDisplayPhoto: !!displayPhoto
+  });
 
   return (
     <div className="rounded-lg border bg-card p-4 sm:p-6">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Photo or Placeholder - For All Posts */}
         <div className="relative w-full lg:w-48 lg:flex-shrink-0 rounded-lg overflow-hidden bg-muted aspect-[4/3] flex items-center justify-center">
-          {post.photo_url && !imageError ? (
+          {displayPhoto && !imageError ? (
             // Show photo if available
             <img
-              src={post.photo_url}
+              src={displayPhoto}
               alt={post.work}
               className="w-full h-full object-cover"
               onError={() => {
@@ -508,17 +527,29 @@ function PostCard({
                     className="w-full px-3 py-2 border rounded-md bg-background text-sm"
                   />
                 </div>
-                {formData.post_type === "employee" && (
+                {formData.post_type === "employee" ? (
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium mb-1.5">Photo URL</label>
+                    <label className="block text-xs font-medium mb-1.5">Employee Photo URL</label>
                     <input
                       type="text"
-                      value={formData.photo_url}
+                      value={formData.employee_photo || ""}
+                      onChange={(e) => setFormData({ ...formData, employee_photo: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Employee profile photo (visible before approval)</p>
+                  </div>
+                ) : (
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium mb-1.5">Post Photo URL</label>
+                    <input
+                      type="text"
+                      value={formData.photo_url || ""}
                       onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
                       placeholder="https://..."
                       className="w-full px-3 py-2 border rounded-md bg-background text-sm"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Leave empty to remove photo</p>
+                    <p className="text-xs text-muted-foreground mt-1">Post-related photo (visible before approval)</p>
                   </div>
                 )}
               </div>
@@ -566,17 +597,43 @@ function PostCard({
                 
                 {/* Payment Actions */}
                 {(() => {
+                  // Debug logging - expand paymentInfo
+                  console.log('🔍 Payment Info Debug:', {
+                    postId: post.id,
+                    postWork: post.work,
+                    paymentInfo: {
+                      status: paymentInfo.status,
+                      type: paymentInfo.type,
+                      receiptUrl: paymentInfo.receiptUrl
+                    },
+                    hasContactRequests: (post.contact_unlock_requests?.length || 0) > 0,
+                    contactRequests: post.contact_unlock_requests || [],
+                    rawContactRequests: post.contact_unlock_requests
+                  });
+
                   if (paymentInfo.status === "pending" || paymentInfo.status === "paid") {
                     if (paymentInfo.receiptUrl) {
                       return (
-                        <Button
-                          onClick={() => onViewReceipt(post)}
-                          size="sm"
-                          variant="outline"
-                          className="border-purple-600 text-purple-600 hover:bg-purple-50"
-                        >
-                          🧾 View Receipt
-                        </Button>
+                        <>
+                          <Button
+                            onClick={() => onViewReceipt(post)}
+                            size="sm"
+                            variant="outline"
+                            className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                          >
+                            🧾 View Receipt
+                          </Button>
+                          {paymentInfo.type === 'contact_unlock' && (
+                            <Button
+                              onClick={() => onMissingReceipt(post)}
+                              size="sm"
+                              variant="outline"
+                              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                            >
+                              👥 View Contact Requests
+                            </Button>
+                          )}
+                        </>
                       );
                     } else {
                       return (
@@ -584,9 +641,12 @@ function PostCard({
                           onClick={() => onMissingReceipt(post)}
                           size="sm"
                           variant="outline"
-                          className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                          className={paymentInfo.type === 'contact_unlock' 
+                            ? "border-blue-600 text-blue-600 hover:bg-blue-50" 
+                            : "border-orange-600 text-orange-600 hover:bg-orange-50"
+                          }
                         >
-                          📄 Receipt Missing
+                          {paymentInfo.type === 'contact_unlock' ? '👥 View Contact Requests' : '📄 Receipt Missing'}
                         </Button>
                       );
                     }

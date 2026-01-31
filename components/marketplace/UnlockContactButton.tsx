@@ -38,7 +38,7 @@ export default function UnlockContactButton({
       console.log('✅ Unlock request created:', requestId);
       // Navigate to the SAME payment page used by post creation
       // We'll use the postId as the parameter and pass the requestId as a query param
-      router.push(`/post-payment/${postId}?unlock_request=${requestId}`);
+      router.push(`/post-payment/${postId}?requestId=${requestId}&type=contact_unlock`);
       
     } catch (error) {
       console.error('❌ Error in unlock contact:', error);

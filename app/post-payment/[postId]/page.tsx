@@ -144,8 +144,9 @@ export default function PostPaymentPage() {
       }
     }
 
-    if (!paymentProof && !transactionId.trim()) {
-      setError("Please provide either a payment proof file or transaction ID");
+    // Payment proof is mandatory for both post and contact unlock payments
+    if (!paymentProof) {
+      setError("Payment proof is required. Please upload a screenshot or receipt.");
       return;
     }
 
@@ -448,97 +449,99 @@ export default function PostPaymentPage() {
                 </div>
               </div>
 
-              {/* Contact Information Section */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Contact Information</h3>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <p className="text-sm text-blue-800">
-                    <strong>Important:</strong> Provide your contact details below. After payment approval, we'll send the job contact information to you.
-                  </p>
+              {/* Contact Information Section - Only for Contact Unlock */}
+              {isContactUnlock && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Contact Information</h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Important:</strong> Provide your contact details below. After payment approval, we'll send the job contact information to you.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="user-name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
+                      <input
+                        id="user-name"
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., John Doe"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Your full name for personalized communication
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="user-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number *
+                      </label>
+                      <input
+                        id="user-phone"
+                        type="tel"
+                        value={userPhone}
+                        onChange={(e) => setUserPhone(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 9849317227"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Format: 10-digit mobile number
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="user-email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        id="user-email"
+                        type="email"
+                        value={userEmail}
+                        onChange={(e) => setUserEmail(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., your.email@example.com"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        We'll send contact details to this email
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="contact-preference" className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Preference *
+                      </label>
+                      <select
+                        id="contact-preference"
+                        value={contactPreference}
+                        onChange={(e) => setContactPreference(e.target.value as "sms" | "email" | "both")}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="sms">SMS Only</option>
+                        <option value="email">Email Only</option>
+                        <option value="both">Both SMS and Email</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        How would you like to receive the job contact information?
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="user-name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name *
-                    </label>
-                    <input
-                      id="user-name"
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="e.g., John Doe"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your full name for personalized communication
-                    </p>
-                  </div>
-
-                  <div>
-                    <label htmlFor="user-phone" className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      id="user-phone"
-                      type="tel"
-                      value={userPhone}
-                      onChange={(e) => setUserPhone(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="e.g., 9849317227"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Format: 10-digit mobile number
-                    </p>
-                  </div>
-
-                  <div>
-                    <label htmlFor="user-email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      id="user-email"
-                      type="email"
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="e.g., your.email@example.com"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      We'll send contact details to this email
-                    </p>
-                  </div>
-
-                  <div>
-                    <label htmlFor="contact-preference" className="block text-sm font-medium text-gray-700 mb-2">
-                      Contact Preference *
-                    </label>
-                    <select
-                      id="contact-preference"
-                      value={contactPreference}
-                      onChange={(e) => setContactPreference(e.target.value as "sms" | "email" | "both")}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="sms">SMS Only</option>
-                      <option value="email">Email Only</option>
-                      <option value="both">Both SMS and Email</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      How would you like to receive the job contact information?
-                    </p>
-                  </div>
-                </div>
-              </div>
+              )}
 
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Submit Payment Proof</h3>
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="payment-proof" className="block text-sm font-medium text-gray-700 mb-2">
-                      Upload Payment Proof (Screenshot or Receipt)
+                      Upload Payment Proof * (Screenshot or Receipt - Required)
                     </label>
                     <input
                       id="payment-proof"
@@ -577,7 +580,7 @@ export default function PostPaymentPage() {
                 </Button>
                 <Button
                   onClick={handleSubmitPaymentProof}
-                  disabled={isSubmitting || (!paymentProof && !transactionId.trim())}
+                  disabled={isSubmitting || !paymentProof}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Payment Proof'}

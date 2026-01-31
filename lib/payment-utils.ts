@@ -44,23 +44,23 @@ export function usePaymentInfo(post: Post) {
 }
 
 export function getPaymentInfo(post: Post) {
-  // Check homepage payments first (for post promotion)
-  if (post.payments && post.payments.length > 0) {
-    const latestPayment = post.payments[0]; // Assuming latest is first
-    return {
-      status: latestPayment.status as "pending" | "approved" | "rejected",
-      receiptUrl: getSupabaseUrl(latestPayment.receipt_url),
-      type: "homepage" as const
-    };
-  }
-  
-  // Check contact unlock payments
+  // Check contact unlock payments first (higher priority)
   if (post.contact_unlock_requests && post.contact_unlock_requests.length > 0) {
     const latestUnlock = post.contact_unlock_requests[0]; // Assuming latest is first
     return {
       status: latestUnlock.status as "pending" | "paid" | "approved" | "rejected",
       receiptUrl: getSupabaseUrl(latestUnlock.payment_proof),
       type: "contact_unlock" as const
+    };
+  }
+  
+  // Check homepage payments second (for post promotion)
+  if (post.payments && post.payments.length > 0) {
+    const latestPayment = post.payments[0]; // Assuming latest is first
+    return {
+      status: latestPayment.status as "pending" | "approved" | "rejected",
+      receiptUrl: getSupabaseUrl(latestPayment.receipt_url),
+      type: "homepage" as const
     };
   }
   

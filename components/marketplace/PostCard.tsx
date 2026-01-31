@@ -16,15 +16,40 @@ interface PostCardProps {
 export function PostCard({ post }: PostCardProps) {
   const [imageError, setImageError] = useState(false);
   
-  // Debug: Log photo URL for employee posts
-  if (post.post_type === 'employee') {
-    console.log(`👤 Employee Post: ${post.work}`);
-    console.log(`📸 Photo URL: ${post.photo_url || 'No photo'}`);
-  }
-  
   // Use the new can_view_contact flag from the database
   const contactVisible = post.can_view_contact && post.contact !== null;
   const isHiring = post.post_type === "employer";
+  
+  // Use the correct photo field based on post type
+  const displayPhoto = post.post_type === "employee" ? post.employee_photo : post.photo_url;
+  
+  // CRITICAL DEBUG: Log exact image source
+  console.log("🖼️ POSTCARD IMAGE SRC:", post.photo_url);
+  console.log("👤 EMPLOYEE PHOTO:", post.employee_photo);
+  console.log("🖼️ POSTCARD DISPLAY PHOTO:", displayPhoto);
+  console.log("🖼️ POSTCARD CONDITION:", { 
+    postType: post.post_type, 
+    displayPhoto: !!displayPhoto, 
+    imageError,
+    hasPhotoUrl: !!post.photo_url,
+    hasEmployeePhoto: !!post.employee_photo
+  });
+  
+  // Test URL accessibility
+  if (displayPhoto) {
+    fetch(displayPhoto, { method: 'HEAD' })
+      .then(response => {
+        console.log("🔥 IMAGE ACCESSIBILITY TEST:", {
+          url: displayPhoto,
+          status: response.status,
+          ok: response.ok,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+      })
+      .catch(error => {
+        console.log("� IMAGE ACCESSIBILITY ERROR:", error);
+      });
+  }
   
   // Format posting time
   const timeInfo = formatTimeWithDetails(post.created_at);
@@ -35,17 +60,29 @@ export function PostCard({ post }: PostCardProps) {
       {/* Header with Image */}
       <div className="relative">
         <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-          {post.photo_url && !imageError ? (
+          {displayPhoto && !imageError ? (
             <img
-              src={post.photo_url}
+              src={displayPhoto}
               alt={post.work}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={() => {
-                console.log(`❌ Photo failed to load: ${post.photo_url}`);
+                console.log(`❌ Photo failed to load: ${displayPhoto}`);
+                console.log(`❌ Photo details:`, {
+                  postId: post.id,
+                  postType: post.post_type,
+                  photoUrl: displayPhoto,
+                  urlType: typeof displayPhoto,
+                  urlLength: displayPhoto?.length
+                });
                 setImageError(true);
               }}
               onLoad={() => {
-                console.log(`✅ Photo loaded successfully: ${post.photo_url}`);
+                console.log(`✅ Photo loaded successfully: ${displayPhoto}`);
+                console.log(`✅ Photo details:`, {
+                  postId: post.id,
+                  postType: post.post_type,
+                  photoUrl: displayPhoto
+                });
               }}
               crossOrigin="anonymous"
             />
@@ -57,7 +94,9 @@ export function PostCard({ post }: PostCardProps) {
                 ) : (
                   <MapPin className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
                 )}
-                <p className="text-xs text-muted-foreground/50">No Photo</p>
+                <p className="text-xs text-muted-foreground/50">
+                  {isHiring ? "No Photo" : "No Photo"}
+                </p>
               </div>
             </div>
           )}

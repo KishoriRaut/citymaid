@@ -59,7 +59,7 @@ export function validateReceiptFile(file: File): { valid: boolean; error?: strin
   return { valid: true };
 }
 
-// Upload payment receipt to Supabase Storage
+// Upload payment receipt to Supabase Storage (server-side compatible)
 export async function uploadPaymentReceipt(file: File): Promise<{ url: string | null; error: string | null }> {
   try {
     // Validate file first
@@ -106,7 +106,18 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
       fileType: fileToUpload.type
     });
 
-    // Upload file to payment-receipts bucket
+    // Check if we're on server-side and import appropriate supabase client
+    let supabaseClient;
+    if (typeof window === 'undefined') {
+      // Server-side - use server supabase client
+      const { supabase } = await import('./supabase');
+      supabaseClient = supabase;
+    } else {
+      // Client-side - use client supabase client
+      const { supabaseClient: client } = await import('./supabase-client');
+      supabaseClient = client;
+    }
+
     if (!supabaseClient) {
       return {
         error: "Supabase client not initialized - missing environment variables",

@@ -17,6 +17,8 @@ export interface AdminPayment {
     work: string;
     post_type: string;
     contact: string;
+    photo_url: string | null;
+    employee_photo: string | null;
   };
 }
 
@@ -29,16 +31,20 @@ export async function getAllAdminPayments(): Promise<{ payments: AdminPayment[],
         posts (
           work,
           post_type,
-          contact
+          contact,
+          photo_url,
+          employee_photo
         )
       `)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1000); // Fetch up to 1000 records to include older ones
 
     if (error) {
       console.error('Error fetching payments:', error);
       return { payments: [], error: error.message };
     }
 
+    console.log(`🔍 Fetched ${data?.length || 0} payment records`);
     return { payments: data as AdminPayment[], error: null };
   } catch (error) {
     console.error('Unexpected error:', error);
@@ -51,14 +57,42 @@ export async function updateAdminPaymentStatus(
   status: 'approved' | 'rejected'
 ): Promise<{ success: boolean, error: string | null }> {
   try {
-    const { error } = await supabase
+    // First get the post_id for this payment
+    const { data: payment, error: fetchError } = await supabase
+      .from('payments')
+      .select('post_id')
+      .eq('id', paymentId)
+      .single();
+
+    if (fetchError || !payment) {
+      console.error('Error fetching payment:', fetchError);
+      return { success: false, error: 'Payment not found' };
+    }
+
+    // Update payment status
+    const { error: paymentError } = await supabase
       .from('payments')
       .update({ status })
       .eq('id', paymentId);
 
-    if (error) {
-      console.error('Error updating payment status:', error);
-      return { success: false, error: error.message };
+    if (paymentError) {
+      console.error('Error updating payment status:', paymentError);
+      return { success: false, error: paymentError.message };
+    }
+
+    // If approving, also update the post status to 'approved'
+    if (status === 'approved') {
+      const { error: postError } = await supabase
+        .from('posts')
+        .update({ status: 'approved' })
+        .eq('id', payment.post_id);
+
+      if (postError) {
+        console.error('Error updating post status:', postError);
+        return { success: false, error: postError.message };
+      }
+
+      console.log('✅ Post status updated to approved for post:', payment.post_id);
     }
 
     return { success: true, error: null };

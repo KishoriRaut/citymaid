@@ -30,7 +30,16 @@ const formSchema = z.object({
   place: z.string().min(1, "Please enter a location"),
   salary: z.string().min(1, "Please enter a salary"),
   contact: z.string().min(1, "Please enter contact information"),
-  photo: z.any().optional(),
+  photo: z.any().refine((data) => {
+    // If employee post, photo is required
+    if (data?.post_type === "employee") {
+      return data && data instanceof File && data.size > 0;
+    }
+    // If employer post, photo is optional
+    return true;
+  }, {
+    message: "Photo is required for employee posts"
+  }),
 });
 
 export default function NewPostPage() {
@@ -69,9 +78,11 @@ export default function NewPostPage() {
       console.log("📸 Photo type:", typeof values.photo);
       console.log("📸 Photo is File:", values.photo instanceof File);
       
-      // Handle photo upload for employee posts
+      // Handle photo upload for both employer and employee posts
       let photoUrl: string | null = null;
-      if (values.post_type === "employee" && values.photo) {
+      let employeePhotoUrl: string | null = null;
+      
+      if (values.photo) {
         console.log("📸 Uploading photo:", values.photo.name, values.photo.size);
         console.log("📸 Photo type:", values.photo.type);
         console.log("📸 Photo last modified:", values.photo.lastModified);
@@ -81,27 +92,29 @@ export default function NewPostPage() {
           console.error("❌ Photo upload error:", uploadError);
           throw new Error(uploadError);
         }
-        photoUrl = url;
-        console.log("✅ Photo uploaded successfully:", photoUrl);
+        
+        // For employee posts, this is the employee profile photo
+        if (values.post_type === "employee") {
+          employeePhotoUrl = url;
+          console.log("✅ Employee photo uploaded successfully:", employeePhotoUrl);
+        } else {
+          // For employer posts, this is the post photo
+          photoUrl = url;
+          console.log("✅ Post photo uploaded successfully:", photoUrl);
+        }
         
         // Verify the uploaded URL format
-        if (photoUrl) {
+        const uploadedUrl = values.post_type === "employee" ? employeePhotoUrl : photoUrl;
+        if (uploadedUrl) {
           console.log("🔍 Uploaded URL analysis:");
-          console.log("  - Contains 'receipt-':", photoUrl.includes('receipt-'));
-          console.log("  - Contains 'post-photos':", photoUrl.includes('post-photos'));
-          console.log("  - URL format:", photoUrl);
+          console.log("  - Contains 'receipt-':", uploadedUrl.includes('receipt-'));
+          console.log("  - Contains 'post-photos':", uploadedUrl.includes('post-photos'));
+          console.log("  - URL format:", uploadedUrl);
         }
       } else {
-        console.log("📷 No photo to upload or not employee post");
+        console.log("📷 No photo to upload");
         console.log("📷 Post type:", values.post_type);
         console.log("📷 Photo exists:", !!values.photo);
-        if (values.photo) {
-          console.log("📷 Photo details:", {
-            name: values.photo.name,
-            size: values.photo.size,
-            type: values.photo.type
-          });
-        }
       }
 
       // Create post data
@@ -113,6 +126,7 @@ export default function NewPostPage() {
         salary: values.salary,
         contact: values.contact,
         photo_url: photoUrl,
+        employee_photo: employeePhotoUrl,
       };
 
       // Submit post
@@ -353,33 +367,37 @@ export default function NewPostPage() {
               )}
             />
 
-            {/* Photo Upload - Only for Employee Posts */}
-            {postType === "employee" && (
-              <FormField
-                control={form.control}
-                name="photo"
-                render={({ field: { onChange, ref } }) => (
-                  <FormItem>
-                    <FormLabel>Photo (Optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          onChange(file || null);
-                        }}
-                        ref={ref}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Upload a photo of your work (only for employee profiles)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            {/* Photo Upload - Mandatory for Employee, Optional for Employer */}
+            <FormField
+              control={form.control}
+              name="photo"
+              render={({ field: { onChange, ref } }) => (
+                <FormItem>
+                  <FormLabel>
+                    Photo {postType === "employee" ? "(Required)" : "(Optional)"}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        onChange(file);
+                      }}
+                      ref={ref}
+                      required={postType === "employee"}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {postType === "employee" 
+                      ? "Upload your photo (required for employee job applications)"
+                      : "Upload a relevant photo for your job posting (optional)"
+                    }
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Form Actions */}
             <div className="flex justify-end gap-3 pt-4">

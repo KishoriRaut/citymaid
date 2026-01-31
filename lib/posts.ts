@@ -70,6 +70,7 @@ export async function createPost(post: {
   salary: string;
   contact: string;
   photo_url?: string | null;
+  employee_photo?: string | null;
 }, request?: Request) {
   try {
     // ========================================================================
@@ -163,12 +164,26 @@ export async function createPost(post: {
     // ========================================================================
     // VALIDATION PASSED: Create the post
     // ========================================================================
-    // Allow photos for both employer and employee posts
-    const postData = {
-      ...post,
-      photo_url: post.photo_url || null, // Allow photos for all post types
+    // Handle photos based on post type
+    const postData: any = {
+      post_type: post.post_type,
+      work: post.work,
+      time: post.time,
+      place: post.place,
+      salary: post.salary,
+      contact: post.contact,
       status: postStatus, // 'approved' for admins, 'pending' for regular users
     };
+
+    // For employee posts: use employee_photo for profile photo, photo_url for payment receipt
+    if (post.post_type === "employee") {
+      postData.employee_photo = post.employee_photo || null;
+      postData.photo_url = null; // photo_url will be used for payment receipt only
+    } else {
+      // For employer posts: use photo_url for post photo
+      postData.photo_url = post.photo_url || null;
+      postData.employee_photo = null;
+    }
 
     const { data, error } = await supabase
       .from("posts")
@@ -252,13 +267,14 @@ export async function getAllPosts(filters?: {
     let query = supabase
       .from("posts")
       .select(`
-        id, post_type, work, time, place, salary, contact, photo_url, status, 
+        id, post_type, work, time, place, salary, contact, photo_url, employee_photo, status, 
         homepage_payment_status, payment_proof, created_at,
         payments!left(
           id, status, receipt_url, created_at
         ),
         contact_unlock_requests!left(
-          id, status, payment_proof, created_at
+          id, status, payment_proof, created_at,
+          user_name, user_phone, user_email, contact_preference, delivery_status, delivery_notes
         )
       `)
       .order("created_at", { ascending: false });
@@ -282,7 +298,18 @@ export async function getAllPosts(filters?: {
     // Process the data to get only the latest contact unlock request per post
     const processedData = (data || []).map((post: Post & { 
       payments?: { id: string; status: string; receipt_url?: string; created_at: string }[];
-      contact_unlock_requests?: { id: string; status: string; payment_proof?: string; created_at: string }[];
+      contact_unlock_requests?: { 
+        id: string; 
+        status: string; 
+        payment_proof?: string; 
+        created_at: string;
+        user_name?: string;
+        user_phone?: string;
+        user_email?: string;
+        contact_preference?: string;
+        delivery_status?: string;
+        delivery_notes?: string;
+      }[];
     }) => {
       // Get the latest payment (if multiple)
       const latestPayment = post.payments && post.payments.length > 0 
@@ -352,6 +379,7 @@ export async function updatePost(
     salary?: string;
     contact?: string;
     photo_url?: string | null;
+    employee_photo?: string | null;
     status?: "pending" | "approved" | "hidden";
   }
 ) {
@@ -367,9 +395,12 @@ export async function updatePost(
     if (updates.contact !== undefined) updateData.contact = updates.contact;
     if (updates.status !== undefined) updateData.status = updates.status;
 
-    // Handle photo_url: allow photos for all post types
+    // Handle photo fields
     if (updates.photo_url !== undefined) {
-      updateData.photo_url = updates.photo_url; // Allow photos for all post types
+      updateData.photo_url = updates.photo_url;
+    }
+    if (updates.employee_photo !== undefined) {
+      updateData.employee_photo = updates.employee_photo;
     }
 
     // Update the post

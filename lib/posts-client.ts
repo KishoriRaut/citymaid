@@ -1,10 +1,11 @@
 "use client";
 
 import { supabaseClient, isSupabaseConfigured } from "./supabase-client";
+import { createClient } from "@supabase/supabase-js";
 import type { PostWithMaskedContact } from "./types";
 import { maskContact } from "./utils";
 
-// Get public posts (client-side version for public pages)
+// Get public posts - SIMPLE DIRECT APPROACH
 export async function getPublicPostsClient() {
   try {
     // Check if Supabase is configured
@@ -17,52 +18,80 @@ export async function getPublicPostsClient() {
       };
     }
 
-    // Try RPC function first (most secure)
-    console.log("🔍 Calling get_public_posts RPC...");
-    const { data: approvedPosts, error: approvedError } = await supabaseClient
-      .rpc("get_public_posts", {} as any);  // Explicitly pass empty object to resolve ambiguity
+    // SIMPLE DIRECT APPROACH: Query posts table directly
+    console.log("🔍 SIMPLE APPROACH: Direct posts table query...");
+    
+    const { data, error } = await supabaseClient
+      .from('posts')
+      .select(`
+        id,
+        post_type,
+        work,
+        time,
+        place,
+        salary,
+        contact,
+        photo_url,
+        employee_photo,
+        status,
+        created_at
+      `)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(50);
 
-    if (approvedError) {
-      console.error("❌ RPC Error details:", approvedError);
-      console.error("Error code:", approvedError.code);
-      console.error("Error message:", approvedError.message);
-      
-      // If RPC function doesn't exist or has ambiguity, try direct query as fallback
-      if (approvedError.code === '42883' || approvedError.code === 'PGRST203' || 
-          approvedError.message?.includes('does not exist') || 
-          approvedError.message?.includes('Could not choose the best candidate function')) {
-        console.log("🔄 RPC function issue detected, trying direct query fallback...");
-        return await getDirectQueryFallback();
-      }
-      
+    if (error) {
+      console.error('❌ Direct query error:', error);
       return {
         posts: [],
         total: 0,
-        error: `RPC Error: ${approvedError.message} (Code: ${approvedError.code})`,
+        error: `Direct query error: ${error.message}`,
       };
     }
 
-    // If approved posts exist, return them with client-side masking
-    if (approvedPosts && approvedPosts.length > 0) {
-      console.log(`Found ${approvedPosts.length} approved posts`);
-      const posts = transformPosts(approvedPosts as any[]);
+    if (data && data.length > 0) {
+      console.log(`✅ Direct query successful: ${data.length} posts`);
+      
+      // Transform data with contact masking
+      const transformedPosts = data.map((post: any) => ({
+        ...post,
+        contact: post.contact ? maskContact(post.contact) : null,
+        can_view_contact: false, // Always false for public
+        homepage_payment_status: 'approved' as 'approved',
+        payment_proof: null,
+      }));
+      
+      // Debug photo data
+      transformedPosts.forEach((post, index) => {
+        console.log(`🖼️ Post ${index + 1} from direct query:`, {
+          id: post.id,
+          post_type: post.post_type,
+          work: post.work,
+          photo_url: post.photo_url,
+          employee_photo: post.employee_photo,
+          has_photo_url: !!post.photo_url,
+          has_employee_photo: !!post.employee_photo
+        });
+      });
+      
       return {
-        posts,
-        total: posts.length,
+        posts: transformedPosts,
+        total: transformedPosts.length,
         error: null,
       };
     }
 
-    // If no approved posts, try direct query fallback
-    console.log("No approved posts found, trying direct query fallback...");
-    return await getDirectQueryFallback();
-
-  } catch (error) {
-    console.error("Unexpected error in getPublicPostsClient:", error);
     return {
       posts: [],
       total: 0,
-      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown'}`,
+      error: "No approved posts found",
+    };
+  } catch (error) {
+    console.error("Error loading posts:", error);
+    return {
+      posts: [],
+      total: 0,
+      error: "Failed to load posts",
     };
   }
 }
@@ -111,23 +140,34 @@ async function getDirectQueryFallback() {
 // Transform posts data to match PostWithMaskedContact interface
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
-  return posts.map((post) => {
+  console.log(`🔄 TransformPosts: Processing ${posts.length} posts`);
+  
+  return posts.map((post, index) => {
     const postData = post as any;
     // Apply client-side contact masking - contacts are locked by default
     const isContactLocked = true; // All contacts are locked by default
     
-    // Log photo URL for debugging
-    console.log(`🖼️ Post photo_url:`, postData.photo_url);
-    console.log(`🖼️ Post photo_url type:`, typeof postData.photo_url);
-    console.log(`🖼️ Post photo_url length:`, postData.photo_url?.length);
+    console.log(`🖼️ Post ${index + 1} Debug:`, {
+      id: postData.id,
+      post_type: postData.post_type,
+      work: postData.work,
+      photo_url: postData.photo_url,
+      employee_photo: postData.employee_photo,
+      photo_url_type: typeof postData.photo_url,
+      employee_photo_type: typeof postData.employee_photo,
+      has_photo_url: !!postData.photo_url,
+      has_employee_photo: !!postData.employee_photo
+    });
     
     // Test if photo URL is accessible
     if (postData.photo_url) {
       console.log(`🔗 Testing photo URL accessibility:`, postData.photo_url);
-      // Note: We'll test this in browser console
+    }
+    if (postData.employee_photo) {
+      console.log(`🔗 Testing employee photo URL accessibility:`, postData.employee_photo);
     }
     
-    return {
+    const transformedPost = {
       id: postData.id,
       post_type: postData.post_type,
       work: postData.work,
@@ -136,10 +176,22 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
       salary: postData.salary,
       contact: isContactLocked ? maskContact(postData.contact) : postData.contact,
       photo_url: postData.photo_url,
+      employee_photo: postData.employee_photo || null,
       status: postData.status,
       created_at: postData.created_at,
       can_view_contact: !isContactLocked, // Always false for now
+      homepage_payment_status: postData.homepage_payment_status || "none",
+      payment_proof: postData.payment_proof || null,
     };
+    
+    console.log(`✅ Transformed Post ${index + 1}:`, {
+      id: transformedPost.id,
+      post_type: transformedPost.post_type,
+      employee_photo: transformedPost.employee_photo,
+      photo_url: transformedPost.photo_url
+    });
+    
+    return transformedPost;
   });
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

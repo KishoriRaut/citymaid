@@ -14,12 +14,13 @@ export async function POST(request: NextRequest) {
     const fileType = formData.get('fileType') as string;
     const transactionId = formData.get('transactionId') as string;
 
-    console.log('🔧 UNIFIED API - Received data:', { 
-      requestId, 
+    console.log('🔧 UNIFIED API - Request received:', {
+      requestId,
       type,
+      hasPaymentProof: !!paymentProofBase64,
+      base64Length: paymentProofBase64?.length,
       fileName, 
       fileType,
-      base64Length: paymentProofBase64?.length,
       transactionId 
     });
 
@@ -32,13 +33,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!requestId || !paymentProofBase64) {
+    // Allow either payment proof OR transaction ID
+    if (!requestId || (!paymentProofBase64 && !transactionId)) {
       console.error('❌ UNIFIED API - Missing required fields:', { 
         requestId, 
-        hasBase64: !!paymentProofBase64 
+        hasBase64: !!paymentProofBase64,
+        hasTransactionId: !!transactionId
       });
       return NextResponse.json(
-        { error: 'Missing required fields: requestId and paymentProofBase64 are required' },
+        { error: 'Missing required fields: requestId and either paymentProofBase64 or transactionId are required' },
         { status: 400 }
       );
     }

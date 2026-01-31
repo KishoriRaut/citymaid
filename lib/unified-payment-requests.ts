@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { supabase } from '@/lib/supabase';
-import { uploadPaymentReceipt } from '@/lib/storage';
+import { uploadPaymentReceiptServer } from '@/lib/storage-server';
 import { 
   PaymentType, 
   PaymentStatus, 
@@ -378,7 +378,7 @@ export async function updateUnifiedPayment(
       const file = new File([blob], fileName, { type: fileType });
       
       // Upload to Supabase Storage
-      const uploadResult = await uploadPaymentReceipt(file);
+      const uploadResult = await uploadPaymentReceiptServer(file);
       
       if (uploadResult.error || !uploadResult.url) {
         console.error('❌ UNIFIED - Failed to upload receipt:', uploadResult.error);
