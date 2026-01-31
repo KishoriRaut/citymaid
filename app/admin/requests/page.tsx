@@ -226,72 +226,72 @@ export default function RequestsPage() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Requests</h1>
-          <p className="text-muted-foreground">Manage post and contact unlock requests</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Requests</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage post and contact unlock requests</p>
         </div>
         <Button 
           onClick={() => window.location.href = "/post"}
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
         >
           Create New Post
         </Button>
       </div>
 
       {/* Mini Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-blue-200 bg-blue-50">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600">Pending</p>
-                <p className="text-2xl font-bold text-blue-900">{counts.pending}</p>
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-blue-600">Pending</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{counts.pending}</p>
               </div>
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <FileText className="h-4 w-4 text-blue-600" />
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-green-200 bg-green-50">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600">Approved</p>
-                <p className="text-2xl font-bold text-green-900">{counts.approved}</p>
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-green-600">Approved</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{counts.approved}</p>
               </div>
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-green-600" />
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-orange-200 bg-orange-50">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-600">Posts</p>
-                <p className="text-2xl font-bold text-orange-900">{requests.filter(r => r.type === 'Post').length}</p>
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-orange-600">Posts</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-900">{requests.filter(r => r.type === 'Post').length}</p>
               </div>
-              <div className="h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center">
-                <FileText className="h-4 w-4 text-orange-600" />
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="border-purple-200 bg-purple-50">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-600">Contact Unlocks</p>
-                <p className="text-2xl font-bold text-purple-900">{requests.filter(r => r.type === 'Contact Unlock').length}</p>
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-purple-600">Contact Unlocks</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">{requests.filter(r => r.type === 'Contact Unlock').length}</p>
               </div>
-              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <Unlock className="h-4 w-4 text-purple-600" />
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Unlock className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -299,11 +299,11 @@ export default function RequestsPage() {
       </div>
 
       {/* Combined Filters */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           {/* Status Filter */}
           <Select value={filter} onValueChange={(value: "all" | "pending" | "approved" | "rejected" | "hidden") => setFilter(value)}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
             <SelectContent>
@@ -317,7 +317,7 @@ export default function RequestsPage() {
           
           {/* Type Filter */}
           <Select value={typeFilter} onValueChange={(value: "all" | "post" | "contact-unlock") => setTypeFilter(value)}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by Type" />
             </SelectTrigger>
             <SelectContent>
@@ -329,7 +329,7 @@ export default function RequestsPage() {
         </div>
         
         {/* Results Count */}
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground sm:text-right">
           Showing {filteredRequests.length} of {requests.length} requests
         </div>
       </div>
@@ -340,19 +340,20 @@ export default function RequestsPage() {
           <CardTitle>Requests ({filteredRequests.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>Photo</TableHead>
-                <TableHead>Contact Information</TableHead>
-                <TableHead>Payment Proof</TableHead>
-                <TableHead>Post Contact (To Deliver)</TableHead>
-                <TableHead>Submitted At</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Photo</TableHead>
+                  <TableHead>Contact Information</TableHead>
+                  <TableHead>Payment Proof</TableHead>
+                  <TableHead>Post Contact (To Deliver)</TableHead>
+                  <TableHead>Submitted At</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {filteredRequests.map((request) => (
                 <TableRow 
@@ -566,6 +567,7 @@ export default function RequestsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
           
           {filteredRequests.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
