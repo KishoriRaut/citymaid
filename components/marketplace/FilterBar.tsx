@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { appConfig } from "@/lib/config";
 import { getAllWorkTypes } from "@/lib/work-types";
 import { getAllTimeOptions } from "@/lib/work-time";
@@ -48,17 +50,18 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Work Type
             </label>
-            <select
-              value={workFilter}
-              onChange={(e) => onWorkChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
-            >
-              {WORK_OPTIONS.map((option) => (
-                <option key={option} value={option === "All Work Types" ? "All" : option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            <Select value={workFilter} onValueChange={onWorkChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select work type" />
+              </SelectTrigger>
+              <SelectContent>
+                {WORK_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={option === "All Work Types" ? "All" : option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Time */}
@@ -66,17 +69,18 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Time
             </label>
-            <select
-              value={timeFilter}
-              onChange={(e) => onTimeChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
-            >
-              {TIME_OPTIONS.map((option) => (
-                <option key={option} value={option === "All Times" ? "All" : option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+            <Select value={timeFilter} onValueChange={onTimeChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select time" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIME_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={option === "All Times" ? "All" : option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Location */}
@@ -84,12 +88,12 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Location
             </label>
-            <input
+            <Input
               type="text"
               placeholder="Search location..."
               value={placeFilter}
               onChange={(e) => onPlaceChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              className="w-full"
             />
           </div>
 
@@ -98,12 +102,12 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Salary
             </label>
-            <input
+            <Input
               type="text"
               placeholder="Search salary..."
               value={salaryFilter}
               onChange={(e) => onSalaryChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              className="w-full"
             />
           </div>
 
@@ -133,33 +137,35 @@ export function FilterBar({
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                 Work Type
               </label>
-              <select
-                value={workFilter}
-                onChange={(e) => onWorkChange(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
-              >
-                {WORK_OPTIONS.map((option) => (
-                  <option key={option} value={option === "All Work Types" ? "All" : option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <Select value={workFilter} onValueChange={onWorkChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Work type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WORK_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option === "All Work Types" ? "All" : option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                 Time
               </label>
-              <select
-                value={timeFilter}
-                onChange={(e) => onTimeChange(e.target.value)}
-                className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200"
-              >
-                {TIME_OPTIONS.map((option) => (
-                  <option key={option} value={option === "All Times" ? "All" : option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+              <Select value={timeFilter} onValueChange={onTimeChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIME_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option === "All Times" ? "All" : option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -168,12 +174,12 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Location
             </label>
-            <input
+            <Input
               type="text"
               placeholder="Search location..."
               value={placeFilter}
               onChange={(e) => onPlaceChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              className="w-full"
             />
           </div>
 
@@ -182,12 +188,12 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Salary
             </label>
-            <input
+            <Input
               type="text"
               placeholder="Search salary..."
               value={salaryFilter}
               onChange={(e) => onSalaryChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-0 focus:border-primary transition-all duration-200 placeholder:text-muted-foreground/50"
+              className="w-full"
             />
           </div>
 
