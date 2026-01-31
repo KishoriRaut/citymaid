@@ -33,6 +33,7 @@ export default function ProfilePage() {
         role: "admin",
         created_at: new Date().toISOString()
       };
+      setUser(mockUser);
       setIsLoading(false);
     }, 100);
 
