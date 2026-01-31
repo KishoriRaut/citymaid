@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy } from "lucide-react";
+import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
 
@@ -46,9 +47,10 @@ interface UnifiedRequest {
 
 export default function RequestsPage() {
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "hidden">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "post" | "contact-unlock">("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [processing, setProcessing] = useState<string | null>(null);
 
   // Load all requests
@@ -124,9 +126,17 @@ export default function RequestsPage() {
         (typeFilter === "post" && request.type === "Post") ||
         (typeFilter === "contact-unlock" && request.type === "Contact Unlock");
       
-      return statusMatch && typeMatch;
+      // Search functionality
+      const searchMatch = !searchTerm || 
+        request.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (request.type === "Contact Unlock" && request.contactInfo?.user_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (request.type === "Contact Unlock" && request.contactInfo?.user_email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (request.type === "Contact Unlock" && request.contactInfo?.user_phone?.includes(searchTerm));
+      
+      return statusMatch && typeMatch && searchMatch;
     });
-  }, [requests, filter, typeFilter]);
+  }, [requests, filter, typeFilter, searchTerm]);
 
   // Get counts for tabs with useMemo for performance
   const counts = useMemo(() => ({
@@ -293,8 +303,33 @@ export default function RequestsPage() {
       </div>
 
       {/* Combined Filters */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+      <div className="flex flex-col gap-4">
+        {/* Search Bar */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search requests by reference, user ID, or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full"
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Status and Type Filters */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           {/* Status Filter */}
           <Select value={filter} onValueChange={(value: "all" | "pending" | "approved" | "rejected" | "hidden") => setFilter(value)}>
             <SelectTrigger className="w-full sm:w-48">
@@ -320,7 +355,7 @@ export default function RequestsPage() {
               <SelectItem value="contact-unlock">Contact Unlock</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          </div>
         
         {/* Results Count */}
         <div className="text-sm text-muted-foreground sm:text-right">
