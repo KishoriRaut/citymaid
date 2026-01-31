@@ -114,12 +114,9 @@ export function FilterBar({
           {/* Action Buttons */}
           <div className="flex items-end gap-2 ml-auto">
             {hasActiveFilters && (
-              <button
-                onClick={onReset}
-                className="px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 whitespace-nowrap border border-border rounded-lg hover:bg-primary/10 hover:border-primary/30"
-              >
+              <Button variant="outline" onClick={onReset} className="text-sm font-medium hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200 whitespace-nowrap">
                 Reset
-              </button>
+              </Button>
             )}
             <Link href={appConfig.routes.post}>
               <Button size="lg" className="whitespace-nowrap shadow-sm hover:shadow transition-shadow duration-200">
@@ -200,12 +197,9 @@ export function FilterBar({
           {/* Row 4: Action Buttons */}
           <div className="flex items-center gap-2 pt-1">
             {hasActiveFilters && (
-              <button
-                onClick={onReset}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 border border-border rounded-lg hover:bg-primary/10 hover:border-primary/30"
-              >
+              <Button variant="outline" onClick={onReset} className="flex-1 text-sm font-medium hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200 whitespace-nowrap">
                 Reset Filters
-              </button>
+              </Button>
             )}
             <Link href={appConfig.routes.post} className={hasActiveFilters ? "flex-1" : "w-full"}>
               <Button size="lg" className="w-full whitespace-nowrap shadow-sm hover:shadow transition-shadow duration-200">
