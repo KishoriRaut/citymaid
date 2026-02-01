@@ -22,8 +22,41 @@ export interface AdminPayment {
   };
 }
 
-export async function getAllAdminPayments(): Promise<{ payments: AdminPayment[], error: string | null }> {
+export async function getAllAdminPayments(
+  page: number = 1,
+  limit: number = 20
+): Promise<{ 
+  payments: AdminPayment[], 
+  total: number,
+  currentPage: number,
+  totalPages: number,
+  hasNextPage: boolean,
+  hasPrevPage: boolean,
+  error: string | null 
+}> {
   try {
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+    
+    // Get total count first
+    const { count: totalCount, error: countError } = await supabase
+      .from('payments')
+      .select('id', { count: 'exact', head: true });
+
+    if (countError) {
+      console.error('Error counting payments:', countError);
+      return { 
+        payments: [], 
+        total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: countError.message 
+      };
+    }
+
+    // Get paginated data
     const { data, error } = await supabase
       .from('payments')
       .select(`
@@ -37,18 +70,47 @@ export async function getAllAdminPayments(): Promise<{ payments: AdminPayment[],
         )
       `)
       .order('created_at', { ascending: false })
-      .limit(1000); // Fetch up to 1000 records to include older ones
+      .range(offset, offset + limit - 1);
 
     if (error) {
       console.error('Error fetching payments:', error);
-      return { payments: [], error: error.message };
+      return { 
+        payments: [], 
+        total: totalCount || 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: error.message 
+      };
     }
 
-    console.log(`🔍 Fetched ${data?.length || 0} payment records`);
-    return { payments: data as AdminPayment[], error: null };
+    // Calculate pagination info
+    const totalPages = Math.ceil((totalCount || 0) / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    console.log(`🔍 Fetched ${data?.length || 0} payment records (Page ${page} of ${totalPages})`);
+    return { 
+      payments: data as AdminPayment[], 
+      total: totalCount || 0,
+      currentPage: page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      error: null 
+    };
   } catch (error) {
     console.error('Unexpected error:', error);
-    return { payments: [], error: 'Failed to fetch payments' };
+    return { 
+      payments: [], 
+      total: 0,
+      currentPage: page,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      error: 'Failed to fetch payments' 
+    };
   }
 }
 

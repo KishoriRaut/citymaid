@@ -223,36 +223,98 @@ export async function updateRequestPaymentProof(
   }
 }
 
-// Get all requests for admin dashboard
+// Get all requests for admin dashboard with pagination
 export async function getAllUnlockRequests(
-  status?: 'pending' | 'paid' | 'approved' | 'rejected'
-): Promise<{ requests?: ContactUnlockRequest[]; error?: string }> {
+  status?: 'pending' | 'paid' | 'approved' | 'rejected',
+  page: number = 1,
+  limit: number = 20
+): Promise<{ 
+  requests?: ContactUnlockRequest[]; 
+  total: number,
+  currentPage: number,
+  totalPages: number,
+  hasNextPage: boolean,
+  hasPrevPage: boolean,
+  error?: string 
+}> {
   try {
-    let query = supabase
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+    
+    // Build base query
+    let countQuery = supabase
+      .from("contact_unlock_requests")
+      .select('id', { count: 'exact', head: true });
+
+    let dataQuery = supabase
       .from("contact_unlock_requests")
       .select(`
         *,
         posts(work, place, contact)
       `)
       .order("created_at", { ascending: false })
-      .limit(1000); // Fetch up to 1000 records to include older ones
+      .range(offset, offset + limit - 1);
 
+    // Apply status filter if provided
     if (status) {
-      query = query.eq("status", status);
+      countQuery = countQuery.eq("status", status);
+      dataQuery = dataQuery.eq("status", status);
     }
 
-    const { data: requests, error } = await query;
+    // Get total count
+    const { count: totalCount, error: countError } = await countQuery;
+
+    if (countError) {
+      console.error("Error counting unlock requests:", countError);
+      return { 
+        total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: "Failed to count unlock requests" 
+      };
+    }
+
+    // Get paginated data
+    const { data: requests, error } = await dataQuery;
 
     if (error) {
       console.error("Error getting unlock requests:", error);
-      return { error: "Failed to get unlock requests" };
+      return { 
+        total: totalCount || 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: "Failed to get unlock requests" 
+      };
     }
 
-    console.log(`🔍 Fetched ${requests?.length || 0} unlock request records`);
-    return { requests: requests || [] };
+    // Calculate pagination info
+    const totalPages = Math.ceil((totalCount || 0) / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    console.log(`🔍 Fetched ${requests?.length || 0} unlock request records (Page ${page} of ${totalPages})`);
+    return { 
+      requests: requests || [],
+      total: totalCount || 0,
+      currentPage: page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
+    };
   } catch (error) {
     console.error("Error in getAllUnlockRequests:", error);
-    return { error: "Failed to get unlock requests" };
+    return { 
+      total: 0,
+      currentPage: page,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      error: "Failed to get unlock requests" 
+    };
   }
 }
 
