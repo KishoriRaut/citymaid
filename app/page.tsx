@@ -54,6 +54,8 @@ function HomePageContent() {
   // Load posts with pagination
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
+      console.log(`📥 loadPosts called: page=${page}, reset=${reset}, currentPage state=${currentPage}`);
+      
       if (reset) {
         setIsLoading(true);
         setError(null);
@@ -80,6 +82,7 @@ function HomePageContent() {
       setHasPrevPage(result.hasPrevPage);
       
       console.log(`✅ Loaded ${result.posts.length} posts from Supabase (Page ${result.currentPage} of ${result.totalPages})`);
+      console.log(`📊 State updated: currentPage=${result.currentPage}, totalPages=${result.totalPages}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
@@ -88,7 +91,7 @@ function HomePageContent() {
       setIsLoading(false);
       setIsPageChanging(false);
     }
-  }, []);
+  }, [currentPage]);
 
   // Initialize page state from URL
   useEffect(() => {
@@ -100,7 +103,7 @@ function HomePageContent() {
     if (mounted) { // Only load after component is mounted
       loadPosts(initialPage, true);
     }
-  }, [initialPage, loadPosts]);
+  }, [initialPage, loadPosts, mounted]);
 
   // Filter posts based on active tab and filters
   const filteredPosts = useMemo(() => {
@@ -146,12 +149,17 @@ function HomePageContent() {
   // Handle tab change
   const handleTabChange = useCallback((tab: typeof activeTab) => {
     setActiveTab(tab);
-    setCurrentPage(1); // Reset to first page when tab changes
-  }, []);
+    // Only reset page if we're not already on page 1
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+      // Load posts for page 1 with new tab filter
+      loadPosts(1, false);
+    }
+  }, [currentPage, loadPosts]);
 
   // Handle page change
   const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
+    console.log(`🔄 handlePageChange called: requesting page ${page}, current page is ${currentPage}`);
     
     // Update URL parameters
     const params = new URLSearchParams(searchParams);
@@ -164,8 +172,9 @@ function HomePageContent() {
     const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
     router.push(newUrl, { scroll: false });
     
+    // Load posts for the new page - let loadPosts handle state updates
     loadPosts(page, false);
-  }, [loadPosts, searchParams, pathname, router]);
+  }, [loadPosts, searchParams, pathname, router, currentPage]);
 
   // Handle load more
   const handleLoadMore = useCallback(() => {
