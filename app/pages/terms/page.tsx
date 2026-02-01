@@ -263,11 +263,11 @@ export default function TermsOfService() {
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
-                    <span><strong>Contact Unlock Fee:</strong> NPR 50 to access worker contact information</span>
+                    <span><strong>Contact Unlock Fee:</strong> Rs. 299 to access worker contact information</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
-                    <span><strong>Homepage Feature Fee:</strong> NPR 500 to feature your post on homepage</span>
+                    <span><strong>Homepage Feature Fee:</strong> Rs. 299 to feature your post on homepage</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>

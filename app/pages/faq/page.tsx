@@ -53,7 +53,7 @@ export default function FAQPage() {
     },
     {
       question: "What is the contact unlock fee?",
-      answer: "We charge a small verification fee of NPR 50 to unlock a worker's contact information. This helps protect workers from spam and ensures only serious inquiries are made. The fee is refundable if you hire the worker through our platform.",
+      answer: "We charge a small verification fee of Rs. 299 to unlock a worker's contact information. This helps protect workers from spam and ensures only serious inquiries are made. The fee is refundable if you hire the worker through our platform.",
       category: "families"
     },
 

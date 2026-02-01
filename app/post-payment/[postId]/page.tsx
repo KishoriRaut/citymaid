@@ -399,7 +399,7 @@ export default function PostPaymentPage() {
                     {isContactUnlock ? ' Get contact details for this job opportunity.' : ' Get your post displayed prominently on the homepage for 30 days.'}
                   </p>
                   <p className="text-blue-800 text-sm">
-                    <strong>Price:</strong> NPR 299
+                    <strong>Price:</strong> Rs. 299
                   </p>
                 </div>
 
@@ -436,7 +436,7 @@ export default function PostPaymentPage() {
                     <div className="bg-gray-50 rounded-lg p-4">
                       <ol className="text-sm text-gray-700 space-y-2">
                         <li>1. Scan the QR code with Sanima Bank app</li>
-                        <li>2. Enter amount: NPR 500</li>
+                        <li>2. Enter amount: Rs. 299</li>
                         <li>3. Complete the payment</li>
                         <li>4. Save the transaction ID or screenshot</li>
                         <li>5. Upload payment proof below</li>
