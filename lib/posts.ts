@@ -224,14 +224,16 @@ export async function createPost(post: {
 // Get post by ID (admin only - includes contact)
 export async function getPostById(postId: string) {
   try {
-    // Use SQL function to get post with masked contact (if payment not approved)
+    console.log("🔍 getPostById: Trying RPC function for post:", postId);
     const { data: rpcData, error: rpcError } = await supabase.rpc("get_post_with_contact_visibility", {
       post_uuid: postId,
     });
 
     if (rpcError) {
+      console.log("❌ RPC Error:", rpcError.message, "Code:", rpcError.code);
       // Fallback to direct query if function doesn't exist
       if (rpcError.code === "42883" || rpcError.message?.includes("does not exist")) {
+        console.log("🔄 Using fallback direct query...");
         const { data, error } = await supabase
           .from("posts")
           .select("*")
@@ -245,6 +247,13 @@ export async function getPostById(postId: string) {
           return { post: null, error: error.message };
         }
 
+        console.log("✅ Direct query result:", {
+          id: data.id,
+          hasDetails: !!data.details,
+          detailsLength: data.details?.length || 0,
+          allFields: Object.keys(data)
+        });
+
         return { post: data as Post, error: null };
       }
 
@@ -254,16 +263,14 @@ export async function getPostById(postId: string) {
       return { post: null, error: rpcError.message };
     }
 
-    // RPC function returns array, get first result
-    const postData = Array.isArray(rpcData) && rpcData.length > 0 ? rpcData[0] : null;
-    
-    if (!postData) {
-      return { post: null, error: "Post not found" };
-    }
+    console.log("✅ RPC Success - Data:", {
+      id: rpcData.id,
+      hasDetails: !!rpcData.details,
+      detailsLength: rpcData.details?.length || 0,
+      allFields: Object.keys(rpcData)
+    });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { contact_visible, ...post } = postData;
-    return { post: post as Post, error: null };
+    return { post: rpcData as Post, error: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error in getPostById:", error);
