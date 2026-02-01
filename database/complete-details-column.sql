@@ -12,7 +12,7 @@ FROM information_schema.columns
 WHERE table_name = 'posts' AND column_name = 'details';
 
 -- Check if constraint exists
-SELECT conname, contype, consrc
+SELECT conname, contype
 FROM pg_constraint 
 WHERE conrelid = 'posts'::regclass AND conname = 'details_not_empty';
 
