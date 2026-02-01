@@ -62,19 +62,6 @@ export async function getPublicPostsClient() {
         payment_proof: null,
       }));
       
-      // Debug photo data
-      transformedPosts.forEach((post, index) => {
-        console.log(`🖼️ Post ${index + 1} from direct query:`, {
-          id: post.id,
-          post_type: post.post_type,
-          work: post.work,
-          photo_url: post.photo_url,
-          employee_photo: post.employee_photo,
-          has_photo_url: !!post.photo_url,
-          has_employee_photo: !!post.employee_photo
-        });
-      });
-      
       return {
         posts: transformedPosts,
         total: transformedPosts.length,

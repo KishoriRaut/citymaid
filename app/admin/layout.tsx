@@ -15,7 +15,7 @@ import {
   Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu,
@@ -99,6 +99,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Mobile sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64">
+          <SheetTitle>Admin Navigation</SheetTitle>
+          <SheetDescription>
+            Access admin dashboard and management tools
+          </SheetDescription>
           <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="flex items-center justify-between h-16 px-6 border-b">
