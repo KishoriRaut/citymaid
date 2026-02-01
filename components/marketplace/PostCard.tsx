@@ -7,7 +7,7 @@ import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Clock, MapPin, DollarSign, Shield, Star } from "lucide-react";
+import { User, Clock, MapPin, DollarSign, Shield, Star, Briefcase } from "lucide-react";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -118,19 +118,26 @@ export function PostCard({ post }: PostCardProps) {
             <div className="text-sm text-muted-foreground mb-2">
               {isHiring ? (
                 <div className="flex items-center gap-1">
-                  <User className="w-4 h-4 flex-shrink-0" />
+                  <Briefcase className="w-4 h-4 flex-shrink-0" />
                   <span className="font-medium">Job Details</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 flex-shrink-0" />
+                  <User className="w-4 h-4 flex-shrink-0" />
                   <span className="font-medium">About Me</span>
                 </div>
               )}
             </div>
-            <p className="text-sm text-foreground line-clamp-3 leading-relaxed">
-              {post.details}
-            </p>
+            <div className="relative">
+              <p className="text-sm text-foreground leading-relaxed text-gray-700 dark:text-gray-300">
+                {post.details.length > 120 ? `${post.details.substring(0, 120)}...` : post.details}
+              </p>
+              {post.details.length > 120 && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer ml-1">
+                  Read more
+                </span>
+              )}
+            </div>
           </div>
         )}
 
