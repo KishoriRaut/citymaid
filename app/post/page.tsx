@@ -207,68 +207,70 @@ export default function NewPostPage() {
         {/* Role Toggle Card */}
         <Card className="mb-8">
           <CardContent className="p-6">
-            <FormField
-              control={form.control}
-              name="post_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-semibold text-center block mb-4">
-                    I want to
-                  </FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                    >
-                      <div className="relative">
-                        <RadioGroupItem
-                          value="employer"
-                          id="employer"
-                          className="peer sr-only"
-                        />
-                        <label
-                          htmlFor="employer"
-                          className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
-                            field.value === "employer"
-                              ? "border-primary bg-primary/5 shadow-lg scale-105"
-                              : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
-                          }`}
-                        >
-                          <div className="space-y-3">
-                            <div className="text-4xl">💼</div>
-                            <div className="text-lg font-semibold">Hire a Worker</div>
-                            <div className="text-sm text-muted-foreground">Post a job requirement and find talent</div>
-                          </div>
-                        </label>
-                      </div>
-                      <div className="relative">
-                        <RadioGroupItem
-                          value="employee"
-                          id="employee"
-                          className="peer sr-only"
-                        />
-                        <label
-                          htmlFor="employee"
-                          className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
-                            field.value === "employee"
-                              ? "border-primary bg-primary/5 shadow-lg scale-105"
-                              : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
-                          }`}
-                        >
-                          <div className="space-y-3">
-                            <div className="text-4xl">👤</div>
-                            <div className="text-lg font-semibold">Find a Job</div>
-                            <div className="text-sm text-muted-foreground">Create your professional work profile</div>
-                          </div>
-                        </label>
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Form {...form}>
+              <FormField
+                control={form.control}
+                name="post_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-semibold text-center block mb-4">
+                      I want to
+                    </FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                      >
+                        <div className="relative">
+                          <RadioGroupItem
+                            value="employer"
+                            id="employer"
+                            className="peer sr-only"
+                          />
+                          <label
+                            htmlFor="employer"
+                            className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
+                              field.value === "employer"
+                                ? "border-primary bg-primary/5 shadow-lg scale-105"
+                                : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
+                            }`}
+                          >
+                            <div className="space-y-3">
+                              <div className="text-4xl">💼</div>
+                              <div className="text-lg font-semibold">Hire a Worker</div>
+                              <div className="text-sm text-muted-foreground">Post a job requirement and find talent</div>
+                            </div>
+                          </label>
+                        </div>
+                        <div className="relative">
+                          <RadioGroupItem
+                            value="employee"
+                            id="employee"
+                            className="peer sr-only"
+                          />
+                          <label
+                            htmlFor="employee"
+                            className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
+                              field.value === "employee"
+                                ? "border-primary bg-primary/5 shadow-lg scale-105"
+                                : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
+                            }`}
+                          >
+                            <div className="space-y-3">
+                              <div className="text-4xl">👤</div>
+                              <div className="text-lg font-semibold">Find a Job</div>
+                              <div className="text-sm text-muted-foreground">Create your professional work profile</div>
+                            </div>
+                          </label>
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </Form>
           </CardContent>
         </Card>
 
