@@ -27,7 +27,7 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
 
   // Debug: Check what postId we received
-  console.log("🔍 PostViewPage: Received params:", params);
+  console.log("🔍 PostViewPage: Received params:", JSON.stringify(params, null, 2));
   console.log("🔍 PostViewPage: postId from params:", params.id);
 
   useEffect(() => {
@@ -43,19 +43,19 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
       const response = await fetch(`/api/posts/${postId}`);
       const data = await response.json();
 
-      console.log("🔍 loadPost: API Response:", data);
+      console.log("🔍 loadPost: API Response:", JSON.stringify(data, null, 2));
 
       if (data.error) {
         setError(data.error);
       } else if (data.post) {
         // Debug: Check if details field is present
-        console.log("🔍 Post Data Received:", {
+        console.log("🔍 Post Data Received:", JSON.stringify({
           id: data.post.id,
           hasDetails: !!data.post.details,
           detailsLength: data.post.details?.length || 0,
           detailsPreview: data.post.details ? data.post.details.substring(0, 100) + '...' : 'null',
           allFields: Object.keys(data.post)
-        });
+        }, null, 2));
         setPost(data.post);
       } else {
         setError("Post not found");
