@@ -288,9 +288,14 @@ export default function TermsOfService() {
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h3 className="font-semibold text-green-800 mb-2">Refund Policy</h3>
-                <p className="text-green-800">
-                  Contact unlock fees are refundable if you hire the worker through our platform 
-                  and the placement is successfully completed. Other fees are generally non-refundable.
+                <p className="text-green-800 mb-2">
+                  <strong>Contact Unlock Fees:</strong> Non-refundable service charge for accessing verified contact information and platform services.
+                </p>
+                <p className="text-green-800 mb-2">
+                  <strong>Homepage Feature Fees:</strong> Non-refundable service charge for featuring posts on homepage.
+                </p>
+                <p className="text-green-800 text-sm">
+                  Users should conduct thorough due diligence, including interviews and reference checks, before making hiring decisions. The platform acts as an intermediary and does not guarantee hiring outcomes.
                 </p>
               </div>
             </div>

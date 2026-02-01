@@ -53,7 +53,12 @@ export default function FAQPage() {
     },
     {
       question: "What is the contact unlock fee?",
-      answer: "We charge a small verification fee of Rs. 299 to unlock a worker's contact information. This helps protect workers from spam and ensures only serious inquiries are made. The fee is refundable if you hire the worker through our platform.",
+      answer: "We charge a verification fee of Rs. 299 to access worker contact information. This fee covers our costs for worker verification, platform maintenance, and quality assurance. The fee is non-refundable as it provides immediate access to verified contact information. We recommend conducting thorough interviews and reference checks before making hiring decisions.",
+      category: "families"
+    },
+    {
+      question: "Is the contact unlock fee refundable?",
+      answer: "No, the contact unlock fee is non-refundable. This is a service fee that provides you with immediate access to verified contact information and platform services. The fee covers our costs for worker verification, background checks, and maintaining the platform. We encourage users to conduct proper due diligence including interviews and reference checks before making any hiring decisions.",
       category: "families"
     },
 
