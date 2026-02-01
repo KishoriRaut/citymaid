@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetHeader } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetHeader, SheetClose } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { appConfig } from "@/lib/config";
 
@@ -12,6 +12,7 @@ export function ConditionalHeader() {
   const pathname = usePathname();
   const [isAdminPage, setIsAdminPage] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -50,7 +51,7 @@ export function ConditionalHeader() {
 
           {/* Mobile Navigation */}
           <div className="sm:hidden">
-            <Sheet>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
                   <Menu className="h-4 w-4" />
@@ -71,16 +72,20 @@ export function ConditionalHeader() {
                   </div>
                   
                   <div className="px-4 space-y-3">
-                    <Link href={appConfig.routes.post}>
-                      <Button className="w-full justify-start shadow-sm hover:shadow transition-shadow duration-200">
-                        + Create Post
-                      </Button>
-                    </Link>
-                    <Link href="/login">
-                      <Button variant="outline" className="w-full justify-start hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200">
-                        Admin
-                      </Button>
-                    </Link>
+                    <SheetClose asChild>
+                      <Link href={appConfig.routes.post}>
+                        <Button className="w-full justify-start shadow-sm hover:shadow transition-shadow duration-200">
+                          + Create Post
+                        </Button>
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/login">
+                        <Button variant="outline" className="w-full justify-start hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200">
+                          Admin
+                        </Button>
+                      </Link>
+                    </SheetClose>
                   </div>
                 </div>
               </SheetContent>
