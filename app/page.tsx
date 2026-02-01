@@ -141,6 +141,26 @@ function HomePageContent() {
     return filtered;
   }, [posts, activeTab, filters]);
 
+  // Debug post rendering
+  useEffect(() => {
+    console.log(`🎨 Post Grid Debug:`);
+    console.log(`  - Total posts loaded: ${posts.length}`);
+    console.log(`  - Filtered posts: ${filteredPosts.length}`);
+    console.log(`  - Active tab: ${activeTab}`);
+    console.log(`  - Current page: ${currentPage}`);
+    console.log(`  - Expected layout: 3 columns`);
+    
+    // Calculate expected rows
+    const expectedRows = Math.ceil(filteredPosts.length / 3);
+    console.log(`  - Expected rows: ${expectedRows}`);
+    
+    // Check if we have complete rows
+    const completeRows = Math.floor(filteredPosts.length / 3);
+    const remainingCards = filteredPosts.length % 3;
+    console.log(`  - Complete rows: ${completeRows}`);
+    console.log(`  - Remaining cards in last row: ${remainingCards}`);
+  }, [filteredPosts, posts, activeTab, currentPage]);
+
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: typeof filters) => {
     setFilters(newFilters);
@@ -284,12 +304,13 @@ function HomePageContent() {
           onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
         />
         
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          {filteredPosts.map((post) => (
-            <PostCard 
-              key={post.id} 
-              post={post}
-            />
+        <div className="grid grid-cols-3 gap-6 mb-8 w-full">
+          {filteredPosts.map((post, index) => (
+            <div key={post.id} className="w-full">
+              <PostCard 
+                post={post}
+              />
+            </div>
           ))}
         </div>
 
