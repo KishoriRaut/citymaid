@@ -129,24 +129,15 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             )}
           </div>
-          <div className="relative">
-            <p className="text-sm text-foreground leading-relaxed text-gray-700 dark:text-gray-300 min-h-[3.5rem]">
-              {post.details ? (
-                post.details.length > 80 ? `${post.details.substring(0, 80)}...` : post.details
-              ) : (
-                <span className="text-gray-400 italic">No details provided</span>
-              )}
-            </p>
-            {/* Always show Read more button for consistent layout */}
-            <span 
-              className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer ml-2 font-semibold"
-              onClick={() => {
-                router.push(`/post/${post.id}`);
-              }}
-            >
-              Read more →
-            </span>
-          </div>
+          {/* Only show Read more button - no text content for consistent height */}
+          <span 
+            className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer font-semibold"
+            onClick={() => {
+              router.push(`/post/${post.id}`);
+            }}
+          >
+            Read more →
+          </span>
         </div>
 
         {/* Unlock Contact Button */}
