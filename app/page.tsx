@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { EnvironmentCheck } from "@/components/EnvironmentCheck";
@@ -12,12 +13,26 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 function HomePageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [isPageChanging, setIsPageChanging] = useState(false);
+
+  // Get initial page from URL or default to 1
+  const initialPage = Number(searchParams.get('page')) || 1;
 
   // Primary tab: "employee" (Find a Job) is now default
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
@@ -30,35 +45,54 @@ function HomePageContent() {
     salary: "",
   });
 
-  // Load posts from Supabase
-  const loadPosts = useCallback(async () => {
+  // Load posts with pagination
+  const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      if (reset) {
+        setIsLoading(true);
+        setError(null);
+      } else {
+        setIsPageChanging(true);
+      }
       
-      console.log("🔍 Loading posts from Supabase...");
-      const result = await getPublicPostsClient();
-      const fetchedPosts = result.posts;
+      console.log(`🔍 Loading posts from Supabase...`);
+      const result = await getPublicPostsClient(page, 12);
       
-      if (fetchedPosts.length === 0) {
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      if (result.posts.length === 0 && page === 1) {
         console.log("⚠️ No posts found");
       }
       
-      setPosts(fetchedPosts);
-      console.log(`✅ Loaded ${fetchedPosts.length} posts from Supabase`);
+      setPosts(result.posts);
+      setCurrentPage(result.currentPage);
+      setTotalPages(result.totalPages);
+      setTotalPosts(result.total);
+      setHasNextPage(result.hasNextPage);
+      setHasPrevPage(result.hasPrevPage);
+      
+      console.log(`✅ Loaded ${result.posts.length} posts from Supabase (Page ${result.currentPage} of ${result.totalPages})`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
       console.error("❌ Failed to load posts:", err);
     } finally {
       setIsLoading(false);
+      setIsPageChanging(false);
     }
   }, []);
 
+  // Initialize page state from URL
+  useEffect(() => {
+    setCurrentPage(initialPage);
+  }, [initialPage]);
+
   // Initial load
   useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
+    loadPosts(initialPage, true);
+  }, [loadPosts, initialPage]);
 
   // Filter posts based on active tab and filters
   const filteredPosts = useMemo(() => {
@@ -104,7 +138,33 @@ function HomePageContent() {
   // Handle tab change
   const handleTabChange = useCallback((tab: typeof activeTab) => {
     setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page when tab changes
   }, []);
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams);
+    if (page === 1) {
+      params.delete('page');
+    } else {
+      params.set('page', page.toString());
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl, { scroll: false });
+    
+    loadPosts(page, false);
+  }, [loadPosts, searchParams, pathname, router]);
+
+  // Handle load more
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage) {
+      handlePageChange(currentPage + 1);
+    }
+  }, [hasNextPage, currentPage, handlePageChange]);
 
   // Show loading skeleton
   if (isLoading) {
@@ -146,7 +206,7 @@ function HomePageContent() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
             <div className="flex justify-center mt-6">
-              <Button onClick={loadPosts} className="mr-4">
+              <Button onClick={() => loadPosts(1, true)} className="mr-4">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
@@ -216,7 +276,38 @@ function HomePageContent() {
           ))}
         </div>
 
-        {/* Load more functionality can be implemented here when needed */}
+        {/* Page change loading indicator */}
+        {isPageChanging && (
+          <div className="flex justify-center py-4">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="space-y-4">
+          {/* Traditional pagination for desktop */}
+          <div className="hidden md:block">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPrevPage={hasPrevPage}
+              onPageChange={handlePageChange}
+              isLoading={isPageChanging}
+              totalPosts={totalPosts}
+            />
+          </div>
+
+          {/* Load more button for mobile */}
+          <div className="md:hidden">
+            <LoadMoreButton
+              hasNextPage={hasNextPage}
+              isLoading={isPageChanging}
+              onLoadMore={handleLoadMore}
+              remainingPosts={totalPosts - (currentPage * 12)}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -5,8 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { PostWithMaskedContact } from "./types";
 import { maskContact } from "./utils";
 
-// Get public posts - SIMPLE DIRECT APPROACH
-export async function getPublicPostsClient() {
+// Get public posts with pagination
+export async function getPublicPostsClient(page: number = 1, limit: number = 12) {
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured || !supabaseClient) {
@@ -14,13 +14,39 @@ export async function getPublicPostsClient() {
       return {
         posts: [],
         total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
         error: "Supabase environment variables are missing. Please check Vercel configuration.",
       };
     }
 
-    // SIMPLE DIRECT APPROACH: Query posts table directly
-    console.log("🔍 SIMPLE APPROACH: Direct posts table query...");
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
     
+    console.log(`🔍 Loading page ${page} with limit ${limit} (offset: ${offset})`);
+    
+    // Get total count first
+    const { count: totalCount, error: countError } = await supabaseClient
+      .from('posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'approved');
+
+    if (countError) {
+      console.error('❌ Count query error:', countError);
+      return {
+        posts: [],
+        total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: countError.message,
+      };
+    }
+
+    // Get paginated data
     const { data, error } = await supabaseClient
       .from('posts')
       .select(`
@@ -39,47 +65,56 @@ export async function getPublicPostsClient() {
       `)
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .range(offset, offset + limit - 1);
 
     if (error) {
       console.error('❌ Direct query error:', error);
       return {
         posts: [],
-        total: 0,
-        error: `Direct query error: ${error.message}`,
+        total: totalCount || 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: error.message,
       };
     }
 
-    if (data && data.length > 0) {
-      console.log(`✅ Direct query successful: ${data.length} posts`);
-      
-      // Transform data with contact masking
-      const transformedPosts = data.map((post: any) => ({
-        ...post,
-        contact: post.contact ? maskContact(post.contact) : null,
-        can_view_contact: false, // Always false for public
-        homepage_payment_status: 'approved' as 'approved',
-        payment_proof: null,
-      }));
-      
-      return {
-        posts: transformedPosts,
-        total: transformedPosts.length,
-        error: null,
-      };
-    }
+    // Transform data with contact masking
+    const transformedPosts = data.map((post: any) => ({
+      ...post,
+      contact: post.contact ? maskContact(post.contact) : null,
+      can_view_contact: false, // Always false for public
+      homepage_payment_status: 'approved' as 'approved',
+      payment_proof: null,
+    }));
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil((totalCount || 0) / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
 
+    console.log(`✅ Loaded ${transformedPosts.length} posts (Page ${page} of ${totalPages})`);
+    
     return {
-      posts: [],
-      total: 0,
-      error: "No approved posts found",
+      posts: transformedPosts,
+      total: totalCount || 0,
+      currentPage: page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      error: null,
     };
-  } catch (error) {
-    console.error("Error loading posts:", error);
+  } catch (err) {
+    console.error('❌ Unexpected error:', err);
     return {
       posts: [],
       total: 0,
-      error: "Failed to load posts",
+      currentPage: page,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      error: err instanceof Error ? err.message : 'Failed to load posts',
     };
   }
 }
