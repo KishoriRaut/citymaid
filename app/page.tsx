@@ -51,7 +51,7 @@ function HomePageContent() {
     salary: "",
   });
 
-  // Load posts with pagination and smart filtering
+  // Load posts with standard industry pagination
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
       console.log(`📥 loadPosts called: page=${page}, reset=${reset}, currentPage state=${currentPage}`);
@@ -65,38 +65,11 @@ function HomePageContent() {
       
       console.log(`🔍 Loading posts from Supabase...`);
       
-      // Load more posts initially to account for filtering
-      let result = await getPublicPostsClient(page, 18); // Load 18 instead of 12
+      // INDUSTRY STANDARD: Fixed 12 posts per page
+      const result = await getPublicPostsClient(page, 12);
       
       if (result.error) {
         throw new Error(result.error);
-      }
-      
-      // Remove duplicates and ensure complete rows after filtering
-      if (result.posts.length > 0) {
-        const uniquePosts = Array.from(new Map(result.posts.map(post => [post.id, post])).values());
-        
-        const tempFiltered = uniquePosts.filter(post => {
-          if (activeTab !== "all") {
-            return post.post_type === activeTab;
-          }
-          return true;
-        });
-        
-        // Calculate how many more posts we need for complete rows
-        const remainder = tempFiltered.length % 3;
-        const neededForCompleteRows = remainder === 0 ? 0 : 3 - remainder;
-        
-        // If we need more posts for complete rows and have more available, load them
-        if (neededForCompleteRows > 0 && result.hasNextPage) {
-          console.log(`🔄 Loading ${neededForCompleteRows} additional posts for complete rows...`);
-          const additionalResult = await getPublicPostsClient(page + 1, neededForCompleteRows + 3); // Load extra for safety
-          if (!additionalResult.error && additionalResult.posts.length > 0) {
-            // Combine and remove duplicates again
-            const allPosts = [...uniquePosts, ...additionalResult.posts];
-            result.posts = Array.from(new Map(allPosts.map(post => [post.id, post])).values());
-          }
-        }
       }
       
       if (result.posts.length === 0 && page === 1) {
@@ -120,7 +93,7 @@ function HomePageContent() {
       setIsLoading(false);
       setIsPageChanging(false);
     }
-  }, [activeTab]);
+  }, []);
 
   // Initialize page state from URL
   useEffect(() => {
@@ -172,22 +145,18 @@ function HomePageContent() {
 
   // Debug post rendering
   useEffect(() => {
-    console.log(`🎨 Post Grid Debug:`);
-    console.log(`  - Total posts loaded: ${posts.length}`);
+    console.log(`🎨 Industry Standard Post Grid:`);
+    console.log(`  - Total posts per page: 12 (fixed)`);
     console.log(`  - Filtered posts: ${filteredPosts.length}`);
     console.log(`  - Active tab: ${activeTab}`);
     console.log(`  - Current page: ${currentPage}`);
-    console.log(`  - Expected layout: 3 columns`);
+    console.log(`  - Layout: 3-column grid (industry standard)`);
     
-    // Calculate expected rows
-    const expectedRows = Math.ceil(filteredPosts.length / 3);
-    console.log(`  - Expected rows: ${expectedRows}`);
-    
-    // Check if we have complete rows
+    // Industry standard: Accept incomplete rows
     const completeRows = Math.floor(filteredPosts.length / 3);
     const remainingCards = filteredPosts.length % 3;
     console.log(`  - Complete rows: ${completeRows}`);
-    console.log(`  - Remaining cards in last row: ${remainingCards}`);
+    console.log(`  - Remaining cards: ${remainingCards} (industry standard)`);
   }, [filteredPosts, posts, activeTab, currentPage]);
 
   // Handle filter changes
@@ -334,19 +303,12 @@ function HomePageContent() {
         />
         
         <div className="grid grid-cols-3 gap-6 mb-8 w-full">
-          {filteredPosts.map((post, index) => (
-            <div key={post.id} className="w-full">
-              <PostCard 
-                post={post}
-              />
-            </div>
+          {filteredPosts.map((post) => (
+            <PostCard 
+              key={post.id} 
+              post={post}
+            />
           ))}
-          {/* Add empty divs to complete the last row if needed */}
-          {filteredPosts.length % 3 !== 0 && (
-            [...Array(3 - (filteredPosts.length % 3))].map((_, index) => (
-              <div key={`empty-${index}`} className="w-full" />
-            ))
-          )}
         </div>
 
         {/* Page change loading indicator */}
