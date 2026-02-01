@@ -267,13 +267,40 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-blue-900 mb-2">📞 Contact Information</h3>
-                  <p className="text-lg font-semibold text-blue-800">{post.contact}</p>
-                  <p className="text-sm text-blue-600 mt-1">
-                    {isEmployer 
-                      ? "Contact this employer for the job opportunity"
-                      : "Contact this job seeker for the position"
-                    }
-                  </p>
+                  
+                  {/* Check if contact should be visible */}
+                  {post.homepage_payment_status === 'approved' ? (
+                    <>
+                      <p className="text-lg font-semibold text-blue-800">{post.contact}</p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        {isEmployer 
+                          ? "Contact this employer for the job opportunity"
+                          : "Contact this job seeker for the position"
+                        }
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-lg font-semibold text-blue-800">
+                        {post.contact ? post.contact.substring(0, 2) + '******' + post.contact.substring(post.contact.length - 2) : 'Contact hidden'}
+                      </p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        {isEmployer 
+                          ? "🔒 Contact available after payment verification"
+                          : "🔒 Contact available after payment verification"
+                        }
+                      </p>
+                      <div className="mt-3">
+                        <Button 
+                          onClick={() => router.push(`/post-payment/${post.id}`)}
+                          className="w-full"
+                          size="sm"
+                        >
+                          💳 Unlock Contact Information
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
