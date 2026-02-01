@@ -173,9 +173,13 @@ export async function createPost(post: {
       place: post.place,
       salary: post.salary,
       contact: post.contact,
-      details: post.details,
       status: postStatus, // 'approved' for admins, 'pending' for regular users
     };
+
+    // Add details field only if it's provided (for backward compatibility)
+    if (post.details) {
+      postData.details = post.details;
+    }
 
     // For employee posts: use employee_photo for profile photo, photo_url for payment receipt
     if (post.post_type === "employee") {
@@ -194,6 +198,14 @@ export async function createPost(post: {
       .single();
 
     if (error) {
+      console.error("❌ Database Error Details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        postData: postData
+      });
+      
       if (process.env.NODE_ENV === "development") {
         console.error("Error creating post:", error);
       }
