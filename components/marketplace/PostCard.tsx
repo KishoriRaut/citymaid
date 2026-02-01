@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
@@ -15,6 +16,7 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const [imageError, setImageError] = useState(false);
+  const router = useRouter();
   
   // Use the new can_view_contact flag from the database
   const contactVisible = post.can_view_contact && post.contact !== null;
@@ -133,7 +135,10 @@ export function PostCard({ post }: PostCardProps) {
                 {post.details.length > 120 ? `${post.details.substring(0, 120)}...` : post.details}
               </p>
               {post.details.length > 120 && (
-                <span className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer ml-1">
+                <span 
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer ml-1 underline"
+                  onClick={() => router.push(`/post/${post.id}`)}
+                >
                   Read more
                 </span>
               )}

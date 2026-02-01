@@ -13,6 +13,7 @@ interface Post {
   salary: string;
   post_type: "employer" | "employee";
   contact: string;
+  details: string;
   photo_url?: string;
   status: string;
   homepage_payment_status: 'none' | 'pending' | 'approved' | 'rejected';
@@ -195,6 +196,15 @@ export default function PostViewPage() {
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Salary</h3>
                     <p className="text-lg font-semibold text-gray-900">{post.salary}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">
+                      {isEmployer ? 'Job Details' : 'About Me'}
+                    </h3>
+                    <p className="text-lg text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {post.details}
+                    </p>
                   </div>
                 </div>
 
