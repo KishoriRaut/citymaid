@@ -140,7 +140,7 @@ export function PostCard({ post }: PostCardProps) {
           </div>
           {/* Only show Read more button - no text content for consistent height */}
           <span 
-            className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer font-semibold"
+            className="inline-block text-xs text-blue-600 hover:text-blue-800 cursor-pointer font-semibold underline"
             onClick={() => {
               router.push(`/post/${post.id}`);
             }}
