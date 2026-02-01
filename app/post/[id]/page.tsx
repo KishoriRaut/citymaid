@@ -42,6 +42,14 @@ export default function PostViewPage() {
       if (data.error) {
         setError(data.error);
       } else if (data.post) {
+        // Debug: Check if details field is present
+        console.log("🔍 Post Data Received:", {
+          id: data.post.id,
+          hasDetails: !!data.post.details,
+          detailsLength: data.post.details?.length || 0,
+          detailsPreview: data.post.details ? data.post.details.substring(0, 100) + '...' : 'null',
+          allFields: Object.keys(data.post)
+        });
         setPost(data.post);
       } else {
         setError("Post not found");
@@ -202,8 +210,14 @@ export default function PostViewPage() {
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       {isEmployer ? 'Job Details' : 'About Me'}
                     </h3>
+                    {/* Debug: Show details info in development */}
+                    {process.env.NODE_ENV === 'development' && (
+                      <div className="text-xs text-red-500 mb-2">
+                        Debug: hasDetails={!!post.details} | length={post.details?.length || 0}
+                      </div>
+                    )}
                     <p className="text-lg text-gray-900 leading-relaxed whitespace-pre-wrap">
-                      {post.details}
+                      {post.details || 'No details available'}
                     </p>
                   </div>
                 </div>
