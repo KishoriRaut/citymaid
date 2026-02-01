@@ -224,8 +224,6 @@ export async function createPost(post: {
 // Get post by ID (admin only - includes contact)
 export async function getPostById(postId: string) {
   try {
-    console.log("🔍 getPostById: Using direct query (bypassing RPC) for post:", postId);
-    
     // Always use direct query for now to ensure details field is included
     const { data, error } = await supabase
       .from("posts")
@@ -239,13 +237,6 @@ export async function getPostById(postId: string) {
       }
       return { post: null, error: error.message };
     }
-
-    console.log("✅ Direct query result:", {
-      id: data.id,
-      hasDetails: !!data.details,
-      detailsLength: data.details?.length || 0,
-      allFields: Object.keys(data)
-    });
 
     return { post: data as Post, error: null };
   } catch (error) {

@@ -26,10 +26,6 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Check what postId we received
-  console.log("🔍 PostViewPage: Received params:", JSON.stringify(params, null, 2));
-  console.log("🔍 PostViewPage: postId from params:", params.id);
-
   useEffect(() => {
     if (params.id) {
       loadPost(params.id as string);
@@ -37,25 +33,14 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   const loadPost = async (postId: string) => {
-    console.log("🔍 loadPost: Called with postId:", postId);
     setIsLoading(true);
     try {
       const response = await fetch(`/api/posts/${postId}`);
       const data = await response.json();
 
-      console.log("🔍 loadPost: API Response:", JSON.stringify(data, null, 2));
-
       if (data.error) {
         setError(data.error);
       } else if (data.post) {
-        // Debug: Check if details field is present
-        console.log("🔍 Post Data Received:", JSON.stringify({
-          id: data.post.id,
-          hasDetails: !!data.post.details,
-          detailsLength: data.post.details?.length || 0,
-          detailsPreview: data.post.details ? data.post.details.substring(0, 100) + '...' : 'null',
-          allFields: Object.keys(data.post)
-        }, null, 2));
         setPost(data.post);
       } else {
         setError("Post not found");
@@ -216,12 +201,6 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       {isEmployer ? 'Job Details' : 'About Me'}
                     </h3>
-                    {/* Debug: Show details info in development */}
-                    {process.env.NODE_ENV === 'development' && (
-                      <div className="text-xs text-red-500 mb-2">
-                        Debug: hasDetails={!!post.details} | length={post.details?.length || 0}
-                      </div>
-                    )}
                     <p className="text-lg text-gray-900 leading-relaxed whitespace-pre-wrap">
                       {post.details || 'No details available'}
                     </p>

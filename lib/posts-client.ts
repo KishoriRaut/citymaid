@@ -141,41 +141,11 @@ async function getDirectQueryFallback() {
 // Transform posts data to match PostWithMaskedContact interface
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
-  console.log(`🔄 TransformPosts: Processing ${posts.length} posts`);
-  
   return posts.map((post, index) => {
     const postData = post as any;
     
-    // Debug: Check if details field exists in raw data
-    console.log(`🔍 Post ${index + 1} Raw Data:`, {
-      id: postData.id,
-      hasDetails: !!postData.details,
-      detailsLength: postData.details?.length || 0,
-      detailsPreview: postData.details ? postData.details.substring(0, 50) + '...' : 'null'
-    });
-    
     // Apply client-side contact masking - contacts are locked by default
     const isContactLocked = true; // All contacts are locked by default
-    
-    console.log(`🖼️ Post ${index + 1} Debug:`, {
-      id: postData.id,
-      post_type: postData.post_type,
-      work: postData.work,
-      photo_url: postData.photo_url,
-      employee_photo: postData.employee_photo,
-      photo_url_type: typeof postData.photo_url,
-      employee_photo_type: typeof postData.employee_photo,
-      has_photo_url: !!postData.photo_url,
-      has_employee_photo: !!postData.employee_photo
-    });
-    
-    // Test if photo URL is accessible
-    if (postData.photo_url) {
-      console.log(`🔗 Testing photo URL accessibility:`, postData.photo_url);
-    }
-    if (postData.employee_photo) {
-      console.log(`🔗 Testing employee photo URL accessibility:`, postData.employee_photo);
-    }
     
     const transformedPost = {
       id: postData.id,
@@ -194,13 +164,6 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
       homepage_payment_status: postData.homepage_payment_status || "none",
       payment_proof: postData.payment_proof || null,
     };
-    
-    console.log(`✅ Transformed Post ${index + 1}:`, {
-      id: transformedPost.id,
-      post_type: transformedPost.post_type,
-      employee_photo: transformedPost.employee_photo,
-      photo_url: transformedPost.photo_url
-    });
     
     return transformedPost;
   });

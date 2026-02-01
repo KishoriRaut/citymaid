@@ -117,14 +117,6 @@ export function PostCard({ post }: PostCardProps) {
         {/* Details */}
         {post.details && (
           <div className="mb-4">
-            {/* Debug: Show details length */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="text-xs text-red-500 mb-1">
-                Debug: details length = {post.details?.length || 0} | 
-                Read more condition: {post.details?.length > 80 ? 'TRUE' : 'FALSE'} |
-                Preview: "{post.details?.substring(0, 50)}..."
-              </div>
-            )}
             <div className="text-sm text-muted-foreground mb-2">
               {isHiring ? (
                 <div className="flex items-center gap-1">
@@ -147,7 +139,6 @@ export function PostCard({ post }: PostCardProps) {
                 <span 
                   className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer ml-2 font-semibold"
                   onClick={() => {
-                    console.log('Read more clicked for post:', post.id);
                     router.push(`/post/${post.id}`);
                   }}
                 >
@@ -155,13 +146,6 @@ export function PostCard({ post }: PostCardProps) {
                 </span>
               )}
             </div>
-          </div>
-        )}
-
-        {/* Debug: Show if details is missing */}
-        {process.env.NODE_ENV === 'development' && !post.details && (
-          <div className="text-xs text-red-500 mb-4">
-            Debug: No details field found for post {post.id}
           </div>
         )}
 
