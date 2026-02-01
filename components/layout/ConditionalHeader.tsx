@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetHeader } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { appConfig } from "@/lib/config";
 
@@ -58,10 +58,12 @@ export function ConditionalHeader() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <SheetTitle>Navigation Menu</SheetTitle>
-                <SheetDescription>
-                  Access main navigation options and create new posts
-                </SheetDescription>
+                <SheetHeader>
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                  <SheetDescription>
+                    Access main navigation options and create new posts
+                  </SheetDescription>
+                </SheetHeader>
                 <div className="flex flex-col space-y-4 mt-8">
                   <div className="px-4">
                     <h2 className="text-lg font-semibold">{appConfig.brand.name}</h2>
