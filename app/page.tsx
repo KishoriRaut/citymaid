@@ -51,7 +51,7 @@ function HomePageContent() {
     salary: "",
   });
 
-  // Load posts with pagination
+  // Load posts with pagination and smart filtering
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
       console.log(`📥 loadPosts called: page=${page}, reset=${reset}, currentPage state=${currentPage}`);
@@ -64,10 +64,32 @@ function HomePageContent() {
       }
       
       console.log(`🔍 Loading posts from Supabase...`);
-      const result = await getPublicPostsClient(page, 12);
+      
+      // Load more posts initially to account for filtering
+      let result = await getPublicPostsClient(page, 15); // Load 15 instead of 12
       
       if (result.error) {
         throw new Error(result.error);
+      }
+      
+      // If we still don't have enough for complete rows after filtering, load more
+      if (result.posts.length > 0) {
+        const tempPosts = result.posts;
+        const tempFiltered = tempPosts.filter(post => {
+          if (activeTab !== "all") {
+            return post.post_type === activeTab;
+          }
+          return true;
+        });
+        
+        // If filtered posts don't create complete rows, load more
+        if (tempFiltered.length > 0 && tempFiltered.length % 3 !== 0 && result.hasNextPage) {
+          console.log(`🔄 Loading additional posts for complete rows...`);
+          const additionalResult = await getPublicPostsClient(page + 1, 6); // Load 6 more
+          if (!additionalResult.error && additionalResult.posts.length > 0) {
+            result.posts = [...result.posts, ...additionalResult.posts];
+          }
+        }
       }
       
       if (result.posts.length === 0 && page === 1) {
@@ -91,7 +113,7 @@ function HomePageContent() {
       setIsLoading(false);
       setIsPageChanging(false);
     }
-  }, [currentPage]);
+  }, [activeTab]);
 
   // Initialize page state from URL
   useEffect(() => {
@@ -312,6 +334,12 @@ function HomePageContent() {
               />
             </div>
           ))}
+          {/* Add empty divs to complete the last row if needed */}
+          {filteredPosts.length % 3 !== 0 && (
+            [...Array(3 - (filteredPosts.length % 3))].map((_, index) => (
+              <div key={`empty-${index}`} className="w-full" />
+            ))
+          )}
         </div>
 
         {/* Page change loading indicator */}
@@ -342,7 +370,7 @@ function HomePageContent() {
               hasNextPage={hasNextPage}
               isLoading={isPageChanging}
               onLoadMore={handleLoadMore}
-              remainingPosts={totalPosts - (currentPage * 12)}
+              remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
             />
           </div>
         </div>
