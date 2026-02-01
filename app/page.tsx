@@ -66,28 +66,35 @@ function HomePageContent() {
       console.log(`🔍 Loading posts from Supabase...`);
       
       // Load more posts initially to account for filtering
-      let result = await getPublicPostsClient(page, 15); // Load 15 instead of 12
+      let result = await getPublicPostsClient(page, 18); // Load 18 instead of 12
       
       if (result.error) {
         throw new Error(result.error);
       }
       
-      // If we still don't have enough for complete rows after filtering, load more
+      // Remove duplicates and ensure complete rows after filtering
       if (result.posts.length > 0) {
-        const tempPosts = result.posts;
-        const tempFiltered = tempPosts.filter(post => {
+        const uniquePosts = Array.from(new Map(result.posts.map(post => [post.id, post])).values());
+        
+        const tempFiltered = uniquePosts.filter(post => {
           if (activeTab !== "all") {
             return post.post_type === activeTab;
           }
           return true;
         });
         
-        // If filtered posts don't create complete rows, load more
-        if (tempFiltered.length > 0 && tempFiltered.length % 3 !== 0 && result.hasNextPage) {
-          console.log(`🔄 Loading additional posts for complete rows...`);
-          const additionalResult = await getPublicPostsClient(page + 1, 6); // Load 6 more
+        // Calculate how many more posts we need for complete rows
+        const remainder = tempFiltered.length % 3;
+        const neededForCompleteRows = remainder === 0 ? 0 : 3 - remainder;
+        
+        // If we need more posts for complete rows and have more available, load them
+        if (neededForCompleteRows > 0 && result.hasNextPage) {
+          console.log(`🔄 Loading ${neededForCompleteRows} additional posts for complete rows...`);
+          const additionalResult = await getPublicPostsClient(page + 1, neededForCompleteRows + 3); // Load extra for safety
           if (!additionalResult.error && additionalResult.posts.length > 0) {
-            result.posts = [...result.posts, ...additionalResult.posts];
+            // Combine and remove duplicates again
+            const allPosts = [...uniquePosts, ...additionalResult.posts];
+            result.posts = Array.from(new Map(allPosts.map(post => [post.id, post])).values());
           }
         }
       }
