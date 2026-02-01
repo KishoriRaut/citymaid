@@ -74,7 +74,10 @@ export default function SuccessPage() {
             Payment Submitted Successfully!
           </h1>
           <p className="text-lg text-gray-600">
-            Thank you for your payment. Admin will verify your payment shortly.
+            {isPostPromotion 
+              ? "Your payment is submitted and verification is in progress. Your post will be published on homepage within 24 hours."
+              : "Your payment is submitted and verification is in progress. You will receive the contact number via email/SMS within 24 hours."
+            }
           </p>
         </div>
 
@@ -114,7 +117,12 @@ export default function SuccessPage() {
 
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Clock className="w-4 h-4" />
-                <span>Processing time: Within 24 hours</span>
+                <span>
+                  {isPostPromotion 
+                    ? "Post approval time: Within 24 hours"
+                    : "Contact delivery time: Within 24 hours via email/SMS"
+                  }
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -158,12 +166,12 @@ export default function SuccessPage() {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">
-                      {isPostPromotion ? 'Post Published' : 'Contact Unlocked'}
+                      {isPostPromotion ? 'Post Published' : 'Contact Number Delivered'}
                     </p>
                     <p className="text-sm text-gray-600">
                       {isPostPromotion 
                         ? 'Your post will appear on the homepage'
-                        : 'You can view the contact information'
+                        : 'You will receive the contact number via email/SMS'
                       }
                     </p>
                   </div>
@@ -174,7 +182,11 @@ export default function SuccessPage() {
 
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                 <p className="text-sm text-amber-800">
-                  <strong>💡 Tip:</strong> Keep your payment receipt handy for future reference.
+                  <strong>💡 Tip:</strong> 
+                  {isPostPromotion 
+                    ? " Keep your payment receipt handy for future reference. Your post will be visible to thousands of users once approved."
+                    : " Keep your payment receipt handy and check your email/SMS regularly. The contact number will be sent to the contact details you provided."
+                  }
                 </p>
               </div>
             </CardContent>
@@ -191,8 +203,20 @@ export default function SuccessPage() {
                 size="lg"
               >
                 <Home className="w-4 h-4" />
-                Browse More Posts
+                {isPostPromotion ? 'Browse More Posts' : 'Browse More Jobs'}
               </Button>
+              
+              {isPostPromotion && (
+                <Button 
+                  onClick={() => router.push("/dashboard")}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  size="lg"
+                >
+                  <User className="w-4 h-4" />
+                  View My Post
+                </Button>
+              )}
               
               <Button 
                 onClick={() => router.back()}

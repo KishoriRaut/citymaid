@@ -130,9 +130,21 @@ export default function PaymentPage() {
 
       const result = await response.json();
       if (result.success) {
+        // Show success toast before redirect
+        const message = isPostPromotion 
+          ? "Payment submitted! Your post will be published within 24 hours."
+          : "Payment submitted! You'll receive the contact number via email/SMS within 24 hours.";
+        
+        toast({
+          title: "Payment Submitted Successfully!",
+          description: message,
+        });
+        
         // Redirect to success page with payment details
         const successUrl = `/success?type=${type}&amount=${amount}&transactionId=${encodeURIComponent(transactionId.trim())}`;
-        router.push(successUrl);
+        setTimeout(() => {
+          router.push(successUrl);
+        }, 1000);
       } else {
         setError(result.error || 'Failed to submit payment');
       }
