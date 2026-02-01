@@ -6,7 +6,7 @@ import type { PostWithMaskedContact } from "./types";
 import { maskContact } from "./utils";
 
 // Get public posts with pagination
-export async function getPublicPostsClient(page: number = 1, limit: number = 12) {
+export async function getPublicPostsClient(page: number = 1, limit: number = 12, postType?: "all" | "employer" | "employee") {
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured || !supabaseClient) {
@@ -27,11 +27,18 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12)
     
     console.log(`🔍 Loading page ${page} with limit ${limit} (offset: ${offset})`);
     
-    // Get total count first
-    const { count: totalCount, error: countError } = await supabaseClient
+    // Get total count first with post_type filter
+    let countQuery = supabaseClient
       .from('posts')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'approved');
+    
+    // Apply post_type filter if specified
+    if (postType && postType !== "all") {
+      countQuery = countQuery.eq('post_type', postType);
+    }
+    
+    const { count: totalCount, error: countError } = await countQuery;
 
     if (countError) {
       console.error('❌ Count query error:', countError);
@@ -46,8 +53,8 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12)
       };
     }
 
-    // Get paginated data
-    const { data, error } = await supabaseClient
+    // Get paginated data with post_type filter
+    let dataQuery = supabaseClient
       .from('posts')
       .select(`
         id,
@@ -63,7 +70,14 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12)
         status,
         created_at
       `)
-      .eq('status', 'approved')
+      .eq('status', 'approved');
+    
+    // Apply post_type filter if specified
+    if (postType && postType !== "all") {
+      dataQuery = dataQuery.eq('post_type', postType);
+    }
+    
+    const { data, error } = await dataQuery
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

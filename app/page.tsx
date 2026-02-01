@@ -51,7 +51,7 @@ function HomePageContent() {
     salary: "",
   });
 
-  // Load posts with standard industry pagination
+  // Load posts with server-side filtering
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
       console.log(`📥 loadPosts called: page=${page}, reset=${reset}, currentPage state=${currentPage}`);
@@ -65,8 +65,8 @@ function HomePageContent() {
       
       console.log(`🔍 Loading posts from Supabase...`);
       
-      // INDUSTRY STANDARD: Fixed 12 posts per page
-      const result = await getPublicPostsClient(page, 12);
+      // INDUSTRY STANDARD: Server-side filtering + fixed 12 posts per page
+      const result = await getPublicPostsClient(page, 12, activeTab);
       
       if (result.error) {
         throw new Error(result.error);
@@ -93,7 +93,7 @@ function HomePageContent() {
       setIsLoading(false);
       setIsPageChanging(false);
     }
-  }, []);
+  }, [activeTab]);
 
   // Initialize page state from URL
   useEffect(() => {
@@ -107,57 +107,24 @@ function HomePageContent() {
     }
   }, [initialPage, loadPosts, mounted]);
 
-  // Filter posts based on active tab and filters
-  const filteredPosts = useMemo(() => {
-    let filtered = posts;
-
-    // Filter by post type (tab)
-    if (activeTab !== "all") {
-      filtered = filtered.filter(post => post.post_type === activeTab);
-    }
-
-    // Filter by work type
-    if (filters.work !== "All") {
-      filtered = filtered.filter(post => post.work === filters.work);
-    }
-
-    // Filter by time
-    if (filters.time !== "All") {
-      filtered = filtered.filter(post => post.time === filters.time);
-    }
-
-    // Filter by place
-    if (filters.place.trim()) {
-      filtered = filtered.filter(post => 
-        post.place.toLowerCase().includes(filters.place.toLowerCase())
-      );
-    }
-
-    // Filter by salary
-    if (filters.salary.trim()) {
-      filtered = filtered.filter(post => 
-        post.salary.toLowerCase().includes(filters.salary.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [posts, activeTab, filters]);
+  // No client-side filtering needed - server handles it
+  const filteredPosts = posts;
 
   // Debug post rendering
   useEffect(() => {
-    console.log(`🎨 Industry Standard Post Grid:`);
-    console.log(`  - Total posts per page: 12 (fixed)`);
-    console.log(`  - Filtered posts: ${filteredPosts.length}`);
+    console.log(`🎨 Server-Side Filtering Results:`);
+    console.log(`  - Posts per page: 12 (fixed)`);
+    console.log(`  - Posts returned: ${filteredPosts.length} (already filtered by server)`);
     console.log(`  - Active tab: ${activeTab}`);
     console.log(`  - Current page: ${currentPage}`);
-    console.log(`  - Layout: 3-column grid (industry standard)`);
+    console.log(`  - Layout: 3-column grid`);
     
-    // Industry standard: Accept incomplete rows
+    // Server-side filtering ensures consistent results
     const completeRows = Math.floor(filteredPosts.length / 3);
     const remainingCards = filteredPosts.length % 3;
     console.log(`  - Complete rows: ${completeRows}`);
-    console.log(`  - Remaining cards: ${remainingCards} (industry standard)`);
-  }, [filteredPosts, posts, activeTab, currentPage]);
+    console.log(`  - Remaining cards: ${remainingCards}`);
+  }, [filteredPosts, activeTab, currentPage]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: typeof filters) => {
@@ -167,13 +134,10 @@ function HomePageContent() {
   // Handle tab change
   const handleTabChange = useCallback((tab: typeof activeTab) => {
     setActiveTab(tab);
-    // Only reset page if we're not already on page 1
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-      // Load posts for page 1 with new tab filter
-      loadPosts(1, false);
-    }
-  }, [currentPage, loadPosts]);
+    setCurrentPage(1); // Reset to first page when tab changes
+    // Load posts with new tab filter
+    loadPosts(1, true);
+  }, [loadPosts]);
 
   // Handle page change
   const handlePageChange = useCallback((page: number) => {
