@@ -20,12 +20,15 @@ interface Post {
   created_at: string;
 }
 
-export default function PostViewPage() {
-  const params = useParams();
+export default function PostViewPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Debug: Check what postId we received
+  console.log("🔍 PostViewPage: Received params:", params);
+  console.log("🔍 PostViewPage: postId from params:", params.id);
 
   useEffect(() => {
     if (params.id) {
@@ -34,10 +37,13 @@ export default function PostViewPage() {
   }, [params.id]);
 
   const loadPost = async (postId: string) => {
-    setLoading(true);
+    console.log("🔍 loadPost: Called with postId:", postId);
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/posts/${postId}`);
       const data = await response.json();
+
+      console.log("🔍 loadPost: API Response:", data);
 
       if (data.error) {
         setError(data.error);
@@ -58,11 +64,11 @@ export default function PostViewPage() {
       console.error("Error loading post:", error);
       setError("Failed to load post");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
