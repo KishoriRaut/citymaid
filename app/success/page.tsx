@@ -34,6 +34,12 @@ export default function SuccessPage() {
     const amount = Number(searchParams.get('amount')) || 299;
     const transactionId = searchParams.get('transactionId');
     
+    // Debug logging
+    console.log('🔍 Success Page Debug:');
+    console.log('  - URL type param:', type);
+    console.log('  - isPostPromotion:', type === 'post_promotion');
+    console.log('  - isContactUnlock:', type === 'contact_unlock');
+    
     setPaymentData({
       type,
       amount,
@@ -74,10 +80,20 @@ export default function SuccessPage() {
             Payment Submitted Successfully!
           </h1>
           <p className="text-lg text-gray-600">
-            {isPostPromotion 
-              ? "Your payment is submitted and verification is in progress. Your post will be published on homepage within 24 hours."
-              : "Your payment is submitted and verification is in progress. You will receive the contact number via email/SMS within 24 hours."
-            }
+            {(() => {
+              console.log('🔍 Message Display Debug:');
+              console.log('  - paymentData?.type:', paymentData?.type);
+              console.log('  - isPostPromotion:', isPostPromotion);
+              console.log('  - isContactUnlock:', isContactUnlock);
+              
+              if (isPostPromotion) {
+                return "Your payment is submitted and verification is in progress. Your post will be published on homepage within 24 hours.";
+              } else if (isContactUnlock) {
+                return "Your payment is submitted and verification is in progress. You will receive the contact number via email/SMS within 24 hours.";
+              } else {
+                return "Your payment is submitted and verification is in progress. You will receive further updates within 24 hours.";
+              }
+            })()}
           </p>
         </div>
 

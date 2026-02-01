@@ -294,21 +294,21 @@ export default function PostPaymentPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Proof Received!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Submitted Successfully!</h2>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
               <p className="text-green-800 text-sm mb-2">
-                <strong>✅ Your payment proof has been received.</strong>
+                <strong>✅ Your payment is submitted and verification is in progress.</strong>
               </p>
               <p className="text-green-800 text-sm mb-2">
-                <strong>⏰ Approval usually takes 2-4 hours.</strong>
+                <strong>⏰ You will receive confirmation within 24 hours.</strong>
               </p>
               {isContactUnlock ? (
                 <p className="text-green-800 text-sm">
-                  <strong>📞 Once approved, you&apos;ll be able to view the contact information for this post.</strong>
+                  <strong>📞 You will receive the contact number via email/SMS within 24 hours.</strong>
                 </p>
               ) : (
                 <p className="text-green-800 text-sm">
-                  <strong>🏠 Once approved, your post will be displayed on the homepage for 30 days.</strong>
+                  <strong>🏠 Your post will be published on homepage within 24 hours.</strong>
                 </p>
               )}
             </div>
