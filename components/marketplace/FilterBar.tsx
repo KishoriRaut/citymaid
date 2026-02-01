@@ -41,7 +41,7 @@ export function FilterBar({
     salaryFilter !== "";
 
   return (
-    <div className="mb-8 sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/50 shadow-sm -mx-4 px-4 md:mx-0 md:px-0 md:border-b-0 md:shadow-none">
+    <div className="mb-8 sticky top-0 z-40 bg-background border-b border-border/50 shadow-sm -mx-4 px-4 md:mx-0 md:px-0 md:border-b-0 md:shadow-none md:bg-background/95 md:backdrop-blur md:supports-[backdrop-filter]:md:bg-background/60">
       <div className="py-5">
         {/* Desktop Layout: Horizontal Row */}
         <div className="hidden md:flex items-center gap-4">

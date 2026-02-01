@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { appConfig } from "@/lib/config";
 
@@ -24,7 +24,7 @@ export function ConditionalHeader() {
   }
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <header className="border-b bg-background sticky top-0 z-50 sm:bg-background/95 sm:backdrop-blur sm:supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-3 sm:py-4">
         <nav className="flex items-center justify-between">
           <Link
@@ -58,6 +58,10 @@ export function ConditionalHeader() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription>
+                  Access main navigation options and create new posts
+                </SheetDescription>
                 <div className="flex flex-col space-y-4 mt-8">
                   <div className="px-4">
                     <h2 className="text-lg font-semibold">{appConfig.brand.name}</h2>
