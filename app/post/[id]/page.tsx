@@ -303,28 +303,6 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
               </div>
             </div>
           </div>
-
-          {/* Additional Information */}
-          <div className="mt-6 bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">About This Listing</h3>
-            <div className="prose prose-sm text-gray-600">
-              <p>
-                {isEmployer 
-                  ? "This employer is looking for qualified candidates for the position mentioned above. Contact them directly using the provided information."
-                  : "This job seeker is available for the work type mentioned above. Contact them directly using the provided information."
-                }
-              </p>
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">💡 Tips:</h4>
-                <ul className="text-sm space-y-1">
-                  <li>• Be professional when contacting</li>
-                  <li>• Have your relevant documents ready</li>
-                  <li>• Discuss salary expectations clearly</li>
-                  <li>• Ask about work schedule and requirements</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
