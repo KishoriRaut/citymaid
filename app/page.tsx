@@ -46,44 +46,6 @@ function HomePageContent() {
       
       setPosts(fetchedPosts);
       console.log(`✅ Loaded ${fetchedPosts.length} posts from Supabase`);
-      
-      // Debug photo URLs - DEEP DIVE ANALYSIS
-      console.log("🔍 === DEEP DIVE PHOTO ANALYSIS ===");
-      console.log(`📊 Total posts loaded: ${fetchedPosts.length}`);
-      console.log(`📊 Employee posts: ${fetchedPosts.filter(p => p.post_type === 'employee').length}`);
-      console.log(`📊 Employer posts: ${fetchedPosts.filter(p => p.post_type === 'employer').length}`);
-      
-      // Analyze each post in detail
-      fetchedPosts.forEach((post, index) => {
-        console.log(`🖼️ POST ${index + 1} ANALYSIS:`, {
-          id: post.id,
-          post_type: post.post_type,
-          work: post.work,
-          photo_url: post.photo_url,
-          has_photo_url: !!post.photo_url,
-          photo_url_type: typeof post.photo_url,
-          photo_url_length: post.photo_url?.length || 0,
-          photo_url_is_string: typeof post.photo_url === 'string',
-          photo_url_not_empty: post.photo_url !== '',
-          photo_url_not_null: post.photo_url !== null,
-          photo_url_not_undefined: post.photo_url !== undefined
-        });
-        
-        // Special focus on employee posts
-        if (post.post_type === 'employee') {
-          console.log(`👤 EMPLOYEE POST ${index + 1} DEEP ANALYSIS:`, {
-            id: post.id,
-            work: post.work,
-            photo_url: post.photo_url,
-            has_photo_url: !!post.photo_url,
-            photo_url_length: post.photo_url?.length || 0,
-            photo_url_valid_format: post.photo_url?.includes('supabase.co') || false,
-            photo_url_valid_extension: post.photo_url?.match(/\.(jpg|jpeg|png|webp)$/i) !== null
-          });
-        }
-      });
-      
-      console.log("🔍 === END DEEP DIVE ANALYSIS ===");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
@@ -228,7 +190,7 @@ function HomePageContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl">Job Listings</CardTitle>
+            <CardTitle className="text-3xl">Opportunities</CardTitle>
           </CardHeader>
         </Card>
         
