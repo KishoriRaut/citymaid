@@ -193,11 +193,6 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
                   </div>
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Salary</h3>
-                    <p className="text-lg font-semibold text-gray-900">{post.salary}</p>
-                  </div>
-                  
-                  <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       {isEmployer ? 'Job Details' : 'About Me'}
                     </h3>
@@ -218,6 +213,11 @@ export default function PostViewPage({ params }: { params: { id: string } }) {
                         day: 'numeric'
                       })}
                     </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Salary</h3>
+                    <p className="text-lg font-semibold text-gray-900">{post.salary}</p>
                   </div>
                   
                   {post.homepage_payment_status !== 'none' && (
