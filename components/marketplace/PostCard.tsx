@@ -117,6 +117,12 @@ export function PostCard({ post }: PostCardProps) {
         {/* Details */}
         {post.details && (
           <div className="mb-4">
+            {/* Debug: Show details length */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="text-xs text-red-500 mb-1">
+                Debug: details length = {post.details?.length || 0}
+              </div>
+            )}
             <div className="text-sm text-muted-foreground mb-2">
               {isHiring ? (
                 <div className="flex items-center gap-1">
@@ -143,6 +149,13 @@ export function PostCard({ post }: PostCardProps) {
                 </span>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Debug: Show if details is missing */}
+        {process.env.NODE_ENV === 'development' && !post.details && (
+          <div className="text-xs text-red-500 mb-4">
+            Debug: No details field found for post {post.id}
           </div>
         )}
 

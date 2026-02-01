@@ -31,6 +31,7 @@ export async function getPublicPostsClient() {
         place,
         salary,
         contact,
+        details,
         photo_url,
         employee_photo,
         status,
@@ -144,6 +145,15 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
   
   return posts.map((post, index) => {
     const postData = post as any;
+    
+    // Debug: Check if details field exists in raw data
+    console.log(`🔍 Post ${index + 1} Raw Data:`, {
+      id: postData.id,
+      hasDetails: !!postData.details,
+      detailsLength: postData.details?.length || 0,
+      detailsPreview: postData.details ? postData.details.substring(0, 50) + '...' : 'null'
+    });
+    
     // Apply client-side contact masking - contacts are locked by default
     const isContactLocked = true; // All contacts are locked by default
     
