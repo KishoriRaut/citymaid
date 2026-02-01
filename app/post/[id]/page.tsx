@@ -95,9 +95,9 @@ export default function PostViewPage() {
   const postTitle = post.title || `${post.work} - ${post.place}`;
   const isEmployer = post.post_type === "employer";
   
-  // Format posting time
-  const timeInfo = formatTimeWithDetails(post.created_at);
-  const isFresh = isFreshPost(post.created_at);
+  // Format posting time - add null check
+  const timeInfo = post.created_at ? formatTimeWithDetails(post.created_at) : { relative: 'Unknown time', title: 'No creation date' };
+  const isFresh = post.created_at ? isFreshPost(post.created_at) : false;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

@@ -6,7 +6,17 @@ export async function GET(
   { params }: { params: { postId: string } }
 ) {
   try {
+    console.log("🔍 API: getPostById called with postId:", params.postId);
     const { post, error } = await getPostById(params.postId);
+
+    console.log("🔍 API: getPostById result:", {
+      error,
+      postExists: !!post,
+      postId: post?.id,
+      hasDetails: !!post?.details,
+      detailsLength: post?.details?.length || 0,
+      allFields: post ? Object.keys(post) : []
+    });
 
     if (error || !post) {
       return NextResponse.json({ error: error || "Post not found" }, { status: 404 });
