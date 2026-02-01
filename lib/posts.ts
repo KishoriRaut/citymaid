@@ -224,53 +224,30 @@ export async function createPost(post: {
 // Get post by ID (admin only - includes contact)
 export async function getPostById(postId: string) {
   try {
-    console.log("🔍 getPostById: Trying RPC function for post:", postId);
-    const { data: rpcData, error: rpcError } = await supabase.rpc("get_post_with_contact_visibility", {
-      post_uuid: postId,
-    });
+    console.log("🔍 getPostById: Using direct query (bypassing RPC) for post:", postId);
+    
+    // Always use direct query for now to ensure details field is included
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", postId)
+      .single();
 
-    if (rpcError) {
-      console.log("❌ RPC Error:", rpcError.message, "Code:", rpcError.code);
-      // Fallback to direct query if function doesn't exist
-      if (rpcError.code === "42883" || rpcError.message?.includes("does not exist")) {
-        console.log("🔄 Using fallback direct query...");
-        const { data, error } = await supabase
-          .from("posts")
-          .select("*")
-          .eq("id", postId)
-          .single();
-
-        if (error) {
-          if (process.env.NODE_ENV === "development") {
-            console.error("Error fetching post:", error);
-          }
-          return { post: null, error: error.message };
-        }
-
-        console.log("✅ Direct query result:", {
-          id: data.id,
-          hasDetails: !!data.details,
-          detailsLength: data.details?.length || 0,
-          allFields: Object.keys(data)
-        });
-
-        return { post: data as Post, error: null };
-      }
-
+    if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching post via RPC:", rpcError);
+        console.error("Error fetching post:", error);
       }
-      return { post: null, error: rpcError.message };
+      return { post: null, error: error.message };
     }
 
-    console.log("✅ RPC Success - Data:", {
-      id: rpcData.id,
-      hasDetails: !!rpcData.details,
-      detailsLength: rpcData.details?.length || 0,
-      allFields: Object.keys(rpcData)
+    console.log("✅ Direct query result:", {
+      id: data.id,
+      hasDetails: !!data.details,
+      detailsLength: data.details?.length || 0,
+      allFields: Object.keys(data)
     });
 
-    return { post: rpcData as Post, error: null };
+    return { post: data as Post, error: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error in getPostById:", error);
