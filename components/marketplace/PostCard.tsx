@@ -120,7 +120,9 @@ export function PostCard({ post }: PostCardProps) {
             {/* Debug: Show details length */}
             {process.env.NODE_ENV === 'development' && (
               <div className="text-xs text-red-500 mb-1">
-                Debug: details length = {post.details?.length || 0}
+                Debug: details length = {post.details?.length || 0} | 
+                Read more condition: {post.details?.length > 80 ? 'TRUE' : 'FALSE'} |
+                Preview: "{post.details?.substring(0, 50)}..."
               </div>
             )}
             <div className="text-sm text-muted-foreground mb-2">
@@ -138,9 +140,9 @@ export function PostCard({ post }: PostCardProps) {
             </div>
             <div className="relative">
               <p className="text-sm text-foreground leading-relaxed text-gray-700 dark:text-gray-300">
-                {post.details.length > 120 ? `${post.details.substring(0, 120)}...` : post.details}
+                {post.details.length > 80 ? `${post.details.substring(0, 80)}...` : post.details}
               </p>
-              {post.details.length > 120 && (
+              {post.details.length > 80 && (
                 <span 
                   className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer ml-1 underline"
                   onClick={() => router.push(`/post/${post.id}`)}
