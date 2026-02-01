@@ -11,6 +11,7 @@ export async function GET() {
       place: "Kathmandu",
       salary: "Rs. 50,000 - 80,000",
       contact: "test@example.com",
+      details: "Experienced software developer with 5+ years in web development. Proficient in React, Node.js, and modern web technologies. Looking for challenging opportunities in growing tech companies.",
       photo_url: null
     };
     

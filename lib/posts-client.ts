@@ -175,6 +175,7 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
       place: postData.place,
       salary: postData.salary,
       contact: isContactLocked ? maskContact(postData.contact) : postData.contact,
+      details: postData.details || "",
       photo_url: postData.photo_url,
       employee_photo: postData.employee_photo || null,
       status: postData.status,

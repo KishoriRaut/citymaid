@@ -69,6 +69,7 @@ export async function createPost(post: {
   place: string;
   salary: string;
   contact: string;
+  details: string;
   photo_url?: string | null;
   employee_photo?: string | null;
 }, request?: Request) {
@@ -172,6 +173,7 @@ export async function createPost(post: {
       place: post.place,
       salary: post.salary,
       contact: post.contact,
+      details: post.details,
       status: postStatus, // 'approved' for admins, 'pending' for regular users
     };
 
@@ -267,7 +269,7 @@ export async function getAllPosts(filters?: {
     let query = supabase
       .from("posts")
       .select(`
-        id, post_type, work, time, place, salary, contact, photo_url, employee_photo, status, 
+        id, post_type, work, time, place, salary, contact, details, photo_url, employee_photo, status, 
         homepage_payment_status, payment_proof, created_at,
         payments!left(
           id, status, receipt_url, created_at

@@ -112,6 +112,28 @@ export function PostCard({ post }: PostCardProps) {
           <span>{post.time}</span>
         </div>
 
+        {/* Details */}
+        {post.details && (
+          <div className="mb-4">
+            <div className="text-sm text-muted-foreground mb-2">
+              {isHiring ? (
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium">Job Details</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Star className="w-4 h-4 flex-shrink-0" />
+                  <span className="font-medium">About Me</span>
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-foreground line-clamp-3 leading-relaxed">
+              {post.details}
+            </p>
+          </div>
+        )}
+
         {/* Unlock Contact Button */}
         {!contactVisible && (
           <div className="mb-4">

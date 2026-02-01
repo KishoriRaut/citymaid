@@ -342,6 +342,7 @@ export default function RequestsPage() {
                   <TableHead>Reference</TableHead>
                   <TableHead className="w-[80px]">Photo</TableHead>
                   <TableHead>Contact</TableHead>
+                  <TableHead className="w-[200px]">Details</TableHead>
                   <TableHead className="w-[120px]">Payment</TableHead>
                   <TableHead className="w-[120px]">Status</TableHead>
                   <TableHead className="w-[140px]">Submitted</TableHead>
@@ -447,6 +448,23 @@ export default function RequestsPage() {
                           </div>
                         )}
                       </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="max-w-[200px]">
+                    {request.type === "Post" ? (
+                      (() => {
+                        const postData = (request.originalData as any)?.posts;
+                        const details = postData?.details;
+                        return details ? (
+                          <div className="text-sm line-clamp-3" title={details}>
+                            {details}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">No details</span>
+                        );
+                      })()
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}

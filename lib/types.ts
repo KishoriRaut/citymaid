@@ -8,6 +8,7 @@ export interface Post {
   place: string;
   salary: string;
   contact: string;
+  details: string;
   photo_url: string | null;
   employee_photo: string | null;
   status: "pending" | "approved" | "hidden";
@@ -36,6 +37,7 @@ export interface PostWithMaskedContact {
   time: string;
   place: string;
   salary: string;
+  details: string;
   photo_url: string | null;
   employee_photo: string | null;
   status: "pending" | "approved" | "hidden";

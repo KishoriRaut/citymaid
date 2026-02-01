@@ -33,6 +33,7 @@ const formSchema = z.object({
   place: z.string().min(1, "Please enter a location"),
   salary: z.string().min(1, "Please enter a salary"),
   contact: z.string().min(1, "Please enter contact information"),
+  details: z.string().min(10, "Please provide at least 10 characters").max(500, "Details must be less than 500 characters"),
   photo: z.any().refine((data) => {
     // If employee post, photo is required
     if (data?.post_type === "employee") {
@@ -63,6 +64,7 @@ export default function NewPostPage() {
       place: "",
       salary: "",
       contact: "",
+      details: "",
       photo: undefined,
     },
   });
@@ -141,7 +143,7 @@ export default function NewPostPage() {
         console.log("📷 Photo exists:", !!values.photo);
       }
 
-      // Create post data
+      // Prepare post data
       const postData = {
         post_type: values.post_type,
         work: values.work === "Other" ? values.workOther || "" : values.work,
@@ -149,6 +151,7 @@ export default function NewPostPage() {
         place: values.place,
         salary: values.salary,
         contact: values.contact,
+        details: values.details,
         photo_url: photoUrl,
         employee_photo: employeePhotoUrl,
       };
@@ -604,6 +607,46 @@ export default function NewPostPage() {
                     {postType === "employer" 
                       ? "Provide multiple ways for interested workers to reach you"
                       : "Share your professional contact information for employers"
+                    }
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Details Input */}
+            <FormField
+              control={form.control}
+              name="details"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium">
+                    {postType === "employer" ? (
+                      <>
+                        <span className="text-primary">📋</span> Job Details
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-primary">👤</span> Personal Details
+                      </>
+                    )}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder={
+                        postType === "employer" 
+                          ? "Describe the job responsibilities, requirements, work environment, and any other relevant details that will help candidates understand the position better..." 
+                          : "Describe your skills, experience, qualifications, and what makes you a great candidate. Include your strengths, achievements, and what you're looking for in a position..."
+                      } 
+                      className="min-h-[150px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {postType === "employer" 
+                      ? "Provide comprehensive details about the position to attract the right candidates (10-500 characters)"
+                      : "Share detailed information about yourself to help employers understand your capabilities (10-500 characters)"
                     }
                   </FormDescription>
                   <FormMessage />
