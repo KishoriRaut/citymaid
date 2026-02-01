@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy } from "lucide-react";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
@@ -45,21 +47,53 @@ interface UnifiedRequest {
 }
 
 export default function RequestsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "hidden">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "post" | "contact-unlock">("all");
   const [processing, setProcessing] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [isPageChanging, setIsPageChanging] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Load all requests
-  const loadRequests = useCallback(async () => {
+  // Get initial page from URL or default to 1
+  const initialPage = Number(searchParams.get('page')) || 1;
+
+  // Handle component mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Load requests with pagination
+  const loadRequests = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setIsPageChanging(true);
+      }
       
-      // Use Promise.all to fetch data in parallel
+      // Determine status filter for unlock requests
+      const unlockStatus = filter === "all" ? undefined : 
+        filter === "hidden" ? "rejected" : 
+        filter === "approved" ? "approved" : 
+        filter === "rejected" ? "rejected" : 
+        filter === "pending" ? "pending" : undefined;
+      
+      // Use Promise.all to fetch data in parallel with pagination
       const [paymentData, unlockData] = await Promise.all([
-        getAllAdminPayments(),
-        getAllUnlockRequests()
+        getAllAdminPayments(page, 20),
+        getAllUnlockRequests(unlockStatus, page, 20)
       ]);
       
       // Process data only after both calls complete
@@ -97,23 +131,76 @@ export default function RequestsPage() {
             user_name: unlock.user_name || undefined,
             user_phone: unlock.user_phone || undefined,
             user_email: unlock.user_email || undefined,
-            contact_preference: unlock.contact_preference || undefined
+            contact_preference: unlock.contact_preference || undefined,
           },
           postContact: unlock.posts?.contact
         });
       });
       
-      // Set all data at once to prevent multiple re-renders
+      // Sort by submitted date (newest first)
+      unifiedRequests.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+      
       setRequests(unifiedRequests);
+      
+      // Calculate combined pagination info
+      const combinedTotal = (paymentData?.total || 0) + (unlockData?.total || 0);
+      const combinedPages = Math.ceil(combinedTotal / 20);
+      
+      setCurrentPage(page);
+      setTotalPages(combinedPages);
+      setTotalRequests(combinedTotal);
+      setHasNextPage(page < combinedPages);
+      setHasPrevPage(page > 1);
+      
+      console.log(`✅ Loaded ${unifiedRequests.length} requests (Page ${page} of ${combinedPages})`);
     } catch (error) {
-      console.error('Error loading requests:', error);
+      console.error("Error loading requests:", error);
     } finally {
       setLoading(false);
+      setIsPageChanging(false);
     }
+  }, [filter]);
+
+  // Initialize page state from URL
+  useEffect(() => {
+    setCurrentPage(initialPage);
+  }, [initialPage]);
+
+  // Initial load and page changes
+  useEffect(() => {
+    if (mounted) { // Only load after component is mounted
+      loadRequests(initialPage, true);
+    }
+  }, [initialPage, loadRequests, mounted]);
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams);
+    if (page === 1) {
+      params.delete('page');
+    } else {
+      params.set('page', page.toString());
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl, { scroll: false });
+    
+    loadRequests(page, false);
+  }, [loadRequests, searchParams, pathname, router]);
+
+  // Handle filter changes
+  const handleFilterChange = useCallback((newFilter: typeof filter) => {
+    setFilter(newFilter);
+    setCurrentPage(1); // Reset to first page when filter changes
   }, []);
 
-  useEffect(() => {
-    loadRequests();
+  // Handle type filter changes
+  const handleTypeFilterChange = useCallback((newTypeFilter: typeof typeFilter) => {
+    setTypeFilter(newTypeFilter);
+    setCurrentPage(1); // Reset to first page when filter changes
   }, []);
 
   // Filter requests with useMemo to prevent unnecessary re-renders
@@ -146,7 +233,7 @@ export default function RequestsPage() {
       } else {
         await approveUnlockRequest(request.id);
       }
-      await loadRequests();
+      await loadRequests(currentPage, false);
     } catch (error) {
       console.error("Error approving request:", error);
     } finally {
@@ -162,7 +249,7 @@ export default function RequestsPage() {
       } else {
         await rejectUnlockRequest(request.id);
       }
-      await loadRequests();
+      await loadRequests(currentPage, false);
     } catch (error) {
       console.error("Error rejecting request:", error);
     } finally {
@@ -296,7 +383,7 @@ export default function RequestsPage() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           {/* Status Filter */}
-          <Select value={filter} onValueChange={(value: "all" | "pending" | "approved" | "rejected" | "hidden") => setFilter(value)}>
+          <Select value={filter} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
@@ -310,7 +397,7 @@ export default function RequestsPage() {
           </Select>
           
           {/* Type Filter */}
-          <Select value={typeFilter} onValueChange={(value: "all" | "post" | "contact-unlock") => setTypeFilter(value)}>
+          <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
             <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by Type" />
             </SelectTrigger>
@@ -576,6 +663,39 @@ export default function RequestsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Page change loading indicator */}
+      {isPageChanging && (
+        <div className="flex justify-center py-4">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="space-y-4">
+        {/* Traditional pagination for desktop */}
+        <div className="hidden md:block">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            onPageChange={handlePageChange}
+            isLoading={isPageChanging}
+            totalPosts={totalRequests}
+          />
+        </div>
+
+        {/* Load more button for mobile */}
+        <div className="md:hidden">
+          <LoadMoreButton
+            hasNextPage={hasNextPage}
+            isLoading={isPageChanging}
+            onLoadMore={() => handlePageChange(currentPage + 1)}
+            remainingPosts={totalRequests - (currentPage * 20)}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -30,9 +30,15 @@ function HomePageContent() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [isPageChanging, setIsPageChanging] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Get initial page from URL or default to 1
   const initialPage = Number(searchParams.get('page')) || 1;
+
+  // Handle component mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Primary tab: "employee" (Find a Job) is now default
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
@@ -89,10 +95,12 @@ function HomePageContent() {
     setCurrentPage(initialPage);
   }, [initialPage]);
 
-  // Initial load
+  // Initial load and page changes
   useEffect(() => {
-    loadPosts(initialPage, true);
-  }, [loadPosts, initialPage]);
+    if (mounted) { // Only load after component is mounted
+      loadPosts(initialPage, true);
+    }
+  }, [initialPage, loadPosts]);
 
   // Filter posts based on active tab and filters
   const filteredPosts = useMemo(() => {
