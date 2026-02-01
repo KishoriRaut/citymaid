@@ -114,40 +114,40 @@ export function PostCard({ post }: PostCardProps) {
           <span>{post.time}</span>
         </div>
 
-        {/* Details */}
-        {post.details && (
-          <div className="mb-4">
-            <div className="text-sm text-muted-foreground mb-2">
-              {isHiring ? (
-                <div className="flex items-center gap-1">
-                  <Briefcase className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium">Job Details</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-medium">About Me</span>
-                </div>
-              )}
-            </div>
-            <div className="relative">
-              <p className="text-sm text-foreground leading-relaxed text-gray-700 dark:text-gray-300">
-                {post.details.length > 80 ? `${post.details.substring(0, 80)}...` : post.details}
-              </p>
-              {/* Always show Read more for testing - make it more prominent */}
-              {post.details && (
-                <span 
-                  className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer ml-2 font-semibold"
-                  onClick={() => {
-                    router.push(`/post/${post.id}`);
-                  }}
-                >
-                  Read more →
-                </span>
-              )}
-            </div>
+        {/* Details Section - Always show for consistent height */}
+        <div className="mb-4">
+          <div className="text-sm text-muted-foreground mb-2">
+            {isHiring ? (
+              <div className="flex items-center gap-1">
+                <Briefcase className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium">Job Details</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <User className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium">About Me</span>
+              </div>
+            )}
           </div>
-        )}
+          <div className="relative">
+            <p className="text-sm text-foreground leading-relaxed text-gray-700 dark:text-gray-300 min-h-[3.5rem]">
+              {post.details ? (
+                post.details.length > 80 ? `${post.details.substring(0, 80)}...` : post.details
+              ) : (
+                <span className="text-gray-400 italic">No details provided</span>
+              )}
+            </p>
+            {/* Always show Read more button for consistent layout */}
+            <span 
+              className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer ml-2 font-semibold"
+              onClick={() => {
+                router.push(`/post/${post.id}`);
+              }}
+            >
+              Read more →
+            </span>
+          </div>
+        </div>
 
         {/* Unlock Contact Button */}
         {!contactVisible && (
