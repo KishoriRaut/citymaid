@@ -88,20 +88,6 @@ export function PostCard({ post }: PostCardProps) {
           {post.work}
         </h3>
 
-        {/* Meta Information */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            <span>{timeInfo.relative}</span>
-          </div>
-          {post.salary && (
-            <div className="flex items-center gap-1 font-medium text-foreground">
-              <DollarSign className="w-4 h-4" />
-              <span>{formatSalary(post.salary)}</span>
-            </div>
-          )}
-        </div>
-
         {/* Location */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <MapPin className="w-4 h-4 flex-shrink-0" />
@@ -112,6 +98,20 @@ export function PostCard({ post }: PostCardProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <Clock className="w-4 h-4 flex-shrink-0" />
           <span>{post.time}</span>
+        </div>
+
+        {/* Meta Information - Time and Salary */}
+        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+          <div className="flex items-center gap-1">
+            <Clock className="w-4 h-4" />
+            <span>{timeInfo.relative}</span>
+          </div>
+          {post.salary && (
+            <div className="flex items-center gap-1 font-medium text-foreground">
+              <DollarSign className="w-4 h-4" />
+              <span>{formatSalary(post.salary)}</span>
+            </div>
+          )}
         </div>
 
         {/* Details Section - Always show for consistent height */}
