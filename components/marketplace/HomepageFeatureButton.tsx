@@ -57,7 +57,7 @@ export default function HomepageFeatureButton({
           Processing...
         </span>
       ) : (
-        children || "🏠 Feature on Homepage - NPR 500"
+        children || "🏠 Feature on Homepage - Rs. 299"
       )}
     </Button>
   );

@@ -68,7 +68,7 @@ export default function UnlockContactButton({
       ) : (
         <span className="flex items-center gap-2">
           <Lock className="h-4 w-4" />
-          <span>Unlock Contact - Rs. 50</span>
+          <span>Unlock Contact - Rs. 299</span>
         </span>
       )}
     </Button>
