@@ -84,34 +84,43 @@ export function PostCard({ post }: PostCardProps) {
       {/* Content */}
       <CardContent className="p-5">
         {/* Title */}
-        <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-lg text-foreground mb-4 line-clamp-2 group-hover:text-primary transition-colors">
           {post.work}
         </h3>
 
-        {/* Location */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <MapPin className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">{post.place || "Location not specified"}</span>
-        </div>
-
-        {/* Work Schedule */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <Clock className="w-4 h-4 flex-shrink-0" />
-          <span>{post.time}</span>
-        </div>
-
-        {/* Meta Information - Time and Salary */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            <span>{timeInfo.relative}</span>
-          </div>
-          {post.salary && (
-            <div className="flex items-center gap-1 font-medium text-foreground">
-              <DollarSign className="w-4 h-4" />
-              <span>{formatSalary(post.salary)}</span>
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Left Column */}
+          <div className="space-y-3">
+            {/* Location */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{post.place || "Location not specified"}</span>
             </div>
-          )}
+            
+            {/* Work Schedule */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4 flex-shrink-0" />
+              <span>{post.time}</span>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-3">
+            {/* Posted Time */}
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>{timeInfo.relative}</span>
+            </div>
+            
+            {/* Salary */}
+            {post.salary && (
+              <div className="flex items-center gap-1 font-medium text-foreground text-sm">
+                <DollarSign className="w-4 h-4" />
+                <span>{formatSalary(post.salary)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Details Section - Always show for consistent height */}
