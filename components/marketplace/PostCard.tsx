@@ -142,12 +142,16 @@ export function PostCard({ post }: PostCardProps) {
               <p className="text-sm text-foreground leading-relaxed text-gray-700 dark:text-gray-300">
                 {post.details.length > 80 ? `${post.details.substring(0, 80)}...` : post.details}
               </p>
-              {post.details.length > 80 && (
+              {/* Always show Read more for testing - make it more prominent */}
+              {post.details && (
                 <span 
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 cursor-pointer ml-1 underline"
-                  onClick={() => router.push(`/post/${post.id}`)}
+                  className="inline-block text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-800 cursor-pointer ml-2 font-semibold"
+                  onClick={() => {
+                    console.log('Read more clicked for post:', post.id);
+                    router.push(`/post/${post.id}`);
+                  }}
                 >
-                  Read more
+                  Read more →
                 </span>
               )}
             </div>
