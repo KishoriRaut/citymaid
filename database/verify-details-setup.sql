@@ -15,13 +15,6 @@ SELECT conname, contype
 FROM pg_constraint 
 WHERE conrelid = 'posts'::regclass AND conname = 'details_not_empty';
 
--- Check column comment
-SELECT 
-    column_name, 
-    column_comment
-FROM information_schema.columns 
-WHERE table_name = 'posts' AND column_name = 'details';
-
 -- Show sample data to verify updates
 SELECT 
     id, 
