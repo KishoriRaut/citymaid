@@ -406,9 +406,37 @@ export default function PostPaymentPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* QR Code Section */}
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Scan QR Code</h4>
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
-                      <div className="w-48 h-48 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <h4 className="font-medium text-gray-900 mb-3">Payment Methods</h4>
+                    
+                    {/* eSewa Section */}
+                    <div className="bg-white border-2 border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center mb-3">
+                        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-2">
+                          <span className="text-white font-bold text-sm">e</span>
+                        </div>
+                        <h5 className="font-medium text-gray-900">eSewa Payment</h5>
+                      </div>
+                      <div className="bg-green-50 rounded p-3 text-sm">
+                        <p className="font-medium text-gray-900 mb-2">eSewa Details:</p>
+                        <div className="space-y-1 text-xs text-gray-700">
+                          <p><strong>eSewa ID:</strong> +9779841317273</p>
+                          <p><strong>Company Name:</strong> City Maid Services Pvt. Ltd.</p>
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-green-200">
+                          <p className="text-xs text-gray-600">Open eSewa app → Send Money → Enter details → Pay Rs. 299</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sanima Bank QR Section */}
+                    <div className="bg-white border-2 border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center mb-3">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-2">
+                          <span className="text-white font-bold text-sm">S</span>
+                        </div>
+                        <h5 className="font-medium text-gray-900">Sanima Bank QR</h5>
+                      </div>
+                      <div className="w-40 h-40 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
                         <img 
                           src="/sanima-qr.png" 
                           alt="Sanima Bank QR Code" 
@@ -420,13 +448,13 @@ export default function PostPaymentPage() {
                           }}
                         />
                         <div className="hidden text-gray-500 text-sm">
-                          <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                           </svg>
                           <p>QR Code</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">Scan with Sanima Bank app</p>
+                      <p className="text-xs text-gray-600 text-center">Scan with Sanima Bank app</p>
                     </div>
                   </div>
 
@@ -434,15 +462,42 @@ export default function PostPaymentPage() {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Payment Instructions</h4>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. Scan the QR code with Sanima Bank app</li>
-                        <li>2. Enter amount: Rs. 299</li>
-                        <li>3. Complete the payment</li>
-                        <li>4. Save the transaction ID or screenshot</li>
-                        <li>5. Upload payment proof below</li>
-                      </ol>
-                      <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                        <strong>Bank:</strong> Sanima Bank
+                      <div className="space-y-4">
+                        {/* eSewa Instructions */}
+                        <div className="bg-green-50 border border-green-200 rounded p-3">
+                          <h5 className="font-medium text-green-800 mb-2 text-sm">For eSewa Users:</h5>
+                          <ol className="text-xs text-green-700 space-y-1">
+                            <li>1. Open eSewa app</li>
+                            <li>2. Tap "Send Money"</li>
+                            <li>3. Enter eSewa ID: +9779841317273</li>
+                            <li>4. Enter amount: Rs. 299</li>
+                            <li>5. Complete payment</li>
+                            <li>6. Save transaction screenshot</li>
+                          </ol>
+                        </div>
+
+                        {/* Sanima Bank Instructions */}
+                        <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                          <h5 className="font-medium text-blue-800 mb-2 text-sm">For Sanima Bank Users:</h5>
+                          <ol className="text-xs text-blue-700 space-y-1">
+                            <li>1. Scan QR code with Sanima Bank app</li>
+                            <li>2. Enter amount: Rs. 299</li>
+                            <li>3. Complete the payment</li>
+                            <li>4. Save the transaction ID or screenshot</li>
+                          </ol>
+                        </div>
+
+                        {/* Bank Transfer Instructions */}
+                        <div className="bg-purple-50 border border-purple-200 rounded p-3">
+                          <h5 className="font-medium text-purple-800 mb-2 text-sm">For Bank Transfer:</h5>
+                          <div className="text-xs text-purple-700 space-y-1">
+                            <p><strong>Account Number:</strong> 005010010001200</p>
+                            <p><strong>Account Name:</strong> City Maid Services Pvt. Ltd.</p>
+                            <p><strong>Branch Name:</strong> Kumaripati</p>
+                            <p><strong>Bank Code:</strong> SNMANPKA</p>
+                            <p className="mt-2 font-medium">Transfer Rs. 299 and save receipt</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
