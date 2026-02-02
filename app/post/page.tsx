@@ -430,6 +430,7 @@ export default function NewPostPage() {
                 </FormItem>
               )}
             />
+            </div>
 
             {/* Other Time Input */}
             {isOtherTimeOption(timeValue) && (
