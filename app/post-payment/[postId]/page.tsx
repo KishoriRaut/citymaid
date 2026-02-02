@@ -369,6 +369,57 @@ export default function PostPaymentPage() {
               </p>
             </div>
 
+            {/* Marketing Banner - Contact Unlock Promotion */}
+            {isContactUnlock && (
+              <div className="mx-6 mb-6">
+                <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden rounded-lg">
+                  <div className="relative">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 bg-black/10">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="relative px-6 py-4 text-white">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                              <span className="text-xl">🔓</span>
+                            </div>
+                            <h3 className="text-lg font-bold">Unlock Contact Numbers</h3>
+                          </div>
+                          <p className="text-white/90 text-sm">
+                            Get instant access to contact details for just <span className="font-bold text-yellow-300">NRs. 300</span>
+                          </p>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                              ✓ Verified Contacts
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                              ✓ Instant Access
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                              ✓ Secure Payment
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="text-2xl font-bold text-yellow-300">
+                            NRs. 300
+                          </div>
+                          <div className="text-xs text-white/80 text-center">
+                            One-time<br />unlock fee
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="p-6">
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Post Details</h3>
