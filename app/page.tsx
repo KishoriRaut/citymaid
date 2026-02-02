@@ -47,6 +47,7 @@ function HomePageContent() {
   const [filters, setFilters] = useState({
     work: "All",
     time: "All",
+    postedTime: "all",
     place: "",
     salary: "",
   });
@@ -66,7 +67,8 @@ function HomePageContent() {
       console.log(`🔍 Loading posts from Supabase...`);
       
       // INDUSTRY STANDARD: Server-side filtering + fixed 12 posts per page
-      const result = await getPublicPostsClient(page, 12, activeTab);
+      console.log(`🔍 Calling getPublicPostsClient with postedTimeFilter: ${filters.postedTime}`);
+      const result = await getPublicPostsClient(page, 12, activeTab, filters.postedTime);
       
       if (result.error) {
         throw new Error(result.error);
@@ -93,7 +95,7 @@ function HomePageContent() {
       setIsLoading(false);
       setIsPageChanging(false);
     }
-  }, [activeTab]);
+  }, [activeTab, filters.postedTime]);
 
   // Initialize page state from URL
   useEffect(() => {
@@ -106,6 +108,15 @@ function HomePageContent() {
       loadPosts(initialPage, true);
     }
   }, [initialPage, loadPosts, mounted]);
+
+  // Reload posts when posted time filter changes
+  useEffect(() => {
+    if (mounted) {
+      console.log(`🔄 Posted time filter changed to: ${filters.postedTime}`);
+      setCurrentPage(1); // Reset to first page when filter changes
+      loadPosts(1, true);
+    }
+  }, [filters.postedTime, loadPosts, mounted]);
 
   // No client-side filtering needed - server handles it
   const filteredPosts = posts;
@@ -225,13 +236,15 @@ function HomePageContent() {
           <FilterBar 
             workFilter={filters.work}
             timeFilter={filters.time}
+            postedTimeFilter={filters.postedTime}
             placeFilter={filters.place}
             salaryFilter={filters.salary}
             onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
             onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
+            onPostedTimeChange={(value) => handleFilterChange({ ...filters, postedTime: value })}
             onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
             onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
-            onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
+            onReset={() => handleFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
           />
           
           <EmptyState 
@@ -257,13 +270,15 @@ function HomePageContent() {
         <FilterBar 
           workFilter={filters.work}
           timeFilter={filters.time}
+          postedTimeFilter={filters.postedTime}
           placeFilter={filters.place}
           salaryFilter={filters.salary}
           onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
           onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
+          onPostedTimeChange={(value) => handleFilterChange({ ...filters, postedTime: value })}
           onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
           onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
-          onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
+          onReset={() => handleFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
         />
         
         <div className="grid grid-cols-3 gap-6 mb-8 w-full">

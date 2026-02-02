@@ -4,9 +4,15 @@ import { supabaseClient, isSupabaseConfigured } from "./supabase-client";
 import { createClient } from "@supabase/supabase-js";
 import type { PostWithMaskedContact } from "./types";
 import { maskContact } from "./utils";
+import { getPostedTimeDays, getPostedDateRange } from "./posted-time";
 
 // Get public posts with pagination
-export async function getPublicPostsClient(page: number = 1, limit: number = 12, postType?: "all" | "employer" | "employee") {
+export async function getPublicPostsClient(
+  page: number = 1, 
+  limit: number = 12, 
+  postType?: "all" | "employer" | "employee",
+  postedTimeFilter?: string
+) {
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured || !supabaseClient) {
@@ -36,6 +42,19 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12,
     // Apply post_type filter if specified
     if (postType && postType !== "all") {
       countQuery = countQuery.eq('post_type', postType);
+    }
+    
+    // Apply posted time filter if specified
+    if (postedTimeFilter && postedTimeFilter !== "all") {
+      const days = getPostedTimeDays(postedTimeFilter);
+      console.log(`🔍 Posted time filter: ${postedTimeFilter}, days: ${days}`);
+      if (days > 0) {
+        const { startDate } = getPostedDateRange(days);
+        console.log(`📅 Filtering posts from: ${startDate.toISOString()}`);
+        countQuery = countQuery.gte('created_at', startDate.toISOString());
+      }
+    } else {
+      console.log(`🔍 No posted time filter applied (postedTimeFilter: ${postedTimeFilter})`);
     }
     
     const { count: totalCount, error: countError } = await countQuery;
@@ -75,6 +94,19 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12,
     // Apply post_type filter if specified
     if (postType && postType !== "all") {
       dataQuery = dataQuery.eq('post_type', postType);
+    }
+    
+    // Apply posted time filter if specified
+    if (postedTimeFilter && postedTimeFilter !== "all") {
+      const days = getPostedTimeDays(postedTimeFilter);
+      console.log(`🔍 Data query - Posted time filter: ${postedTimeFilter}, days: ${days}`);
+      if (days > 0) {
+        const { startDate } = getPostedDateRange(days);
+        console.log(`📅 Data query filtering posts from: ${startDate.toISOString()}`);
+        dataQuery = dataQuery.gte('created_at', startDate.toISOString());
+      }
+    } else {
+      console.log(`🔍 Data query - No posted time filter applied (postedTimeFilter: ${postedTimeFilter})`);
     }
     
     const { data, error } = await dataQuery

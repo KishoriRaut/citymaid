@@ -7,17 +7,21 @@ import { Input } from "@/components/ui/input";
 import { appConfig } from "@/lib/config";
 import { getAllWorkTypes } from "@/lib/work-types";
 import { getAllTimeOptions } from "@/lib/work-time";
+import { getPostedTimeOptions } from "@/lib/posted-time";
 
 const WORK_OPTIONS = ["All Work Types", ...getAllWorkTypes()];
 const TIME_OPTIONS = ["All Times", ...getAllTimeOptions()];
+const POSTED_TIME_OPTIONS = getPostedTimeOptions();
 
 interface FilterBarProps {
   workFilter: string;
   timeFilter: string;
+  postedTimeFilter: string;
   placeFilter: string;
   salaryFilter: string;
   onWorkChange: (value: string) => void;
   onTimeChange: (value: string) => void;
+  onPostedTimeChange: (value: string) => void;
   onPlaceChange: (value: string) => void;
   onSalaryChange: (value: string) => void;
   onReset: () => void;
@@ -26,10 +30,12 @@ interface FilterBarProps {
 export function FilterBar({
   workFilter,
   timeFilter,
+  postedTimeFilter,
   placeFilter,
   salaryFilter,
   onWorkChange,
   onTimeChange,
+  onPostedTimeChange,
   onPlaceChange,
   onSalaryChange,
   onReset,
@@ -37,6 +43,7 @@ export function FilterBar({
   const hasActiveFilters =
     workFilter !== "All" ||
     timeFilter !== "All" ||
+    postedTimeFilter !== "all" ||
     placeFilter !== "" ||
     salaryFilter !== "";
 
@@ -77,6 +84,28 @@ export function FilterBar({
                 {TIME_OPTIONS.map((option) => (
                   <SelectItem key={option} value={option === "All Times" ? "All" : option}>
                     {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Posted Time */}
+          <div className="w-[160px]">
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+              Posted
+            </label>
+            <Select value={postedTimeFilter} onValueChange={(value) => {
+              console.log(`🔄 FilterBar desktop postedTime changed to: ${value}`);
+              onPostedTimeChange(value);
+            }}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="When posted" />
+              </SelectTrigger>
+              <SelectContent>
+                {POSTED_TIME_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -164,6 +193,28 @@ export function FilterBar({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Row 1.5: Posted Time */}
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+              Posted
+            </label>
+            <Select value={postedTimeFilter} onValueChange={(value) => {
+              console.log(`🔄 FilterBar mobile postedTime changed to: ${value}`);
+              onPostedTimeChange(value);
+            }}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="When posted" />
+              </SelectTrigger>
+              <SelectContent>
+                {POSTED_TIME_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Row 2: Location */}
