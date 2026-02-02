@@ -30,6 +30,7 @@ function HomePageContent() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [isPageChanging, setIsPageChanging] = useState(false);
+  const [isTabChanging, setIsTabChanging] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Get initial page from URL or default to 1
@@ -144,8 +145,12 @@ function HomePageContent() {
   const handleTabChange = useCallback((tab: typeof activeTab) => {
     setActiveTab(tab);
     setCurrentPage(1); // Reset to first page when tab changes
+    setIsTabChanging(true); // Show tab loading state
+    
     // Load posts with new tab filter
-    loadPosts(1, true);
+    loadPosts(1, false).finally(() => {
+      setIsTabChanging(false); // Hide tab loading state
+    });
   }, [loadPosts]);
 
   // Handle page change
@@ -361,14 +366,37 @@ function HomePageContent() {
           onReset={() => handleFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
         />
         
-        <div className="grid grid-cols-3 gap-6 mb-8 w-full">
-          {filteredPosts.map((post) => (
-            <PostCard 
-              key={post.id} 
-              post={post}
-            />
-          ))}
-        </div>
+        {/* Tab change loading indicator */}
+        {isTabChanging && (
+          <div className="relative">
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-lg">
+              <div className="flex items-center justify-center h-64">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <span className="text-sm text-muted-foreground">Loading posts...</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-6 mb-8 w-full opacity-30">
+              {filteredPosts.map((post) => (
+                <PostCard 
+                  key={post.id} 
+                  post={post}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-6 mb-8 w-full">
+            {filteredPosts.map((post) => (
+              <PostCard 
+                key={post.id} 
+                post={post}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Page change loading indicator */}
         {isPageChanging && (
