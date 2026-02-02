@@ -31,10 +31,6 @@ export default function ContactSubmissionsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, [searchTerm, statusFilter, priorityFilter]);
-
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
@@ -52,13 +48,17 @@ export default function ContactSubmissionsPage() {
       } else {
         setError(result.error || "Failed to fetch submissions");
       }
-    } catch (error) {
-      setError("Failed to fetch submissions");
-      console.error("Fetch submissions error:", error);
+    } catch (err) {
+      console.error('Error fetching submissions:', err);
+      setError('Failed to load submissions');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [searchTerm, statusFilter, priorityFilter]);
 
   const updateSubmission = async (submissionId: string) => {
     try {

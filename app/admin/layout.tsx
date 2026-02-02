@@ -11,8 +11,7 @@ import {
   Bell,
   Menu,
   User as UserIcon,
-  LogOut,
-  Users
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -36,18 +35,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Immediate authentication check without delay
-    const mockUser = {
-      id: "admin-123",
-      email: "admin@test.com",
-      role: "admin",
+    const mockUser: User = {
+      id: 'admin',
+      email: 'admin@citymaid.com',
+      name: 'Admin User',
+      role: 'admin',
       created_at: new Date().toISOString()
     };
     setUser(mockUser);
-    setIsLoading(false);
   }, []);
 
   const navigation = [
