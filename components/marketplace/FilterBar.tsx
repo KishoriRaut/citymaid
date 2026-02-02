@@ -95,10 +95,7 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Posted
             </label>
-            <Select value={postedTimeFilter} onValueChange={(value) => {
-              console.log(`🔄 FilterBar desktop postedTime changed to: ${value}`);
-              onPostedTimeChange(value);
-            }}>
+            <Select value={postedTimeFilter} onValueChange={onPostedTimeChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="When posted" />
               </SelectTrigger>
@@ -200,10 +197,7 @@ export function FilterBar({
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">
               Posted
             </label>
-            <Select value={postedTimeFilter} onValueChange={(value) => {
-              console.log(`🔄 FilterBar mobile postedTime changed to: ${value}`);
-              onPostedTimeChange(value);
-            }}>
+            <Select value={postedTimeFilter} onValueChange={onPostedTimeChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="When posted" />
               </SelectTrigger>

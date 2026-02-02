@@ -38,22 +38,17 @@ export function getPostedTimeLabels(): string[] {
  * Get days filter for a given posted time value
  */
 export function getPostedTimeDays(value: string): number {
-  console.log(`🔍 getPostedTimeDays called with value: ${value}`);
   const option = POSTED_TIME_OPTIONS.find(opt => opt.value === value);
-  const days = option ? option.days : 0;
-  console.log(`🔍 getPostedTimeDays returning: ${days}`);
-  return days;
+  return option ? option.days : 0;
 }
 
 /**
  * Calculate date range for filtering posts
  */
 export function getPostedDateRange(days: number): { startDate: Date; endDate: Date } {
-  console.log(`🔍 getPostedDateRange called with days: ${days}`);
   const endDate = new Date();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
   
-  console.log(`🔍 Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
   return { startDate, endDate };
 }

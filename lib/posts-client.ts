@@ -47,14 +47,10 @@ export async function getPublicPostsClient(
     // Apply posted time filter if specified
     if (postedTimeFilter && postedTimeFilter !== "all") {
       const days = getPostedTimeDays(postedTimeFilter);
-      console.log(`🔍 Posted time filter: ${postedTimeFilter}, days: ${days}`);
       if (days > 0) {
         const { startDate } = getPostedDateRange(days);
-        console.log(`📅 Filtering posts from: ${startDate.toISOString()}`);
         countQuery = countQuery.gte('created_at', startDate.toISOString());
       }
-    } else {
-      console.log(`🔍 No posted time filter applied (postedTimeFilter: ${postedTimeFilter})`);
     }
     
     const { count: totalCount, error: countError } = await countQuery;
@@ -99,14 +95,10 @@ export async function getPublicPostsClient(
     // Apply posted time filter if specified
     if (postedTimeFilter && postedTimeFilter !== "all") {
       const days = getPostedTimeDays(postedTimeFilter);
-      console.log(`🔍 Data query - Posted time filter: ${postedTimeFilter}, days: ${days}`);
       if (days > 0) {
         const { startDate } = getPostedDateRange(days);
-        console.log(`📅 Data query filtering posts from: ${startDate.toISOString()}`);
         dataQuery = dataQuery.gte('created_at', startDate.toISOString());
       }
-    } else {
-      console.log(`🔍 Data query - No posted time filter applied (postedTimeFilter: ${postedTimeFilter})`);
     }
     
     const { data, error } = await dataQuery

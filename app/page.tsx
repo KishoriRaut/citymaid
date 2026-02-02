@@ -67,7 +67,6 @@ function HomePageContent() {
       console.log(`🔍 Loading posts from Supabase...`);
       
       // INDUSTRY STANDARD: Server-side filtering + fixed 12 posts per page
-      console.log(`🔍 Calling getPublicPostsClient with postedTimeFilter: ${filters.postedTime}`);
       const result = await getPublicPostsClient(page, 12, activeTab, filters.postedTime);
       
       if (result.error) {
@@ -112,7 +111,6 @@ function HomePageContent() {
   // Reload posts when posted time filter changes
   useEffect(() => {
     if (mounted) {
-      console.log(`🔄 Posted time filter changed to: ${filters.postedTime}`);
       setCurrentPage(1); // Reset to first page when filter changes
       loadPosts(1, true);
     }
