@@ -438,8 +438,10 @@ export default function TermsOfService() {
                 <h3 className="font-semibold text-blue-800 mb-2">Contact for Disputes</h3>
                 <p className="text-blue-800">
                   For dispute resolution assistance, contact us at:<br/>
-                  Email: disputes@citymaid.com.np<br/>
-                  Phone: +977-1-1234567
+                  Email: citymaid60@gmail.com<br/>
+                  Phone: +977 9841317273<br/>
+                  WhatsApp: +977 9841317273<br/>
+                  Address: Talchhikhel 15, Satdobato, Lalitpur, Nepal
                 </p>
               </div>
             </div>
@@ -460,7 +462,7 @@ export default function TermsOfService() {
       {/* Contact */}
       <div className="mt-6 text-center">
         <p className="text-gray-600">
-          Questions about these Terms? Contact us at legal@citymaid.com.np
+          Questions about these Terms? Contact us at citymaid60@gmail.com or call +977 9841317273
         </p>
       </div>
     </main>

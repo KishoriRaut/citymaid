@@ -213,6 +213,83 @@ export default function AboutPage() {
           </a>
         </div>
       </div>
+
+      {/* Contact Information */}
+      <div className="mt-12">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">Get in Touch</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="font-semibold text-lg mb-4 text-gray-900">Contact Information</h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="text-blue-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">Email</p>
+                    <p className="text-gray-600">citymaid60@gmail.com</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="text-blue-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">WhatsApp</p>
+                    <p className="text-gray-600">+977 9841317273</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="text-blue-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">Office</p>
+                    <p className="text-gray-600">Talchhikhel 15, Satdobato</p>
+                    <p className="text-gray-600">Lalitpur, Nepal</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600">
+                  <strong>Business Hours:</strong> Sunday to Friday 9AM - 5PM
+                </p>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-4 text-gray-900">How We Can Help</h3>
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-800 mb-2">For Families</h4>
+                  <p className="text-blue-700 text-sm">
+                    Find verified domestic workers for cooking, cleaning, childcare, and elderly care services.
+                  </p>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-medium text-green-800 mb-2">For Workers</h4>
+                  <p className="text-green-700 text-sm">
+                    Create your profile, get verified, and connect with families seeking your services.
+                  </p>
+                </div>
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <h4 className="font-medium text-purple-800 mb-2">Support</h4>
+                  <p className="text-purple-700 text-sm">
+                    Need help? Reach out to us via email, WhatsApp, or visit our office during business hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
