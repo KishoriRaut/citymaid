@@ -128,7 +128,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="font-medium">Email</p>
-                <p className="text-gray-600">support@citymaid.com.np</p>
+                <p className="text-gray-600">citymaid60@gmail.com</p>
               </div>
             </div>
 
@@ -139,8 +139,8 @@ export default function ContactPage() {
                 </svg>
               </div>
               <div>
-                <p className="font-medium">Phone</p>
-                <p className="text-gray-600">+977-9841234567</p>
+                <p className="font-medium">WhatsApp</p>
+                <p className="text-gray-600">+977 9841317273</p>
               </div>
             </div>
 
@@ -152,14 +152,15 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="font-medium">Office</p>
-                <p className="text-gray-600">Putalisadak, Kathmandu</p>
+                <p className="text-gray-600">Talchhikhel 15, Satdobato</p>
+                <p className="text-gray-600">Lalitpur, Nepal</p>
               </div>
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-600">
-              <strong>Business Hours:</strong> Mon-Fri 9AM-6PM, Sat 10AM-4PM
+              <strong>Business Hours:</strong> Sunday to Friday 9AM - 5PM
             </p>
           </div>
         </CardContent>
