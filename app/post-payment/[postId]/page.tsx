@@ -412,6 +412,9 @@ export default function PostPaymentPage() {
                           <div className="text-xs text-white/80 text-center">
                             One-time<br />unlock fee
                           </div>
+                          <div className="text-xs text-white/60 italic text-center mt-1">
+                            Complete payment below to unlock
+                          </div>
                         </div>
                       </div>
                     </div>

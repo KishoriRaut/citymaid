@@ -319,17 +319,6 @@ export default function NewPostPage() {
                     <div className="text-xs text-white/80 text-center">
                       One-time<br />unlock fee
                     </div>
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      className="bg-white text-purple-600 hover:bg-white/90 font-semibold px-4 py-2 shadow-lg"
-                      onClick={() => {
-                        // Navigate to marketplace to see existing posts
-                        router.push('/');
-                      }}
-                    >
-                      Browse Posts
-                    </Button>
                   </div>
                 </div>
               </div>
