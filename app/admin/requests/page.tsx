@@ -270,9 +270,20 @@ export default function RequestsPage() {
   };
 
   // Copy to clipboard helper
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // Use a non-blocking notification instead of alert
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-pulse';
+      toast.textContent = 'Copied to clipboard!';
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   // View payment proof
