@@ -381,16 +381,16 @@ export default function NewPostPage() {
                       <Input 
                         placeholder={
                           postType === "employer" 
-                            ? "e.g., Custom furniture making, Event planning" 
-                            : "e.g., Graphic design, Content writing, Plumbing"
+                            ? "e.g., Custom work, Specialized service" 
+                            : "e.g., Design, Writing, Plumbing"
                         } 
                         {...field} 
                       />
                     </FormControl>
                     <FormDescription>
                       {postType === "employer" 
-                        ? "Provide a clear description of the specific work needed"
-                        : "Describe your specialized skills and services"
+                        ? "Describe the specific work needed"
+                        : "List your specialized skills"
                       }
                     </FormDescription>
                     <FormMessage />
@@ -476,16 +476,16 @@ export default function NewPostPage() {
                       <Input 
                         placeholder={
                           postType === "employer" 
-                            ? "e.g., Weekends only, Evenings after 6 PM, Flexible hours" 
-                            : "e.g., Available weekdays 9-5, Weekend work preferred"
+                            ? "e.g., Weekends, Evenings, Flexible" 
+                            : "e.g., Weekdays 9-5, Weekends preferred"
                         } 
                         {...field} 
                       />
                     </FormControl>
                     <FormDescription>
                       {postType === "employer" 
-                        ? "Provide specific timing requirements for the work"
-                        : "Describe your preferred working hours and flexibility"
+                        ? "Specify timing requirements"
+                        : "Describe your availability"
                       }
                     </FormDescription>
                     <FormMessage />
@@ -518,16 +518,16 @@ export default function NewPostPage() {
                     <Input 
                       placeholder={
                         postType === "employer" 
-                          ? "e.g., Kathmandu, Lalitpur, Remote work available" 
-                          : "e.g., Kathmandu, Lalitpur, Can work remotely"
+                          ? "e.g., Kathmandu, Lalitpur, Remote" 
+                          : "e.g., Kathmandu, Lalitpur, Remote"
                       } 
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
                     {postType === "employer" 
-                      ? "Where will the work be performed?"
-                      : "Where are you located or willing to work?"
+                      ? "Work location"
+                      : "Your location preference"
                     }
                   </FormDescription>
                   <FormMessage />
@@ -557,16 +557,16 @@ export default function NewPostPage() {
                     <Input 
                       placeholder={
                         postType === "employer" 
-                          ? "e.g., NPR 15,000 per month, Negotiable, Based on experience" 
-                          : "e.g., NPR 15,000-20,000 per month, Negotiable, Market rate"
+                          ? "e.g., NPR 15,000/month, Negotiable" 
+                          : "e.g., NPR 15,000-20,000/month"
                       } 
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
                     {postType === "employer" 
-                      ? "Specify the salary range or compensation details"
-                      : "Indicate your salary expectations"
+                      ? "Salary range or compensation"
+                      : "Your salary expectations"
                     }
                   </FormDescription>
                   <FormMessage />
@@ -596,8 +596,8 @@ export default function NewPostPage() {
                     <Textarea 
                       placeholder={
                         postType === "employer" 
-                          ? "Phone number, email, and best time to contact you" 
-                          : "Phone number, email, LinkedIn profile, portfolio link"
+                          ? "Phone, email, best time to contact" 
+                          : "Phone, email, LinkedIn, portfolio"
                       } 
                       className="min-h-[100px]"
                       {...field} 
@@ -605,8 +605,8 @@ export default function NewPostPage() {
                   </FormControl>
                   <FormDescription>
                     {postType === "employer" 
-                      ? "Provide multiple ways for interested workers to reach you"
-                      : "Share your professional contact information for employers"
+                      ? "Multiple ways to reach you"
+                      : "Your professional contact info"
                     }
                   </FormDescription>
                   <FormMessage />
@@ -636,8 +636,8 @@ export default function NewPostPage() {
                     <Textarea 
                       placeholder={
                         postType === "employer" 
-                          ? "Describe the job responsibilities, requirements, work environment, and any other relevant details that will help candidates understand the position better..." 
-                          : "Describe your skills, experience, qualifications, and what makes you a great candidate. Include your strengths, achievements, and what you're looking for in a position..."
+                          ? "Job responsibilities, requirements, work environment..." 
+                          : "Your skills, experience, qualifications, achievements..."
                       } 
                       className="min-h-[150px]"
                       {...field} 
@@ -645,8 +645,8 @@ export default function NewPostPage() {
                   </FormControl>
                   <FormDescription>
                     {postType === "employer" 
-                      ? "Provide comprehensive details about the position to attract the right candidates (10-500 characters)"
-                      : "Share detailed information about yourself to help employers understand your capabilities (10-500 characters)"
+                      ? "Describe the role and requirements (10-500 chars)"
+                      : "Share your professional details (10-500 chars)"
                     }
                   </FormDescription>
                   <FormMessage />
@@ -690,8 +690,8 @@ export default function NewPostPage() {
                   </FormControl>
                   <FormDescription>
                     {postType === "employee" 
-                      ? "Upload a professional photo - this helps employers get to know you (required)"
-                      : "Add a relevant photo for your job posting (optional but recommended)"
+                      ? "Professional photo helps employers know you (required)"
+                      : "Add relevant photo for your job post (optional)"
                     }
                   </FormDescription>
                   <FormMessage />
