@@ -347,12 +347,6 @@ export default function NewPostPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Choose the category that best describes the work needed"
-                      : "Select the services you can provide"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -387,12 +381,6 @@ export default function NewPostPage() {
                         {...field} 
                       />
                     </FormControl>
-                    <FormDescription>
-                      {postType === "employer" 
-                        ? "Describe the specific work needed"
-                        : "List your specialized skills"
-                      }
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -442,12 +430,6 @@ export default function NewPostPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Specify when the work needs to be done"
-                      : "Let employers know when you're available to work"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -482,12 +464,6 @@ export default function NewPostPage() {
                         {...field} 
                       />
                     </FormControl>
-                    <FormDescription>
-                      {postType === "employer" 
-                        ? "Specify timing requirements"
-                        : "Describe your availability"
-                      }
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -524,12 +500,6 @@ export default function NewPostPage() {
                       {...field} 
                     />
                   </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Work location"
-                      : "Your location preference"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -563,12 +533,6 @@ export default function NewPostPage() {
                       {...field} 
                     />
                   </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Salary range or compensation"
-                      : "Your salary expectations"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -603,12 +567,6 @@ export default function NewPostPage() {
                       {...field} 
                     />
                   </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Multiple ways to reach you"
-                      : "Your professional contact info"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -643,12 +601,6 @@ export default function NewPostPage() {
                       {...field} 
                     />
                   </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Describe the role and requirements (10-500 chars)"
-                      : "Share your professional details (10-500 chars)"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -688,12 +640,6 @@ export default function NewPostPage() {
                       required={postType === "employee"}
                     />
                   </FormControl>
-                  <FormDescription>
-                    {postType === "employee" 
-                      ? "Professional photo helps employers know you (required)"
-                      : "Add relevant photo for your job post (optional)"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
