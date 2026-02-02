@@ -367,7 +367,7 @@ function HomePageContent() {
         />
         
         {/* Tab change loading indicator */}
-        {isTabChanging && (
+        {isTabChanging ? (
           <div className="relative">
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-lg">
               <div className="flex items-center justify-center h-64">
