@@ -277,6 +277,66 @@ export default function NewPostPage() {
           </CardContent>
         </Card>
 
+        {/* Marketing Banner - Contact Unlock Promotion */}
+        <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="relative">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-black/10">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="relative px-8 py-6 text-white">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <span className="text-xl">🔓</span>
+                      </div>
+                      <h3 className="text-xl font-bold">Unlock Contact Numbers</h3>
+                    </div>
+                    <p className="text-white/90 text-sm sm:text-base">
+                      Get instant access to contact details of qualified candidates or employers for just <span className="font-bold text-yellow-300">NRs. 300</span>
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ Verified Contacts
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ Instant Access
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ Secure Payment
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-3xl font-bold text-yellow-300">
+                      NRs. 300
+                    </div>
+                    <div className="text-xs text-white/80 text-center">
+                      One-time<br />unlock fee
+                    </div>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      className="bg-white text-purple-600 hover:bg-white/90 font-semibold px-4 py-2 shadow-lg"
+                      onClick={() => {
+                        // Navigate to marketplace to see existing posts
+                        router.push('/');
+                      }}
+                    >
+                      Browse Posts
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Main Form Card */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50">
           <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b">
