@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { formatSalary } from "@/lib/utils";
 import { formatTimeWithDetails, isFreshPost } from "@/lib/time-ago";
 import UnlockContactButton from "./UnlockContactButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Clock, MapPin, DollarSign, Shield, Star } from "lucide-react";
+import { User, Clock, MapPin, DollarSign, Shield, Star, Briefcase } from "lucide-react";
 
 interface PostCardProps {
   post: PostWithMaskedContact;
@@ -15,10 +16,14 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   const [imageError, setImageError] = useState(false);
+  const router = useRouter();
   
   // Use the new can_view_contact flag from the database
   const contactVisible = post.can_view_contact && post.contact !== null;
   const isHiring = post.post_type === "employer";
+  
+  // Use the correct photo field based on post type
+  const displayPhoto = post.post_type === "employee" ? post.employee_photo : post.photo_url;
   
   // Format posting time
   const timeInfo = formatTimeWithDetails(post.created_at);
@@ -29,27 +34,29 @@ export function PostCard({ post }: PostCardProps) {
       {/* Header with Image */}
       <div className="relative">
         <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
-          {post.photo_url && !imageError ? (
+          {displayPhoto && !imageError ? (
             <img
-              src={post.photo_url}
+              src={displayPhoto}
               alt={post.work}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={() => setImageError(true)}
-              loading="lazy"
+              onLoad={() => {
+                // Image loaded successfully
+              }}
+              crossOrigin="anonymous"
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              {isHiring ? (
-                <div className="text-center">
+              <div className="text-center">
+                {isHiring ? (
                   <User className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground/50">No Photo</p>
-                </div>
-              ) : (
-                <div className="text-center">
+                ) : (
                   <MapPin className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground/50">No Photo</p>
-                </div>
-              )}
+                )}
+                <p className="text-xs text-muted-foreground/50">
+                  {isHiring ? "No Photo" : "No Photo"}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -77,34 +84,69 @@ export function PostCard({ post }: PostCardProps) {
       {/* Content */}
       <CardContent className="p-5">
         {/* Title */}
-        <h3 className="font-bold text-lg text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-lg text-foreground mb-4 line-clamp-2 group-hover:text-primary transition-colors">
           {post.work}
         </h3>
 
-        {/* Meta Information */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Clock className="w-4 h-4" />
-            <span>{timeInfo.relative}</span>
-          </div>
-          {post.salary && (
-            <div className="flex items-center gap-1 font-medium text-foreground">
-              <DollarSign className="w-4 h-4" />
-              <span>{formatSalary(post.salary)}</span>
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Left Column */}
+          <div className="space-y-3">
+            {/* Location */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{post.place || "Location not specified"}</span>
             </div>
-          )}
+            
+            {/* Work Schedule */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4 flex-shrink-0" />
+              <span>{post.time}</span>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-3">
+            {/* Posted Time */}
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>{timeInfo.relative}</span>
+            </div>
+            
+            {/* Salary */}
+            {post.salary && (
+              <div className="flex items-center gap-1 font-medium text-foreground text-sm">
+                <DollarSign className="w-4 h-4" />
+                <span>{formatSalary(post.salary)}</span>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Location */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <MapPin className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">{post.place || "Location not specified"}</span>
-        </div>
-
-        {/* Work Schedule */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <Clock className="w-4 h-4 flex-shrink-0" />
-          <span>{post.time}</span>
+        {/* Details Section - Always show for consistent height */}
+        <div className="mb-4">
+          <div className="text-sm text-muted-foreground mb-2">
+            {isHiring ? (
+              <div className="flex items-center gap-1">
+                <Briefcase className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium">Job Details</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <User className="w-4 h-4 flex-shrink-0" />
+                <span className="font-medium">About Me</span>
+              </div>
+            )}
+          </div>
+          {/* Only show Read more button - no text content for consistent height */}
+          <span 
+            className="inline-block text-xs text-blue-600 hover:text-blue-800 cursor-pointer font-semibold underline"
+            onClick={() => {
+              router.push(`/post/${post.id}`);
+            }}
+          >
+            Read more →
+          </span>
         </div>
 
         {/* Unlock Contact Button */}

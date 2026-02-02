@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { EnvironmentCheck } from "@/components/EnvironmentCheck";
@@ -12,12 +13,32 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 function HomePageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [posts, setPosts] = useState<PostWithMaskedContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [isPageChanging, setIsPageChanging] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Get initial page from URL or default to 1
+  const initialPage = Number(searchParams.get('page')) || 1;
+
+  // Handle component mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Primary tab: "employee" (Find a Job) is now default
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
@@ -30,71 +51,80 @@ function HomePageContent() {
     salary: "",
   });
 
-  // Load posts from Supabase
-  const loadPosts = useCallback(async () => {
+  // Load posts with server-side filtering
+  const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      console.log(`📥 loadPosts called: page=${page}, reset=${reset}, currentPage state=${currentPage}`);
       
-      console.log("🔍 Loading posts from Supabase...");
-      const result = await getPublicPostsClient();
-      const fetchedPosts = result.posts;
+      if (reset) {
+        setIsLoading(true);
+        setError(null);
+      } else {
+        setIsPageChanging(true);
+      }
       
-      if (fetchedPosts.length === 0) {
+      console.log(`🔍 Loading posts from Supabase...`);
+      
+      // INDUSTRY STANDARD: Server-side filtering + fixed 12 posts per page
+      const result = await getPublicPostsClient(page, 12, activeTab);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      if (result.posts.length === 0 && page === 1) {
         console.log("⚠️ No posts found");
       }
       
-      setPosts(fetchedPosts);
-      console.log(`✅ Loaded ${fetchedPosts.length} posts from Supabase`);
+      setPosts(result.posts);
+      setCurrentPage(result.currentPage);
+      setTotalPages(result.totalPages);
+      setTotalPosts(result.total);
+      setHasNextPage(result.hasNextPage);
+      setHasPrevPage(result.hasPrevPage);
+      
+      console.log(`✅ Loaded ${result.posts.length} posts from Supabase (Page ${result.currentPage} of ${result.totalPages})`);
+      console.log(`📊 State updated: currentPage=${result.currentPage}, totalPages=${result.totalPages}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
       console.error("❌ Failed to load posts:", err);
     } finally {
       setIsLoading(false);
+      setIsPageChanging(false);
     }
-  }, []);
+  }, [activeTab]);
 
-  // Initial load
+  // Initialize page state from URL
   useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
+    setCurrentPage(initialPage);
+  }, [initialPage]);
 
-  // Filter posts based on active tab and filters
-  const filteredPosts = useMemo(() => {
-    let filtered = posts;
-
-    // Filter by post type (tab)
-    if (activeTab !== "all") {
-      filtered = filtered.filter(post => post.post_type === activeTab);
+  // Initial load and page changes
+  useEffect(() => {
+    if (mounted) { // Only load after component is mounted
+      loadPosts(initialPage, true);
     }
+  }, [initialPage, loadPosts, mounted]);
 
-    // Filter by work type
-    if (filters.work !== "All") {
-      filtered = filtered.filter(post => post.work === filters.work);
-    }
+  // No client-side filtering needed - server handles it
+  const filteredPosts = posts;
 
-    // Filter by time
-    if (filters.time !== "All") {
-      filtered = filtered.filter(post => post.time === filters.time);
-    }
-
-    // Filter by place
-    if (filters.place.trim()) {
-      filtered = filtered.filter(post => 
-        post.place.toLowerCase().includes(filters.place.toLowerCase())
-      );
-    }
-
-    // Filter by salary
-    if (filters.salary.trim()) {
-      filtered = filtered.filter(post => 
-        post.salary.toLowerCase().includes(filters.salary.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [posts, activeTab, filters]);
+  // Debug post rendering
+  useEffect(() => {
+    console.log(`🎨 Server-Side Filtering Results:`);
+    console.log(`  - Posts per page: 12 (fixed)`);
+    console.log(`  - Posts returned: ${filteredPosts.length} (already filtered by server)`);
+    console.log(`  - Active tab: ${activeTab}`);
+    console.log(`  - Current page: ${currentPage}`);
+    console.log(`  - Layout: 3-column grid`);
+    
+    // Server-side filtering ensures consistent results
+    const completeRows = Math.floor(filteredPosts.length / 3);
+    const remainingCards = filteredPosts.length % 3;
+    console.log(`  - Complete rows: ${completeRows}`);
+    console.log(`  - Remaining cards: ${remainingCards}`);
+  }, [filteredPosts, activeTab, currentPage]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters: typeof filters) => {
@@ -104,7 +134,36 @@ function HomePageContent() {
   // Handle tab change
   const handleTabChange = useCallback((tab: typeof activeTab) => {
     setActiveTab(tab);
-  }, []);
+    setCurrentPage(1); // Reset to first page when tab changes
+    // Load posts with new tab filter
+    loadPosts(1, true);
+  }, [loadPosts]);
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    console.log(`🔄 handlePageChange called: requesting page ${page}, current page is ${currentPage}`);
+    
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams);
+    if (page === 1) {
+      params.delete('page');
+    } else {
+      params.set('page', page.toString());
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl, { scroll: false });
+    
+    // Load posts for the new page - let loadPosts handle state updates
+    loadPosts(page, false);
+  }, [loadPosts, searchParams, pathname, router, currentPage]);
+
+  // Handle load more
+  const handleLoadMore = useCallback(() => {
+    if (hasNextPage) {
+      handlePageChange(currentPage + 1);
+    }
+  }, [hasNextPage, currentPage, handlePageChange]);
 
   // Show loading skeleton
   if (isLoading) {
@@ -115,7 +174,7 @@ function HomePageContent() {
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
                 <Skeleton className="h-4 w-3/4 mb-2" />
@@ -146,7 +205,7 @@ function HomePageContent() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
             <div className="flex justify-center mt-6">
-              <Button onClick={loadPosts} className="mr-4">
+              <Button onClick={() => loadPosts(1, true)} className="mr-4">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
@@ -190,7 +249,7 @@ function HomePageContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-3xl">Job Listings</CardTitle>
+            <CardTitle className="text-3xl">Opportunities</CardTitle>
           </CardHeader>
         </Card>
         
@@ -207,7 +266,7 @@ function HomePageContent() {
           onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-3 gap-6 mb-8 w-full">
           {filteredPosts.map((post) => (
             <PostCard 
               key={post.id} 
@@ -216,7 +275,38 @@ function HomePageContent() {
           ))}
         </div>
 
-        {/* Load more functionality can be implemented here when needed */}
+        {/* Page change loading indicator */}
+        {isPageChanging && (
+          <div className="flex justify-center py-4">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="space-y-4">
+          {/* Traditional pagination for desktop */}
+          <div className="hidden md:block">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPrevPage={hasPrevPage}
+              onPageChange={handlePageChange}
+              isLoading={isPageChanging}
+              totalPosts={totalPosts}
+            />
+          </div>
+
+          {/* Load more button for mobile */}
+          <div className="md:hidden">
+            <LoadMoreButton
+              hasNextPage={hasNextPage}
+              isLoading={isPageChanging}
+              onLoadMore={handleLoadMore}
+              remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -225,7 +315,9 @@ function HomePageContent() {
 export default function HomePage() {
   return (
     <EnvironmentCheck>
-      <HomePageContent />
+      <Suspense fallback={<div>Loading...</div>}>
+        <HomePageContent />
+      </Suspense>
     </EnvironmentCheck>
   );
 }

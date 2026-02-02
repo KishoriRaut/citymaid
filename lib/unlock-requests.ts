@@ -14,12 +14,31 @@ export interface ContactUnlockRequest {
   payment_proof: string | null;
   created_at: string;
   updated_at: string;
+  // Additional contact info fields
+  user_name?: string | null;
+  user_phone?: string | null;
+  user_email?: string | null;
+  contact_preference?: string | null;
+  delivery_status?: string | null;
+  delivery_notes?: string | null;
+  // Related post data
+  posts?: {
+    work: string;
+    place: string;
+    contact: string;
+  };
 }
 
 // Create a new unlock request (for authenticated users)
 export async function createUnlockRequest(
   postId: string,
-  userId?: string | null
+  userId?: string | null,
+  contactInfo?: {
+    user_name?: string;
+    user_phone?: string;
+    user_email?: string;
+    contact_preference?: string;
+  }
 ): Promise<{ success: boolean; error?: string; requestId?: string }> {
   try {
     // For authenticated users, use user_id, for visitors use visitor_id
@@ -45,15 +64,29 @@ export async function createUnlockRequest(
       status: 'pending';
       user_id?: string;
       visitor_id?: string;
+      user_name?: string;
+      user_phone?: string;
+      user_email?: string;
+      contact_preference?: string;
+      delivery_status?: string;
     } = {
       post_id: postId,
-      status: 'pending'
+      status: 'pending',
+      delivery_status: 'pending'
     };
 
     if (userId) {
       requestData.user_id = userId;
     } else {
       requestData.visitor_id = identifier;
+    }
+
+    // Add contact information if provided
+    if (contactInfo) {
+      if (contactInfo.user_name) requestData.user_name = contactInfo.user_name;
+      if (contactInfo.user_phone) requestData.user_phone = contactInfo.user_phone;
+      if (contactInfo.user_email) requestData.user_email = contactInfo.user_email;
+      if (contactInfo.contact_preference) requestData.contact_preference = contactInfo.contact_preference;
     }
 
     const { data: request, error } = await supabase
@@ -71,6 +104,44 @@ export async function createUnlockRequest(
   } catch (error) {
     console.error("Error in createUnlockRequest:", error);
     return { success: false, error: "Failed to create unlock request" };
+  }
+}
+
+// Update unlock request with contact information
+export async function updateUnlockRequestContactInfo(
+  requestId: string,
+  contactInfo: {
+    user_name?: string;
+    user_phone?: string;
+    user_email?: string;
+    contact_preference?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    console.log('🔧 Debug - Updating contact info for request:', requestId);
+    console.log('🔧 Debug - Contact info:', contactInfo);
+    
+    const { error } = await supabase
+      .from("contact_unlock_requests")
+      .update({
+        user_name: contactInfo.user_name,
+        user_phone: contactInfo.user_phone,
+        user_email: contactInfo.user_email,
+        contact_preference: contactInfo.contact_preference,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", requestId);
+
+    if (error) {
+      console.error("Error updating unlock request contact info:", error);
+      return { success: false, error: "Failed to update contact information" };
+    }
+
+    console.log('✅ Debug - Contact info updated successfully');
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateUnlockRequestContactInfo:", error);
+    return { success: false, error: "Failed to update contact information" };
   }
 }
 
@@ -152,35 +223,98 @@ export async function updateRequestPaymentProof(
   }
 }
 
-// Get all requests for admin dashboard
+// Get all requests for admin dashboard with pagination
 export async function getAllUnlockRequests(
-  status?: 'pending' | 'paid' | 'approved' | 'rejected'
-): Promise<{ requests?: ContactUnlockRequest[]; error?: string }> {
+  status?: 'pending' | 'paid' | 'approved' | 'rejected',
+  page: number = 1,
+  limit: number = 20
+): Promise<{ 
+  requests?: ContactUnlockRequest[]; 
+  total: number,
+  currentPage: number,
+  totalPages: number,
+  hasNextPage: boolean,
+  hasPrevPage: boolean,
+  error?: string 
+}> {
   try {
-    let query = supabase
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+    
+    // Build base query
+    let countQuery = supabase
+      .from("contact_unlock_requests")
+      .select('id', { count: 'exact', head: true });
+
+    let dataQuery = supabase
       .from("contact_unlock_requests")
       .select(`
         *,
-        posts(title, contact),
-        users(email)
+        posts(work, place, contact)
       `)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
 
+    // Apply status filter if provided
     if (status) {
-      query = query.eq("status", status);
+      countQuery = countQuery.eq("status", status);
+      dataQuery = dataQuery.eq("status", status);
     }
 
-    const { data: requests, error } = await query;
+    // Get total count
+    const { count: totalCount, error: countError } = await countQuery;
+
+    if (countError) {
+      console.error("Error counting unlock requests:", countError);
+      return { 
+        total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: "Failed to count unlock requests" 
+      };
+    }
+
+    // Get paginated data
+    const { data: requests, error } = await dataQuery;
 
     if (error) {
       console.error("Error getting unlock requests:", error);
-      return { error: "Failed to get unlock requests" };
+      return { 
+        total: totalCount || 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: "Failed to get unlock requests" 
+      };
     }
 
-    return { requests: requests || [] };
+    // Calculate pagination info
+    const totalPages = Math.ceil((totalCount || 0) / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    console.log(`🔍 Fetched ${requests?.length || 0} unlock request records (Page ${page} of ${totalPages})`);
+    return { 
+      requests: requests || [],
+      total: totalCount || 0,
+      currentPage: page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage
+    };
   } catch (error) {
     console.error("Error in getAllUnlockRequests:", error);
-    return { error: "Failed to get unlock requests" };
+    return { 
+      total: 0,
+      currentPage: page,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      error: "Failed to get unlock requests" 
+    };
   }
 }
 

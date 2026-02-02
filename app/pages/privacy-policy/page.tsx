@@ -322,8 +322,9 @@ export default function PrivacyPolicy() {
                   To exercise any of these rights, please contact us at:
                 </p>
                 <p className="text-blue-800">
-                  Email: privacy@citymaid.com.np<br/>
-                  Phone: +977-1-1234567
+                  Email: citymaid60@gmail.com<br/>
+                  Phone: +977 9841317273<br/>
+                  Address: Talchhikhel 15, Satdobato, Lalitpur, Nepal
                 </p>
               </div>
 
@@ -386,9 +387,11 @@ export default function PrivacyPolicy() {
                 </p>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-gray-700">
-                    <strong>Email:</strong> privacy@citymaid.com.np<br/>
-                    <strong>Phone:</strong> +977-1-1234567<br/>
-                    <strong>Address:</strong> CityMaid Nepal, Putalisadak, Kathmandu, Nepal 44600
+                    <strong>Email:</strong> citymaid60@gmail.com<br/>
+                    <strong>Phone:</strong> +977 9841317273<br/>
+                    <strong>WhatsApp:</strong> +977 9841317273<br/>
+                    <strong>Address:</strong> Talchhikhel 15, Satdobato, Lalitpur, Nepal<br/>
+                    <strong>Business Hours:</strong> Sunday to Friday 9AM - 5PM
                   </p>
                 </div>
               </div>

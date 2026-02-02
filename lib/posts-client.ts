@@ -1,11 +1,12 @@
 "use client";
 
 import { supabaseClient, isSupabaseConfigured } from "./supabase-client";
+import { createClient } from "@supabase/supabase-js";
 import type { PostWithMaskedContact } from "./types";
 import { maskContact } from "./utils";
 
-// Get public posts (client-side version for public pages)
-export async function getPublicPostsClient() {
+// Get public posts with pagination
+export async function getPublicPostsClient(page: number = 1, limit: number = 12, postType?: "all" | "employer" | "employee") {
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured || !supabaseClient) {
@@ -13,85 +14,162 @@ export async function getPublicPostsClient() {
       return {
         posts: [],
         total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
         error: "Supabase environment variables are missing. Please check Vercel configuration.",
       };
     }
 
-    // Get approved posts from the database
-    const { data: approvedPosts, error: approvedError } = await supabaseClient
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+    
+    console.log(`🔍 Loading page ${page} with limit ${limit} (offset: ${offset})`);
+    
+    // Get total count first with post_type filter
+    let countQuery = supabaseClient
+      .from('posts')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'approved');
+    
+    // Apply post_type filter if specified
+    if (postType && postType !== "all") {
+      countQuery = countQuery.eq('post_type', postType);
+    }
+    
+    const { count: totalCount, error: countError } = await countQuery;
+
+    if (countError) {
+      console.error('❌ Count query error:', countError);
+      return {
+        posts: [],
+        total: 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: countError.message,
+      };
+    }
+
+    // Get paginated data with post_type filter
+    let dataQuery = supabaseClient
+      .from('posts')
+      .select(`
+        id,
+        post_type,
+        work,
+        time,
+        place,
+        salary,
+        contact,
+        details,
+        photo_url,
+        employee_photo,
+        status,
+        created_at
+      `)
+      .eq('status', 'approved');
+    
+    // Apply post_type filter if specified
+    if (postType && postType !== "all") {
+      dataQuery = dataQuery.eq('post_type', postType);
+    }
+    
+    const { data, error } = await dataQuery
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      console.error('❌ Direct query error:', error);
+      return {
+        posts: [],
+        total: totalCount || 0,
+        currentPage: page,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+        error: error.message,
+      };
+    }
+
+    // Transform data with contact masking
+    const transformedPosts = data.map((post: any) => ({
+      ...post,
+      contact: post.contact ? maskContact(post.contact) : null,
+      can_view_contact: false, // Always false for public
+      homepage_payment_status: 'approved' as 'approved',
+      payment_proof: null,
+    }));
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil((totalCount || 0) / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    console.log(`✅ Loaded ${transformedPosts.length} posts (Page ${page} of ${totalPages})`);
+    
+    return {
+      posts: transformedPosts,
+      total: totalCount || 0,
+      currentPage: page,
+      totalPages,
+      hasNextPage,
+      hasPrevPage,
+      error: null,
+    };
+  } catch (err) {
+    console.error('❌ Unexpected error:', err);
+    return {
+      posts: [],
+      total: 0,
+      currentPage: page,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      error: err instanceof Error ? err.message : 'Failed to load posts',
+    };
+  }
+}
+
+// Fallback function using direct query (less secure but works if RPC fails)
+async function getDirectQueryFallback() {
+  try {
+    console.log("🔄 Using direct query fallback...");
+    if (!supabaseClient) {
+      throw new Error("Supabase client not initialized");
+    }
+    
+    const { data: posts, error: postsError } = await supabaseClient
       .from("posts")
       .select("*")
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (approvedError) {
-      console.error("Error fetching approved posts:", approvedError);
+    if (postsError) {
+      console.error("❌ Direct query error:", postsError);
       return {
         posts: [],
         total: 0,
-        error: `Database error: ${approvedError.message}`,
+        error: `Direct query failed: ${postsError.message}`,
       };
     }
 
-    // If approved posts exist, return them with client-side masking
-    if (approvedPosts && approvedPosts.length > 0) {
-      console.log(`Found ${approvedPosts.length} approved posts`);
-      const posts = transformPosts(approvedPosts as unknown[]);
-      return {
-        posts,
-        total: posts.length,
-        error: null,
-      };
-    }
-
-    // If no approved posts, get status distribution for debugging
-    console.log("No approved posts found, checking status distribution...");
-    const { data: statusData, error: statusError } = await supabaseClient
-      .from("posts")
-      .select("status")
-      .limit(100);
-
-    if (statusError) {
-      console.error("Error getting status distribution:", statusError);
-    } else if (statusData && statusData.length > 0) {
-      const statusCount = statusData.reduce((acc: Record<string, number>, post: { status: string }) => {
-        acc[post.status] = (acc[post.status] || 0) + 1;
-        return acc;
-      }, {});
-      console.log("Status distribution:", statusCount);
-    }
-
-    // Fallback: get any posts from the database
-    const { data: anyPosts, error: anyPostsError } = await supabaseClient
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (anyPostsError) {
-      console.error("Error fetching any posts:", anyPostsError);
-      return {
-        posts: [],
-        total: 0,
-        error: `Database error: ${anyPostsError.message}`,
-      };
-    }
-
-    console.log(`Found ${anyPosts?.length || 0} posts with any status`);
-    const posts = transformPosts((anyPosts || []) as unknown[]);
+    console.log(`✅ Direct query found ${(posts || []).length} posts`);
+    const transformedPosts = transformPosts((posts || []) as any[]);
     return {
-      posts,
-      total: posts.length,
+      posts: transformedPosts,
+      total: transformedPosts.length,
       error: null,
     };
-
   } catch (error) {
-    console.error("Unexpected error in getPublicPostsClient:", error);
+    console.error("❌ Fallback function error:", error);
     return {
       posts: [],
       total: 0,
-      error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown'}`,
+      error: `Fallback failed: ${error instanceof Error ? error.message : 'Unknown'}`,
     };
   }
 }
@@ -99,11 +177,13 @@ export async function getPublicPostsClient() {
 // Transform posts data to match PostWithMaskedContact interface
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
-  return posts.map((post) => {
+  return posts.map((post, index) => {
     const postData = post as any;
+    
     // Apply client-side contact masking - contacts are locked by default
     const isContactLocked = true; // All contacts are locked by default
-    return {
+    
+    const transformedPost = {
       id: postData.id,
       post_type: postData.post_type,
       work: postData.work,
@@ -111,12 +191,17 @@ function transformPosts(posts: unknown[]): PostWithMaskedContact[] {
       place: postData.place,
       salary: postData.salary,
       contact: isContactLocked ? maskContact(postData.contact) : postData.contact,
+      details: postData.details || "",
       photo_url: postData.photo_url,
+      employee_photo: postData.employee_photo || null,
       status: postData.status,
-      homepage_payment_status: postData.homepage_payment_status,
       created_at: postData.created_at,
       can_view_contact: !isContactLocked, // Always false for now
+      homepage_payment_status: postData.homepage_payment_status || "none",
+      payment_proof: postData.payment_proof || null,
     };
+    
+    return transformedPost;
   });
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

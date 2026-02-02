@@ -69,7 +69,9 @@ export async function createPost(post: {
   place: string;
   salary: string;
   contact: string;
+  details: string;
   photo_url?: string | null;
+  employee_photo?: string | null;
 }, request?: Request) {
   try {
     // ========================================================================
@@ -81,7 +83,6 @@ export async function createPost(post: {
     
     // Determine status based on server-side admin check
     const postStatus: "pending" | "approved" = isAdmin ? "approved" : "pending";
-    const homepagePaymentStatus: "none" | "pending" | "approved" | "rejected" = isAdmin ? "approved" : "none";
 
     // ========================================================================
     // VALIDATION 1: Check for duplicate posts (applies to all users)
@@ -164,13 +165,31 @@ export async function createPost(post: {
     // ========================================================================
     // VALIDATION PASSED: Create the post
     // ========================================================================
-    // Force photo_url = NULL for employer posts (security: prevent client manipulation)
-    const postData = {
-      ...post,
-      photo_url: post.post_type === "employer" ? null : post.photo_url || null,
+    // Handle photos based on post type
+    const postData: any = {
+      post_type: post.post_type,
+      work: post.work,
+      time: post.time,
+      place: post.place,
+      salary: post.salary,
+      contact: post.contact,
       status: postStatus, // 'approved' for admins, 'pending' for regular users
-      homepage_payment_status: homepagePaymentStatus, // 'approved' for admins, 'none' for regular users
     };
+
+    // Add details field only if it's provided (for backward compatibility)
+    if (post.details) {
+      postData.details = post.details;
+    }
+
+    // For employee posts: use employee_photo for profile photo, photo_url for payment receipt
+    if (post.post_type === "employee") {
+      postData.employee_photo = post.employee_photo || null;
+      postData.photo_url = null; // photo_url will be used for payment receipt only
+    } else {
+      // For employer posts: use photo_url for post photo
+      postData.photo_url = post.photo_url || null;
+      postData.employee_photo = null;
+    }
 
     const { data, error } = await supabase
       .from("posts")
@@ -179,6 +198,14 @@ export async function createPost(post: {
       .single();
 
     if (error) {
+      console.error("❌ Database Error Details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        postData: postData
+      });
+      
       if (process.env.NODE_ENV === "development") {
         console.error("Error creating post:", error);
       }
@@ -197,46 +224,21 @@ export async function createPost(post: {
 // Get post by ID (admin only - includes contact)
 export async function getPostById(postId: string) {
   try {
-    // Use SQL function to get post with masked contact (if payment not approved)
-    const { data: rpcData, error: rpcError } = await supabase.rpc("get_post_with_contact_visibility", {
-      post_uuid: postId,
-    });
+    // Always use direct query for now to ensure details field is included
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", postId)
+      .single();
 
-    if (rpcError) {
-      // Fallback to direct query if function doesn't exist
-      if (rpcError.code === "42883" || rpcError.message?.includes("does not exist")) {
-        const { data, error } = await supabase
-          .from("posts")
-          .select("*")
-          .eq("id", postId)
-          .single();
-
-        if (error) {
-          if (process.env.NODE_ENV === "development") {
-            console.error("Error fetching post:", error);
-          }
-          return { post: null, error: error.message };
-        }
-
-        return { post: data as Post, error: null };
-      }
-
+    if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching post via RPC:", rpcError);
+        console.error("Error fetching post:", error);
       }
-      return { post: null, error: rpcError.message };
+      return { post: null, error: error.message };
     }
 
-    // RPC function returns array, get first result
-    const postData = Array.isArray(rpcData) && rpcData.length > 0 ? rpcData[0] : null;
-    
-    if (!postData) {
-      return { post: null, error: "Post not found" };
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { contact_visible, ...post } = postData;
-    return { post: post as Post, error: null };
+    return { post: data as Post, error: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error in getPostById:", error);
@@ -245,13 +247,26 @@ export async function getPostById(postId: string) {
   }
 }
 
-// Get all posts (admin only)
+// Get all posts (admin only) with payment data
 export async function getAllPosts(filters?: {
   status?: "pending" | "approved" | "hidden";
   post_type?: "employer" | "employee";
 }) {
   try {
-    let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
+    let query = supabase
+      .from("posts")
+      .select(`
+        id, post_type, work, time, place, salary, contact, details, photo_url, employee_photo, status, 
+        homepage_payment_status, payment_proof, created_at,
+        payments!left(
+          id, status, receipt_url, created_at
+        ),
+        contact_unlock_requests!left(
+          id, status, payment_proof, created_at,
+          user_name, user_phone, user_email, contact_preference, delivery_status, delivery_notes
+        )
+      `)
+      .order("created_at", { ascending: false });
 
     if (filters?.status) {
       query = query.eq("status", filters.status);
@@ -269,7 +284,44 @@ export async function getAllPosts(filters?: {
       return { posts: [], error: error.message };
     }
 
-    return { posts: (data || []) as Post[], error: null };
+    // Process the data to get only the latest contact unlock request per post
+    const processedData = (data || []).map((post: Post & { 
+      payments?: { id: string; status: string; receipt_url?: string; created_at: string }[];
+      contact_unlock_requests?: { 
+        id: string; 
+        status: string; 
+        payment_proof?: string; 
+        created_at: string;
+        user_name?: string;
+        user_phone?: string;
+        user_email?: string;
+        contact_preference?: string;
+        delivery_status?: string;
+        delivery_notes?: string;
+      }[];
+    }) => {
+      // Get the latest payment (if multiple)
+      const latestPayment = post.payments && post.payments.length > 0 
+        ? post.payments.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0]
+        : null;
+
+      // Get the latest contact unlock request (if multiple)
+      const latestUnlock = post.contact_unlock_requests && post.contact_unlock_requests.length > 0
+        ? post.contact_unlock_requests.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0]
+        : null;
+
+      return {
+        ...post,
+        payments: latestPayment ? [latestPayment] : [],
+        contact_unlock_requests: latestUnlock ? [latestUnlock] : []
+      };
+    });
+
+    return { posts: processedData as Post[], error: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Error in getAllPosts:", error);
@@ -316,6 +368,7 @@ export async function updatePost(
     salary?: string;
     contact?: string;
     photo_url?: string | null;
+    employee_photo?: string | null;
     status?: "pending" | "approved" | "hidden";
   }
 ) {
@@ -331,26 +384,12 @@ export async function updatePost(
     if (updates.contact !== undefined) updateData.contact = updates.contact;
     if (updates.status !== undefined) updateData.status = updates.status;
 
-    // Handle photo_url: force NULL for employer posts
+    // Handle photo fields
     if (updates.photo_url !== undefined) {
-      const postType = updates.post_type !== undefined ? updates.post_type : undefined;
-      // If we're updating post_type to employer, or if it's already employer, set photo_url to null
-      if (postType === "employer") {
-        updateData.photo_url = null;
-      } else {
-        // If we don't know the post_type, check the existing post
-        const { data: existingPost } = await supabase
-          .from("posts")
-          .select("post_type")
-          .eq("id", postId)
-          .single();
-
-        if (existingPost?.post_type === "employer") {
-          updateData.photo_url = null;
-        } else {
-          updateData.photo_url = updates.photo_url;
-        }
-      }
+      updateData.photo_url = updates.photo_url;
+    }
+    if (updates.employee_photo !== undefined) {
+      updateData.employee_photo = updates.employee_photo;
     }
 
     // Update the post

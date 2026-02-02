@@ -42,17 +42,34 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const { getFieldState, formState } = useFormContext()
+  const formContext = useFormContext()
 
+  // Check if we're inside a FormField
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
   }
 
+  // Check if we're inside a FormItem
   if (!itemContext) {
     throw new Error("useFormField should be used within <FormItem>")
   }
 
-  const fieldState = getFieldState(fieldContext.name, formState)
+  // Check if we have form context - provide more helpful error
+  if (!formContext) {
+    throw new Error("useFormField should be used within <Form> or <FormProvider>. Make sure your FormField is wrapped in <Form {...form}>.")
+  }
+
+  // Safely get form state with fallback
+  let fieldState = { error: undefined, invalid: false, isTouched: false, isDirty: false, isValidating: false }
+  
+  try {
+    if (formContext && 'getFieldState' in formContext && 'formState' in formContext) {
+      fieldState = (formContext as any).getFieldState(fieldContext.name, (formContext as any).formState)
+    }
+  } catch (error) {
+    // Gracefully handle errors during hot reload or context issues
+    console.warn('Form field state access error:', error)
+  }
 
   const { id } = itemContext
 
@@ -147,7 +164,7 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
-  const body = error ? String(error?.message ?? "") : children
+  const body = error ? String((error as any)?.message ?? "") : children
 
   if (!body) {
     return null

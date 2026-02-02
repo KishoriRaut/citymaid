@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, CheckCircle, XCircle, FileText, Unlock } from "lucide-react";
+import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
+import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy } from "lucide-react";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
 
@@ -34,56 +36,104 @@ interface UnifiedRequest {
   submittedAt: string;
   status: "pending" | "approved" | "rejected" | "hidden";
   originalData: AdminPayment | ContactUnlockRequest;
+  // Contact unlock specific fields
+  contactInfo?: {
+    user_name?: string;
+    user_phone?: string;
+    user_email?: string;
+    contact_preference?: string;
+  };
+  postContact?: string; // Contact to deliver
 }
 
 export default function RequestsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   const [requests, setRequests] = useState<UnifiedRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "hidden">("pending");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "hidden">("all");
   const [typeFilter, setTypeFilter] = useState<"all" | "post" | "contact-unlock">("all");
   const [processing, setProcessing] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [isPageChanging, setIsPageChanging] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Load all requests
-  const loadRequests = async () => {
+  // Get initial page from URL or default to 1
+  const initialPage = Number(searchParams.get('page')) || 1;
+
+  // Handle component mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Load requests with pagination
+  const loadRequests = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setIsPageChanging(true);
+      }
       
-      // Get payments (post requests)
-      const { payments: paymentData } = await getAllAdminPayments();
+      // Determine status filter for unlock requests
+      const unlockStatus = filter === "all" ? undefined : 
+        filter === "hidden" ? "rejected" : 
+        filter === "approved" ? "approved" : 
+        filter === "rejected" ? "rejected" : 
+        filter === "pending" ? "pending" : undefined;
       
-      // Get unlock requests
-      const { requests: unlockData } = await getAllUnlockRequests();
+      // Use Promise.all to fetch data in parallel with pagination
+      const [paymentData, unlockData] = await Promise.all([
+        getAllAdminPayments(page, 20),
+        getAllUnlockRequests(unlockStatus, page, 20)
+      ]);
       
-      // Transform to unified format
+      // Process data only after both calls complete
       const unifiedRequests: UnifiedRequest[] = [];
       
-      // Add payment requests as "Post" type
-      paymentData?.forEach((payment: AdminPayment) => {
+      // Add post payments as "Post" type
+      paymentData?.payments?.forEach((payment: AdminPayment) => {
         unifiedRequests.push({
           id: payment.id,
           type: "Post",
           reference: payment.posts?.work || "Unknown Post",
-          user: "", // No user for post requests
+          user: payment.visitor_id || "",
           paymentProof: payment.receipt_url,
           transactionId: payment.reference_id,
           submittedAt: payment.created_at,
-          status: payment.status,
-          originalData: payment
+          status: payment.status as "pending" | "approved" | "rejected" | "hidden",
+          originalData: payment,
+          postContact: payment.posts?.contact
         });
       });
       
       // Add unlock requests as "Contact Unlock" type
-      unlockData?.forEach((unlock: ContactUnlockRequest) => {
+      unlockData?.requests?.forEach((unlock: ContactUnlockRequest) => {
         unifiedRequests.push({
           id: unlock.id,
           type: "Contact Unlock",
-          reference: unlock.post_id || "Unknown Post",
+          reference: unlock.posts?.work || "Unknown Post",
           user: unlock.visitor_id || "",
           paymentProof: unlock.payment_proof,
-          transactionId: null, // Not available in ContactUnlockRequest
+          transactionId: null,
           submittedAt: unlock.created_at,
           status: unlock.status as "pending" | "approved" | "rejected" | "hidden",
-          originalData: unlock
+          originalData: unlock,
+          contactInfo: {
+            user_name: unlock.user_name || undefined,
+            user_phone: unlock.user_phone || undefined,
+            user_email: unlock.user_email || undefined,
+            contact_preference: unlock.contact_preference || undefined,
+          },
+          postContact: unlock.posts?.contact
         });
       });
       
@@ -91,36 +141,88 @@ export default function RequestsPage() {
       unifiedRequests.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
       
       setRequests(unifiedRequests);
+      
+      // Calculate combined pagination info
+      const combinedTotal = (paymentData?.total || 0) + (unlockData?.total || 0);
+      const combinedPages = Math.ceil(combinedTotal / 20);
+      
+      setCurrentPage(page);
+      setTotalPages(combinedPages);
+      setTotalRequests(combinedTotal);
+      setHasNextPage(page < combinedPages);
+      setHasPrevPage(page > 1);
+      
+      console.log(`✅ Loaded ${unifiedRequests.length} requests (Page ${page} of ${combinedPages})`);
     } catch (error) {
       console.error("Error loading requests:", error);
     } finally {
       setLoading(false);
+      setIsPageChanging(false);
     }
-  };
+  }, [filter]);
 
+  // Initialize page state from URL
   useEffect(() => {
-    loadRequests();
+    setCurrentPage(initialPage);
+  }, [initialPage]);
+
+  // Initial load and page changes
+  useEffect(() => {
+    if (mounted) { // Only load after component is mounted
+      loadRequests(initialPage, true);
+    }
+  }, [initialPage, loadRequests, mounted]);
+
+  // Handle page change
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams);
+    if (page === 1) {
+      params.delete('page');
+    } else {
+      params.set('page', page.toString());
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl, { scroll: false });
+    
+    loadRequests(page, false);
+  }, [loadRequests, searchParams, pathname, router]);
+
+  // Handle filter changes
+  const handleFilterChange = useCallback((newFilter: typeof filter) => {
+    setFilter(newFilter);
+    setCurrentPage(1); // Reset to first page when filter changes
   }, []);
 
-  // Filter requests
-  const filteredRequests = requests.filter(request => {
-    const statusMatch = filter === "all" || request.status === filter;
-    const typeMatch = typeFilter === "all" || 
-      (typeFilter === "post" && request.type === "Post") ||
-      (typeFilter === "contact-unlock" && request.type === "Contact Unlock");
-    return statusMatch && typeMatch;
-  });
+  // Handle type filter changes
+  const handleTypeFilterChange = useCallback((newTypeFilter: typeof typeFilter) => {
+    setTypeFilter(newTypeFilter);
+    setCurrentPage(1); // Reset to first page when filter changes
+  }, []);
 
-  // Get counts for tabs
-  const getCounts = () => ({
+  // Filter requests with useMemo to prevent unnecessary re-renders
+  const filteredRequests = useMemo(() => {
+    return requests.filter(request => {
+      const statusMatch = filter === "all" || request.status === filter;
+      const typeMatch = typeFilter === "all" || 
+        (typeFilter === "post" && request.type === "Post") ||
+        (typeFilter === "contact-unlock" && request.type === "Contact Unlock");
+      
+      return statusMatch && typeMatch;
+    });
+  }, [requests, filter, typeFilter]);
+
+  // Get counts for tabs with useMemo for performance
+  const counts = useMemo(() => ({
     all: requests.length,
     pending: requests.filter(r => r.status === "pending").length,
     approved: requests.filter(r => r.status === "approved").length,
     rejected: requests.filter(r => r.status === "rejected").length,
     hidden: requests.filter(r => r.status === "hidden").length,
-  });
-
-  const counts = getCounts();
+  }), [requests]);
 
   // Handle approve/reject
   const handleApprove = async (request: UnifiedRequest) => {
@@ -131,7 +233,7 @@ export default function RequestsPage() {
       } else {
         await approveUnlockRequest(request.id);
       }
-      await loadRequests();
+      await loadRequests(currentPage, false);
     } catch (error) {
       console.error("Error approving request:", error);
     } finally {
@@ -147,7 +249,7 @@ export default function RequestsPage() {
       } else {
         await rejectUnlockRequest(request.id);
       }
-      await loadRequests();
+      await loadRequests(currentPage, false);
     } catch (error) {
       console.error("Error rejecting request:", error);
     } finally {
@@ -165,6 +267,34 @@ export default function RequestsPage() {
       hour: "2-digit",
       minute: "2-digit"
     });
+  };
+
+  // Copy to clipboard helper
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // Use a non-blocking notification instead of alert
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-pulse';
+      toast.textContent = 'Copied to clipboard!';
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  // View payment proof
+  const viewPaymentProof = (paymentProof: string | null) => {
+    if (!paymentProof) return;
+    
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const receiptUrl = paymentProof.startsWith('http') 
+      ? paymentProof 
+      : `${supabaseUrl}/storage/v1/object/public/${paymentProof}`;
+    window.open(receiptUrl, '_blank');
   };
 
   if (loading) {
@@ -188,39 +318,98 @@ export default function RequestsPage() {
   return (
     <div className="space-y-6">
       {/* Page Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Requests</h1>
-        <p className="text-muted-foreground">Manage post and contact unlock requests</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Requests</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage post and contact unlock requests</p>
+        </div>
+        <Button 
+          onClick={() => window.location.href = "/post"}
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+        >
+          Create New Post
+        </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2">
-        {[
-          { key: "all", label: "All" },
-          { key: "pending", label: "Pending" },
-          { key: "approved", label: "Approved" },
-          { key: "rejected", label: "Rejected" },
-          { key: "hidden", label: "Hidden" },
-        ].map((tab) => (
-          <Button
-            key={tab.key}
-            variant={filter === tab.key ? "default" : "outline"}
-            onClick={() => setFilter(tab.key as typeof filter)}
-            className="rounded-full"
-          >
-            {tab.label}
-            <Badge variant="secondary" className="ml-2">
-              {counts[tab.key as keyof typeof counts]}
-            </Badge>
-          </Button>
-        ))}
+      {/* Mini Stats Cards */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-blue-600">Pending</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-900">{counts.pending}</p>
+              </div>
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-green-600">Approved</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-900">{counts.approved}</p>
+              </div>
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-orange-600">Posts</p>
+                <p className="text-xl sm:text-2xl font-bold text-orange-900">{requests.filter(r => r.type === 'Post').length}</p>
+              </div>
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-200 bg-purple-50">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-xs sm:text-sm font-medium text-purple-600">Contact Unlocks</p>
+                <p className="text-xl sm:text-2xl font-bold text-purple-900">{requests.filter(r => r.type === 'Contact Unlock').length}</p>
+              </div>
+              <div className="h-6 w-6 sm:h-8 sm:w-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Unlock className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <Select value={typeFilter} onValueChange={(value: "all" | "post" | "contact-unlock") => setTypeFilter(value)}>
-            <SelectTrigger className="w-48">
+      {/* Combined Filters */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          {/* Status Filter */}
+          <Select value={filter} onValueChange={handleFilterChange}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Filter by Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status ({counts.all})</SelectItem>
+              <SelectItem value="pending">Pending ({counts.pending})</SelectItem>
+              <SelectItem value="approved">Approved ({counts.approved})</SelectItem>
+              <SelectItem value="rejected">Rejected ({counts.rejected})</SelectItem>
+              <SelectItem value="hidden">Hidden ({counts.hidden})</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {/* Type Filter */}
+          <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by Type" />
             </SelectTrigger>
             <SelectContent>
@@ -230,6 +419,11 @@ export default function RequestsPage() {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Results Count */}
+        <div className="text-sm text-muted-foreground sm:text-right">
+          Showing {filteredRequests.length} of {requests.length} requests
+        </div>
       </div>
 
       {/* Requests Table */}
@@ -238,17 +432,21 @@ export default function RequestsPage() {
           <CardTitle>Requests ({filteredRequests.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Payment Proof</TableHead>
-                <TableHead>Submitted At</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">Type</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead className="w-[80px]">Photo</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead className="w-[200px]">Details</TableHead>
+                  <TableHead className="w-[120px]">Payment</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[140px]">Submitted</TableHead>
+                  <TableHead className="w-[120px]">Action</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {filteredRequests.map((request) => (
                 <TableRow 
@@ -262,32 +460,164 @@ export default function RequestsPage() {
                       ) : (
                         <Unlock className="h-4 w-4 text-green-600" />
                       )}
-                      <span className="font-medium">
-                        {request.type === "Contact Unlock" && (
-                          <span>Contact<br />Unlock</span>
-                        )}
-                        {request.type === "Post" && "Post"}
+                      <span className="font-medium text-sm">
+                        {request.type === "Contact Unlock" ? "Contact" : request.type}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium text-sm max-w-[200px] truncate" title={request.reference}>
                     {request.reference}
                   </TableCell>
                   <TableCell>
-                    {request.user || "—"}
+                    {(() => {
+                      if (request.type === "Post") {
+                        const postData = (request.originalData as any)?.posts;
+                        
+                        if (postData?.employee_photo) {
+                          return (
+                            <div>
+                              <img 
+                                src={postData.employee_photo} 
+                                alt="Employee" 
+                                className="w-12 h-12 object-cover rounded"
+                                onError={(e) => {
+                                  console.error('❌ Photo failed to load:', postData.employee_photo);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div className="text-xs text-muted-foreground mt-1">Employee</div>
+                            </div>
+                          );
+                        } else if (postData?.photo_url) {
+                          return (
+                            <div>
+                              <img 
+                                src={postData.photo_url} 
+                                alt="Post" 
+                                className="w-12 h-12 object-cover rounded"
+                                onError={(e) => {
+                                  console.error('❌ Photo failed to load:', postData.photo_url);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div className="text-xs text-muted-foreground mt-1">Post</div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                              <span className="text-xs text-muted-foreground">No Photo</span>
+                            </div>
+                          );
+                        }
+                      } else {
+                        return (
+                          <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">N/A</span>
+                          </div>
+                        );
+                      }
+                    })()}
+                  </TableCell>
+                  <TableCell className="max-w-[200px]">
+                    {request.type === "Contact Unlock" && request.contactInfo ? (
+                      <div className="space-y-1 text-sm">
+                        {request.contactInfo.user_name && (
+                          <div className="truncate" title={request.contactInfo.user_name}>
+                            <strong>{request.contactInfo.user_name}</strong>
+                          </div>
+                        )}
+                        {request.contactInfo.user_phone && (
+                          <div className="text-muted-foreground">{request.contactInfo.user_phone}</div>
+                        )}
+                        {request.contactInfo.user_email && (
+                          <div className="flex items-center gap-1">
+                            <div className="text-muted-foreground text-xs truncate" title={request.contactInfo.user_email}>
+                              {request.contactInfo.user_email}
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyToClipboard(request.contactInfo!.user_email!)}
+                              className="h-4 w-4 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="max-w-[200px]">
+                    {request.type === "Post" ? (
+                      (() => {
+                        const postData = (request.originalData as any)?.posts;
+                        const details = postData?.details;
+                        return details ? (
+                          <div className="text-sm line-clamp-3" title={details}>
+                            {details}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">No details</span>
+                        );
+                      })()
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Proof
-                      </Button>
+                      {request.paymentProof ? (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => viewPaymentProof(request.paymentProof)}
+                            className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Proof
+                          </Button>
+                          <Badge className="bg-green-100 text-green-800">
+                            ✅ Uploaded
+                          </Badge>
+                        </>
+                      ) : (
+                        <Badge variant="destructive" className="bg-red-100 text-red-800">
+                          ❌ Missing
+                        </Badge>
+                      )}
                       {request.transactionId && (
                         <Badge variant="secondary" className="text-xs">
                           {request.transactionId}
                         </Badge>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {request.type === "Contact Unlock" && request.postContact ? (
+                      <div className={`space-y-1 ${request.paymentProof ? '' : 'opacity-50'}`}>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm">{request.postContact}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(request.postContact!)}
+                            className="h-4 w-4 p-0"
+                            disabled={!request.paymentProof}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        {!request.paymentProof && (
+                          <div className="text-xs text-red-600">⚠️ Verify payment first</div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(request.submittedAt)}
@@ -335,6 +665,7 @@ export default function RequestsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
           
           {filteredRequests.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
@@ -343,6 +674,39 @@ export default function RequestsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Page change loading indicator */}
+      {isPageChanging && (
+        <div className="flex justify-center py-4">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="space-y-4">
+        {/* Traditional pagination for desktop */}
+        <div className="hidden md:block">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            onPageChange={handlePageChange}
+            isLoading={isPageChanging}
+            totalPosts={totalRequests}
+          />
+        </div>
+
+        {/* Load more button for mobile */}
+        <div className="md:hidden">
+          <LoadMoreButton
+            hasNextPage={hasNextPage}
+            isLoading={isPageChanging}
+            onLoadMore={() => handlePageChange(currentPage + 1)}
+            remainingPosts={totalRequests - (currentPage * 20)}
+          />
+        </div>
+      </div>
     </div>
   );
 }

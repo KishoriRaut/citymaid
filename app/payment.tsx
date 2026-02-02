@@ -3,14 +3,24 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+// Shadcn Components
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+
 export default function PaymentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   
   const [postDetails, setPostDetails] = useState<{
     work: string;
@@ -120,13 +130,32 @@ export default function PaymentPage() {
 
       const result = await response.json();
       if (result.success) {
-        setSuccess(true);
+        // Show success toast before redirect
+        const message = isPostPromotion 
+          ? "Payment submitted! Your post will be published within 24 hours."
+          : "Payment submitted! You'll receive the contact number via email/SMS within 24 hours.";
+        
+        toast({
+          title: "Payment Submitted Successfully!",
+          description: message,
+        });
+        
+        // Redirect to success page with payment details
+        const successUrl = `/success?type=${type}&amount=${amount}&transactionId=${encodeURIComponent(transactionId.trim())}`;
+        setTimeout(() => {
+          router.push(successUrl);
+        }, 1000);
       } else {
         setError(result.error || 'Failed to submit payment');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit payment';
       setError(errorMessage);
+      toast({
+        title: "Payment Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -148,52 +177,38 @@ export default function PaymentPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading payment details...</p>
+        <div className="max-w-2xl w-full mx-auto px-4">
+          <Card>
+            <CardHeader className="text-center">
+              <Skeleton className="h-8 w-3/4 mx-auto mb-2" />
+              <Skeleton className="h-4 w-1/2 mx-auto" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
-  if (error && !success) {
+  if (error && !loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold text-red-600 mb-4">Error</h2>
-            <p className="text-gray-700 mb-6">{error}</p>
-            <button
-              onClick={() => router.push("/")}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Go Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Submitted Successfully!</h2>
-            <p className="text-gray-600 mb-6">Admin will verify your payment shortly.</p>
-            <button
-              onClick={() => router.push("/")}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Browse More Jobs
-            </button>
-          </div>
+        <div className="max-w-md w-full mx-auto px-4">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-red-600">Error</CardTitle>
+              <CardDescription>{error}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => router.push("/")} className="w-full">
+                Go Home
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -204,9 +219,9 @@ export default function PaymentPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4 space-y-6">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {isPostPromotion ? 'Homepage Post Payment' : 'Contact Unlock Payment'}
           </h1>
@@ -220,124 +235,149 @@ export default function PaymentPage() {
 
         {/* Post Summary Card - Only for post promotion */}
         {isPostPromotion && postDetails && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">📝 Post Summary</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Work Category</p>
-                <p className="font-semibold text-gray-900">{postDetails.work}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                📝 Post Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Work Category</p>
+                  <p className="font-semibold text-gray-900">{postDetails.work}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Location</p>
+                  <p className="font-semibold text-gray-900">{postDetails.place}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Salary</p>
+                  <p className="font-semibold text-gray-900">Rs. {postDetails.salary}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Work Time</p>
+                  <p className="font-semibold text-gray-900">{postDetails.time}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Location</p>
-                <p className="font-semibold text-gray-900">{postDetails.place}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Salary</p>
-                <p className="font-semibold text-gray-900">Rs. {postDetails.salary}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Work Time</p>
-                <p className="font-semibold text-gray-900">{postDetails.time}</p>
-              </div>
-            </div>
-            {postDetails.post_type === 'employee' && postDetails.photo_url && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-500 mb-2">Employee Photo</p>
-                <img 
-                  src={postDetails.photo_url} 
-                  alt="Employee" 
-                  className="w-16 h-16 object-cover rounded-lg"
-                />
-              </div>
-            )}
-          </div>
+              {postDetails.post_type === 'employee' && postDetails.photo_url && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-500 mb-2">Employee Photo</p>
+                  <img 
+                    src={postDetails.photo_url} 
+                    alt="Employee" 
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
-        {/* Payment Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">💳 Payment Details</h2>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-900 mb-2">Rs. {amount}</p>
-              <p className="text-sm text-blue-700">Fixed payment amount</p>
+        {/* Payment Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              💳 Payment Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Amount Display */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-900 mb-2">Rs. {amount}</p>
+                <p className="text-sm text-blue-700">Fixed payment amount</p>
+              </div>
             </div>
-          </div>
 
-          <div className="text-center mb-4">
-            <p className="text-sm text-gray-600 mb-2">Scan QR code to complete payment</p>
-            <img 
-              src="/sanima-qr.png" 
-              alt="Payment QR Code" 
-              className="w-32 h-32 mx-auto border border-gray-300 rounded-lg"
-            />
-            <p className="text-xs text-gray-500 mt-2">Scan with ESEWA, Khalti, or banking app</p>
-          </div>
+            <Separator />
 
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-sm text-gray-600 text-center">
-              <strong>Payment Method:</strong> Bank Transfer, ESEWA, Khalti<br />
-              <strong>Processing Time:</strong> Within 24 hours
-            </p>
-          </div>
-        </div>
+            {/* QR Code */}
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">Scan QR code to complete payment</p>
+              <img 
+                src="/sanima-qr.png" 
+                alt="Payment QR Code" 
+                className="w-32 h-32 mx-auto border border-gray-300 rounded-lg"
+              />
+              <p className="text-xs text-gray-500 mt-2">Scan with ESEWA, Khalti, or banking app</p>
+            </div>
+
+            <Separator />
+
+            {/* Payment Info */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-600 text-center">
+                <strong>Payment Method:</strong> Bank Transfer, ESEWA, Khalti<br />
+                <strong>Processing Time:</strong> Within 24 hours
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Payment Proof Form */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">📸 Submit Payment Proof</h2>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Transaction ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={transactionId}
-                onChange={(e) => setTransactionId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your transaction ID"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Screenshot <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="file"
-                onChange={handleFileChange}
-                accept="image/jpeg,image/png,image/jpg,application/pdf"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
-            </div>
-
-            {paymentProof && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-800">
-                  <strong>Selected file:</strong> {paymentProof.name}
-                </p>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              📸 Submit Payment Proof
+            </CardTitle>
+            <CardDescription>
+              Upload your payment screenshot and enter transaction ID to complete verification
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Transaction ID <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="text"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  placeholder="Enter your transaction ID"
+                  required
+                />
               </div>
-            )}
 
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-800">{error}</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Screenshot <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept="image/jpeg,image/png,image/jpg,application/pdf"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Submitting...' : 'Submit Payment Proof'}
-            </button>
-          </form>
-        </div>
+              {paymentProof && (
+                <Alert>
+                  <AlertDescription>
+                    <strong>Selected file:</strong> {paymentProof.name}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full"
+                size="lg"
+              >
+                {submitting ? 'Submitting...' : 'Submit Payment Proof'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

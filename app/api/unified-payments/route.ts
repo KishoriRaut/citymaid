@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔧 UNIFIED API - Fetching payment requests...');
     
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const postId = searchParams.get('post_id');
     const type = searchParams.get('type');
     const visitorId = searchParams.get('visitor_id');

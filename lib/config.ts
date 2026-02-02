@@ -6,7 +6,7 @@
 export const appConfig = {
   // Brand Information
   brand: {
-    name: "CityMaid",
+    name: "City Maid Services Pvt. Ltd.",
     tagline: "Find work or hire help in your city",
     description: "CityMaid Marketplace - Connect employers with workers for local services",
   },
@@ -32,11 +32,9 @@ export const appConfig = {
   routes: {
     home: "/",
     payment: "/payment",
-    admin: "/admin",
+    admin: "/admin/requests", // Default to requests page
     adminProfile: "/admin/profile",
     post: "/post",
     unlock: "/unlock",
-    adminPosts: "/admin/posts",
-    adminPayments: "/admin/payments",
   },
 } as const;

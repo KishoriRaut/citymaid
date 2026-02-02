@@ -1,33 +1,23 @@
 "use client";
 
-interface TabsProps {
+import { Tabs as ShadcnTabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+interface CustomTabsProps {
   activeTab: "all" | "employer" | "employee";
   onTabChange: (tab: "employer" | "employee") => void;
 }
 
-export function Tabs({ activeTab, onTabChange }: TabsProps) {
+export function Tabs({ activeTab, onTabChange }: CustomTabsProps) {
   return (
-    <div className="flex gap-2 mb-8">
-      <button
-        onClick={() => onTabChange("employee")}
-        className={`flex-1 px-6 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
-          activeTab === "employee"
-            ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow"
-            : "bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground hover:border-primary/20 border border-transparent"
-        }`}
-      >
-        Find a Job
-      </button>
-      <button
-        onClick={() => onTabChange("employer")}
-        className={`flex-1 px-6 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
-          activeTab === "employer"
-            ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow"
-            : "bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-foreground hover:border-primary/20 border border-transparent"
-        }`}
-      >
-        Hire a Worker
-      </button>
-    </div>
+    <ShadcnTabs value={activeTab} onValueChange={(value: string) => onTabChange(value as "employer" | "employee")}>
+      <TabsList className="grid w-full grid-cols-2 mb-8">
+        <TabsTrigger value="employee" className="text-base font-semibold">
+          Find a Job
+        </TabsTrigger>
+        <TabsTrigger value="employer" className="text-base font-semibold">
+          Hire a Worker
+        </TabsTrigger>
+      </TabsList>
+    </ShadcnTabs>
   );
 }

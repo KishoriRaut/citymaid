@@ -115,10 +115,7 @@ export default function UnifiedPaymentPage() {
       return;
     }
 
-    if (!transactionId.trim()) {
-      setError("Please enter transaction ID");
-      return;
-    }
+    // Transaction ID is optional - only validate if provided
 
     if (!request || !type || !requestId) {
       setError("Invalid payment request");
@@ -379,7 +376,7 @@ export default function UnifiedPaymentPage() {
                 {/* Transaction ID */}
                 <div className="mb-4">
                   <label htmlFor="transactionId" className="block text-sm font-medium text-gray-700 mb-2">
-                    Transaction ID *
+                    Transaction ID (Optional)
                   </label>
                   <input
                     type="text"
@@ -387,8 +384,7 @@ export default function UnifiedPaymentPage() {
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your transaction ID"
-                    required
+                    placeholder="Enter your transaction ID (optional)"
                   />
                 </div>
 

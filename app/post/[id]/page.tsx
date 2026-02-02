@@ -13,17 +13,17 @@ interface Post {
   salary: string;
   post_type: "employer" | "employee";
   contact: string;
+  details: string;
   photo_url?: string;
   status: string;
   homepage_payment_status: 'none' | 'pending' | 'approved' | 'rejected';
   created_at: string;
 }
 
-export default function PostViewPage() {
-  const params = useParams();
+export default function PostViewPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function PostViewPage() {
   }, [params.id]);
 
   const loadPost = async (postId: string) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/posts/${postId}`);
       const data = await response.json();
@@ -49,11 +49,11 @@ export default function PostViewPage() {
       console.error("Error loading post:", error);
       setError("Failed to load post");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -86,9 +86,9 @@ export default function PostViewPage() {
   const postTitle = post.title || `${post.work} - ${post.place}`;
   const isEmployer = post.post_type === "employer";
   
-  // Format posting time
-  const timeInfo = formatTimeWithDetails(post.created_at);
-  const isFresh = isFreshPost(post.created_at);
+  // Format posting time - add null check
+  const timeInfo = post.created_at ? formatTimeWithDetails(post.created_at) : { relative: 'Unknown time', title: 'No creation date' };
+  const isFresh = post.created_at ? isFreshPost(post.created_at) : false;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -193,8 +193,12 @@ export default function PostViewPage() {
                   </div>
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Salary</h3>
-                    <p className="text-lg font-semibold text-gray-900">{post.salary}</p>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">
+                      {isEmployer ? 'Job Details' : 'About Me'}
+                    </h3>
+                    <p className="text-lg text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {post.details || 'No details available'}
+                    </p>
                   </div>
                 </div>
 
@@ -209,6 +213,11 @@ export default function PostViewPage() {
                         day: 'numeric'
                       })}
                     </p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Salary</h3>
+                    <p className="text-lg font-semibold text-gray-900">{post.salary}</p>
                   </div>
                   
                   {post.homepage_payment_status !== 'none' && (
@@ -237,13 +246,40 @@ export default function PostViewPage() {
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h3 className="text-sm font-medium text-blue-900 mb-2">📞 Contact Information</h3>
-                  <p className="text-lg font-semibold text-blue-800">{post.contact}</p>
-                  <p className="text-sm text-blue-600 mt-1">
-                    {isEmployer 
-                      ? "Contact this employer for the job opportunity"
-                      : "Contact this job seeker for the position"
-                    }
-                  </p>
+                  
+                  {/* Check if contact should be visible */}
+                  {post.homepage_payment_status === 'approved' ? (
+                    <>
+                      <p className="text-lg font-semibold text-blue-800">{post.contact}</p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        {isEmployer 
+                          ? "Contact this employer for the job opportunity"
+                          : "Contact this job seeker for the position"
+                        }
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-lg font-semibold text-blue-800">
+                        {post.contact ? post.contact.substring(0, 2) + '******' + post.contact.substring(post.contact.length - 2) : 'Contact hidden'}
+                      </p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        {isEmployer 
+                          ? "🔒 Contact available after payment verification"
+                          : "🔒 Contact available after payment verification"
+                        }
+                      </p>
+                      <div className="mt-3">
+                        <Button 
+                          onClick={() => router.push(`/post-payment/${post.id}`)}
+                          className="w-full"
+                          size="sm"
+                        >
+                          💳 Unlock Contact Information
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -264,28 +300,6 @@ export default function PostViewPage() {
                     Feature on Homepage
                   </Button>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Information */}
-          <div className="mt-6 bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">About This Listing</h3>
-            <div className="prose prose-sm text-gray-600">
-              <p>
-                {isEmployer 
-                  ? "This employer is looking for qualified candidates for the position mentioned above. Contact them directly using the provided information."
-                  : "This job seeker is available for the work type mentioned above. Contact them directly using the provided information."
-                }
-              </p>
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">💡 Tips:</h4>
-                <ul className="text-sm space-y-1">
-                  <li>• Be professional when contacting</li>
-                  <li>• Have your relevant documents ready</li>
-                  <li>• Discuss salary expectations clearly</li>
-                  <li>• Ask about work schedule and requirements</li>
-                </ul>
               </div>
             </div>
           </div>

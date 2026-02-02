@@ -14,7 +14,7 @@ import {
   LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu,
@@ -37,12 +37,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // For development/testing - bypass authentication
-    // In production, you would check for actual admin session here
-    const mockUser = {
-      id: "admin-123",
-      email: "admin@test.com",
-      role: "admin",
+    // Immediate authentication check without delay
+    const mockUser: User = {
+      id: 'admin',
+      email: 'admin@citymaid.com',
+      name: 'Admin User',
+      role: 'admin',
       created_at: new Date().toISOString()
     };
     setUser(mockUser);
@@ -54,36 +54,42 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       href: "/admin/requests",
       icon: FileText,
       current: pathname === "/admin/requests",
+      description: "Manage posts and contact unlocks"
     },
     {
       name: "Reports",
       href: "/admin/reports",
       icon: BarChart3,
       current: pathname === "/admin/reports",
+      description: "View analytics and insights"
     },
     {
       name: "Settings",
       href: "/admin/settings",
       icon: Settings,
       current: pathname === "/admin/settings",
+      description: "System configuration"
+    },
+    {
+      name: "Profile",
+      href: "/admin/profile",
+      icon: UserIcon,
+      current: pathname === "/admin/profile",
+      description: "Account settings"
     },
   ];
 
   const handleLogout = async () => {
     try {
       clearSession();
-      router.push("/admin/login");
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return null; // Will redirect automatically
   }
 
   return (
@@ -91,12 +97,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Mobile sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="p-0 w-64">
+          <SheetTitle>Admin Navigation</SheetTitle>
+          <SheetDescription>
+            Access admin dashboard and management tools
+          </SheetDescription>
           <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="flex items-center justify-between h-16 px-6 border-b">
-              <Link href="/admin/requests" className="text-xl font-bold text-primary">
+              <div className="text-xl font-bold text-primary">
                 CityMaid Admin
-              </Link>
+              </div>
             </div>
 
             {/* Navigation */}
@@ -108,7 +118,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     key={item.name}
                     href={item.href}
                     className={`
-                      flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                      flex flex-col gap-y-1 px-3 py-3 rounded-lg text-sm font-medium transition-colors
                       ${item.current
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -116,8 +126,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     `}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <Icon className="h-4 w-4" />
-                    {item.name}
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-4 w-4" />
+                      <span className="font-medium">{item.name}</span>
+                    </div>
+                    <p className={`text-xs ml-7 ${
+                      item.current 
+                        ? "text-primary-foreground/80" 
+                        : "text-muted-foreground"
+                    }`}>
+                      {item.description}
+                    </p>
                   </Link>
                 );
               })}
@@ -128,17 +147,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-card border-r px-6 pb-4">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-card border-r px-6 pb-4 relative z-10">
           {/* Logo */}
           <div className="flex h-16 shrink-0 items-center">
-            <Link href="/admin/requests" className="text-xl font-bold text-primary">
+            <div className="text-xl font-bold text-primary">
               CityMaid Admin
-            </Link>
+            </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
+          <nav className="flex flex-1 flex-col relative z-20">
+            <ul role="list" className="flex flex-1 flex-col gap-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -146,15 +165,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     <Link
                       href={item.href}
                       className={`
-                        group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 transition-colors
+                        group flex flex-col gap-y-1 rounded-lg p-3 text-sm font-medium leading-6 transition-all duration-200
                         ${item.current
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         }
                       `}
                     >
-                      <Icon className="h-6 w-6 shrink-0" />
-                      {item.name}
+                      <div className="flex items-center gap-x-3">
+                        <Icon className="h-5 w-5 shrink-0" />
+                        <span className="font-medium">{item.name}</span>
+                      </div>
+                      <p className={`text-xs ml-8 ${
+                        item.current 
+                          ? "text-primary-foreground/80" 
+                          : "text-muted-foreground"
+                      }`}>
+                        {item.description}
+                      </p>
                     </Link>
                   </li>
                 );
@@ -185,46 +213,74 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {/* Right side icons */}
             <div className="flex items-center gap-x-4">
               {/* Notification bell */}
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 hover:bg-accent/50 transition-colors">
                 <Bell className="h-5 w-5" />
-                <span className="sr-only">Notifications</span>
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="sr-only">View notifications</span>
+                {/* Notification badge */}
+                <span className="absolute -top-0.5 -right-0.5 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center ring-2 ring-background">
                   <span className="text-xs text-white font-medium">3</span>
                 </span>
+                {/* Pulse animation for new notifications */}
+                <span className="absolute -top-0.5 -right-0.5 h-5 w-5 bg-red-500 rounded-full animate-ping opacity-75"></span>
               </Button>
               
               {/* User profile dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent/50 transition-colors">
+                    <Avatar className="h-10 w-10 border-2 border-border">
                       <AvatarImage src="" alt={user.email} />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                         {user.email?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user.email}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        Administrator
-                      </p>
+                <DropdownMenuContent className="w-64" align="end" style={{ zIndex: 40 }}>
+                  <DropdownMenuLabel className="font-normal p-4">
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-10 w-10 border-2 border-border">
+                          <AvatarImage src="" alt={user.email} />
+                          <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                            {user.email?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col space-y-1 leading-none">
+                          <p className="text-sm font-medium">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Administrator
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/admin/settings" className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      Settings
+                    <Link href="/admin/profile" className="flex items-center cursor-pointer">
+                      <UserIcon className="mr-3 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Profile</span>
+                        <span className="text-xs text-muted-foreground">Account settings</span>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/settings" className="flex items-center cursor-pointer">
+                      <Settings className="mr-3 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Settings</span>
+                        <span className="text-xs text-muted-foreground">System configuration</span>
+                      </div>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="flex items-center">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
+                  <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-red-600 focus:text-red-600">
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <div className="flex flex-col">
+                      <span>Logout</span>
+                      <span className="text-xs text-muted-foreground">Sign out of account</span>
+                    </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

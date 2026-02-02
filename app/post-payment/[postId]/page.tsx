@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
+import { uploadPaymentReceipt } from "@/lib/storage";
 import { getOrCreateVisitorId } from "@/lib/visitor-id";
+
+// Check if Supabase is configured
+const isSupabaseConfigured = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 interface Post {
   id: string;
@@ -22,6 +26,31 @@ export default function PostPaymentPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const postId = params.postId as string;
+  const isContactUnlock = searchParams.get("type") === "contact_unlock";
+  const unlockRequestId = searchParams.get("requestId");
+
+  // Check if Supabase is configured
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
+          <p className="text-gray-700 mb-4">
+            Supabase is not configured. Please set up your environment variables:
+          </p>
+          <div className="bg-gray-100 p-4 rounded text-sm">
+            <p><strong>NEXT_PUBLIC_SUPABASE_URL</strong></p>
+            <p><strong>NEXT_PUBLIC_SUPABASE_ANON_KEY</strong></p>
+          </div>
+          <p className="text-gray-600 text-sm mt-4">
+            Copy these from your Supabase project settings and add them to your .env.local file.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,9 +59,11 @@ export default function PostPaymentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   
-  // Check if this is a contact unlock payment
-  const unlockRequestId = searchParams.get('unlock_request');
-  const isContactUnlock = !!unlockRequestId;
+  // New contact information fields
+  const [userName, setUserName] = useState("");
+  const [userPhone, setUserPhone] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [contactPreference, setContactPreference] = useState<"sms" | "email" | "both">("both");
 
   useEffect(() => {
     if (params.postId) {
@@ -85,8 +116,37 @@ export default function PostPaymentPage() {
   };
 
   const handleSubmitPaymentProof = async () => {
-    if (!paymentProof && !transactionId.trim()) {
-      setError("Please provide either a payment proof file or transaction ID");
+    // Validate contact information for contact unlock
+    if (isContactUnlock) {
+      if (!userName.trim()) {
+        setError("Please provide your full name");
+        return;
+      }
+      if (!userPhone.trim()) {
+        setError("Please provide your phone number");
+        return;
+      }
+      if (!userEmail.trim()) {
+        setError("Please provide your email address");
+        return;
+      }
+      if (userName.length < 2 || userName.length > 100) {
+        setError("Please provide a valid name (2-100 characters)");
+        return;
+      }
+      if (userPhone.length !== 10 || !/^\d+$/.test(userPhone)) {
+        setError("Please provide a valid 10-digit phone number");
+        return;
+      }
+      if (!userEmail.includes('@') || !userEmail.includes('.')) {
+        setError("Please provide a valid email address");
+        return;
+      }
+    }
+
+    // Payment proof is mandatory for both post and contact unlock payments
+    if (!paymentProof) {
+      setError("Payment proof is required. Please upload a screenshot or receipt.");
       return;
     }
 
@@ -97,7 +157,7 @@ export default function PostPaymentPage() {
       const visitorId = getOrCreateVisitorId();
       
       if (isContactUnlock && unlockRequestId) {
-        // Handle contact unlock payment
+        // Handle contact unlock payment using server-side function
         const base64String = paymentProof ? await fileToBase64(paymentProof) : '';
         
         const formData = new FormData();
@@ -107,6 +167,12 @@ export default function PostPaymentPage() {
         formData.append('fileName', paymentProof?.name || '');
         formData.append('fileType', paymentProof?.type || '');
         formData.append('transactionId', transactionId.trim());
+        
+        // Add contact information
+        formData.append('userName', userName.trim());
+        formData.append('userPhone', userPhone.trim());
+        formData.append('userEmail', userEmail.trim());
+        formData.append('contactPreference', contactPreference);
 
         const response = await fetch('/api/unified-payment', {
           method: 'POST',
@@ -125,14 +191,30 @@ export default function PostPaymentPage() {
           setError(result.error || 'Failed to submit payment');
         }
       } else {
-        // Handle post promotion payment (existing logic)
-        const paymentProofUrl = paymentProof 
-          ? `payment_proof_${post.id}_${visitorId}_${Date.now()}.${paymentProof.type.split('/')[1]}`
-          : `transaction_${post.id}_${transactionId}_${Date.now()}`;
+        // Handle post promotion payment with actual file upload
+        let receiptUrl = null;
+        
+        if (paymentProof) {
+          // Upload file to Supabase Storage first
+          const uploadResult = await uploadPaymentReceipt(paymentProof);
+          
+          if (uploadResult.error || !uploadResult.url) {
+            throw new Error(`Failed to upload receipt: ${uploadResult.error}`);
+          }
+          
+          receiptUrl = uploadResult.url;
+          console.log("✅ Receipt uploaded to storage:", receiptUrl);
+        } else if (transactionId.trim()) {
+          // For transaction ID only, create a placeholder
+          receiptUrl = `transaction_${post.id}_${transactionId.trim()}_${Date.now()}`;
+          console.log("📝 Using transaction ID placeholder:", receiptUrl);
+        } else {
+          throw new Error("Either payment proof file or transaction ID is required");
+        }
 
         console.log("Submitting payment proof:", {
           postId: post.id,
-          paymentProofUrl,
+          receiptUrl,
           visitorId,
           hasFile: !!paymentProof,
           transactionId
@@ -140,7 +222,7 @@ export default function PostPaymentPage() {
 
         const { success, error } = await updateHomepagePaymentProof(
           post.id,
-          paymentProofUrl
+          receiptUrl
         );
 
         console.log("Payment proof submission result:", { success, error });
@@ -212,21 +294,21 @@ export default function PostPaymentPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Proof Received!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Payment Submitted Successfully!</h2>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
               <p className="text-green-800 text-sm mb-2">
-                <strong>✅ Your payment proof has been received.</strong>
+                <strong>✅ Your payment is submitted and verification is in progress.</strong>
               </p>
               <p className="text-green-800 text-sm mb-2">
-                <strong>⏰ Approval usually takes 2-4 hours.</strong>
+                <strong>⏰ You will receive confirmation within 24 hours.</strong>
               </p>
               {isContactUnlock ? (
                 <p className="text-green-800 text-sm">
-                  <strong>📞 Once approved, you&apos;ll be able to view the contact information for this post.</strong>
+                  <strong>📞 You will receive the contact number via email/SMS within 24 hours.</strong>
                 </p>
               ) : (
                 <p className="text-green-800 text-sm">
-                  <strong>🏠 Once approved, your post will be displayed on the homepage for 30 days.</strong>
+                  <strong>🏠 Your post will be published on homepage within 24 hours.</strong>
                 </p>
               )}
             </div>
@@ -317,7 +399,7 @@ export default function PostPaymentPage() {
                     {isContactUnlock ? ' Get contact details for this job opportunity.' : ' Get your post displayed prominently on the homepage for 30 days.'}
                   </p>
                   <p className="text-blue-800 text-sm">
-                    <strong>Price:</strong> NPR 299
+                    <strong>Price:</strong> Rs. 299
                   </p>
                 </div>
 
@@ -354,7 +436,7 @@ export default function PostPaymentPage() {
                     <div className="bg-gray-50 rounded-lg p-4">
                       <ol className="text-sm text-gray-700 space-y-2">
                         <li>1. Scan the QR code with Sanima Bank app</li>
-                        <li>2. Enter amount: NPR 500</li>
+                        <li>2. Enter amount: Rs. 299</li>
                         <li>3. Complete the payment</li>
                         <li>4. Save the transaction ID or screenshot</li>
                         <li>5. Upload payment proof below</li>
@@ -367,12 +449,99 @@ export default function PostPaymentPage() {
                 </div>
               </div>
 
+              {/* Contact Information Section - Only for Contact Unlock */}
+              {isContactUnlock && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Contact Information</h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-800">
+                      <strong>Important:</strong> Provide your contact details below. After payment approval, we'll send the job contact information to you.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="user-name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
+                      <input
+                        id="user-name"
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., John Doe"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Your full name for personalized communication
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="user-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number *
+                      </label>
+                      <input
+                        id="user-phone"
+                        type="tel"
+                        value={userPhone}
+                        onChange={(e) => setUserPhone(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 9849317227"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Format: 10-digit mobile number
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="user-email" className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        id="user-email"
+                        type="email"
+                        value={userEmail}
+                        onChange={(e) => setUserEmail(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., your.email@example.com"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        We'll send contact details to this email
+                      </p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="contact-preference" className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Preference *
+                      </label>
+                      <select
+                        id="contact-preference"
+                        value={contactPreference}
+                        onChange={(e) => setContactPreference(e.target.value as "sms" | "email" | "both")}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="sms">SMS Only</option>
+                        <option value="email">Email Only</option>
+                        <option value="both">Both SMS and Email</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        How would you like to receive the job contact information?
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Submit Payment Proof</h3>
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="payment-proof" className="block text-sm font-medium text-gray-700 mb-2">
-                      Upload Payment Proof (Screenshot or Receipt)
+                      Upload Payment Proof * (Screenshot or Receipt - Required)
                     </label>
                     <input
                       id="payment-proof"
@@ -411,7 +580,7 @@ export default function PostPaymentPage() {
                 </Button>
                 <Button
                   onClick={handleSubmitPaymentProof}
-                  disabled={isSubmitting || (!paymentProof && !transactionId.trim())}
+                  disabled={isSubmitting || !paymentProof}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Payment Proof'}

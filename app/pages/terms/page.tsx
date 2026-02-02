@@ -263,11 +263,11 @@ export default function TermsOfService() {
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
-                    <span><strong>Contact Unlock Fee:</strong> NPR 50 to access worker contact information</span>
+                    <span><strong>Contact Unlock Fee:</strong> Rs. 299 to access worker contact information</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
-                    <span><strong>Homepage Feature Fee:</strong> NPR 500 to feature your post on homepage</span>
+                    <span><strong>Homepage Feature Fee:</strong> Rs. 299 to feature your post on homepage</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
@@ -288,9 +288,14 @@ export default function TermsOfService() {
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h3 className="font-semibold text-green-800 mb-2">Refund Policy</h3>
-                <p className="text-green-800">
-                  Contact unlock fees are refundable if you hire the worker through our platform 
-                  and the placement is successfully completed. Other fees are generally non-refundable.
+                <p className="text-green-800 mb-2">
+                  <strong>Contact Unlock Fees:</strong> Non-refundable service charge for accessing verified contact information and platform services.
+                </p>
+                <p className="text-green-800 mb-2">
+                  <strong>Homepage Feature Fees:</strong> Non-refundable service charge for featuring posts on homepage.
+                </p>
+                <p className="text-green-800 text-sm">
+                  Users should conduct thorough due diligence, including interviews and reference checks, before making hiring decisions. The platform acts as an intermediary and does not guarantee hiring outcomes.
                 </p>
               </div>
             </div>
@@ -433,8 +438,10 @@ export default function TermsOfService() {
                 <h3 className="font-semibold text-blue-800 mb-2">Contact for Disputes</h3>
                 <p className="text-blue-800">
                   For dispute resolution assistance, contact us at:<br/>
-                  Email: disputes@citymaid.com.np<br/>
-                  Phone: +977-1-1234567
+                  Email: citymaid60@gmail.com<br/>
+                  Phone: +977 9841317273<br/>
+                  WhatsApp: +977 9841317273<br/>
+                  Address: Talchhikhel 15, Satdobato, Lalitpur, Nepal
                 </p>
               </div>
             </div>
@@ -455,7 +462,7 @@ export default function TermsOfService() {
       {/* Contact */}
       <div className="mt-6 text-center">
         <p className="text-gray-600">
-          Questions about these Terms? Contact us at legal@citymaid.com.np
+          Questions about these Terms? Contact us at citymaid60@gmail.com or call +977 9841317273
         </p>
       </div>
     </main>

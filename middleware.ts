@@ -14,6 +14,11 @@ export function middleware(request: NextRequest) {
     const userCookie = request.cookies.get("user_session");
     
     if (!userCookie?.value) {
+      // For development, allow access without authentication
+      if (process.env.NODE_ENV === "development") {
+        return NextResponse.next();
+      }
+      
       // Redirect to admin login if no session cookie
       const loginUrl = new URL("/admin/login", request.url);
       return NextResponse.redirect(loginUrl);
@@ -23,6 +28,11 @@ export function middleware(request: NextRequest) {
     try {
       JSON.parse(userCookie.value);
     } catch {
+      // For development, allow access without authentication
+      if (process.env.NODE_ENV === "development") {
+        return NextResponse.next();
+      }
+      
       // Invalid cookie, redirect to admin login
       const loginUrl = new URL("/admin/login", request.url);
       return NextResponse.redirect(loginUrl);

@@ -14,12 +14,13 @@ export async function POST(request: NextRequest) {
     const fileType = formData.get('fileType') as string;
     const transactionId = formData.get('transactionId') as string;
 
-    console.log('🔧 UNIFIED API - Received data:', { 
-      requestId, 
+    console.log('🔧 UNIFIED API - Request received:', {
+      requestId,
       type,
+      hasPaymentProof: !!paymentProofBase64,
+      base64Length: paymentProofBase64?.length,
       fileName, 
       fileType,
-      base64Length: paymentProofBase64?.length,
       transactionId 
     });
 
@@ -32,16 +33,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!requestId || !paymentProofBase64) {
+    // Allow either payment proof OR transaction ID
+    if (!requestId || (!paymentProofBase64 && !transactionId)) {
       console.error('❌ UNIFIED API - Missing required fields:', { 
         requestId, 
-        hasBase64: !!paymentProofBase64 
+        hasBase64: !!paymentProofBase64,
+        hasTransactionId: !!transactionId
       });
       return NextResponse.json(
-        { error: 'Missing required fields: requestId and paymentProofBase64 are required' },
+        { error: 'Missing required fields: requestId and either paymentProofBase64 or transactionId are required' },
         { status: 400 }
       );
     }
+
+    // Extract contact information from form data
+    const userName = formData.get('userName') as string;
+    const userPhone = formData.get('userPhone') as string;
+    const userEmail = formData.get('userEmail') as string;
+    const contactPreference = formData.get('contactPreference') as string;
+
+    console.log('🔧 UNIFIED API - Contact info:', { 
+      userName, 
+      userPhone, 
+      userEmail, 
+      contactPreference 
+    });
 
     // Call the unified server function
     console.log('🔧 UNIFIED API - Calling updateUnifiedPayment...');
@@ -51,7 +67,11 @@ export async function POST(request: NextRequest) {
       paymentProofBase64,
       fileName,
       fileType,
-      transactionId
+      transactionId,
+      userName,
+      userPhone,
+      userEmail,
+      contactPreference
     );
 
     console.log('🔧 UNIFIED API - Result from updateUnifiedPayment:', result);

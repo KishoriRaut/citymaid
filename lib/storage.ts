@@ -59,13 +59,22 @@ export function validateReceiptFile(file: File): { valid: boolean; error?: strin
   return { valid: true };
 }
 
-// Upload payment receipt to Supabase Storage
+// Upload payment receipt to Supabase Storage (server-side compatible)
 export async function uploadPaymentReceipt(file: File): Promise<{ url: string | null; error: string | null }> {
   try {
     // Validate file first
     const validation = validateReceiptFile(file);
     if (!validation.valid) {
       return { url: null, error: validation.error || "Invalid file" };
+    }
+
+    // Additional defensive checks
+    if (!file || file.size === 0) {
+      return { url: null, error: "Invalid file: File is empty or undefined" };
+    }
+
+    if (!file.name || file.name.trim() === '') {
+      return { url: null, error: "Invalid file: File name is empty" };
     }
 
     // Optimize image if it's an image (not PDF)
@@ -82,12 +91,33 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
       }
     }
 
-    // Generate unique filename
+    // Generate unique filename with timestamp and random string
     const fileExt = fileToUpload.name.split(".").pop();
-    const fileName = `receipt-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(7);
+    const fileName = `receipt-${timestamp}-${randomString}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    // Upload file to payment-receipts bucket
+    console.log("📤 Uploading payment receipt:", {
+      originalName: file.name,
+      fileName,
+      filePath,
+      fileSize: fileToUpload.size,
+      fileType: fileToUpload.type
+    });
+
+    // Check if we're on server-side and import appropriate supabase client
+    let supabaseClient;
+    if (typeof window === 'undefined') {
+      // Server-side - use server supabase client
+      const { supabase } = await import('./supabase');
+      supabaseClient = supabase;
+    } else {
+      // Client-side - use client supabase client
+      const { supabaseClient: client } = await import('./supabase-client');
+      supabaseClient = client;
+    }
+
     if (!supabaseClient) {
       return {
         error: "Supabase client not initialized - missing environment variables",
@@ -104,22 +134,30 @@ export async function uploadPaymentReceipt(file: File): Promise<{ url: string | 
       });
 
     if (uploadError) {
+      console.error("❌ Storage upload error:", uploadError);
       if (process.env.NODE_ENV === "development") {
         console.error("Error uploading file:", uploadError);
       }
       return { url: null, error: uploadError.message };
     }
 
-    // Get public URL
+    // Get public URL - this will be the exact path stored in database
     const {
       data: { publicUrl },
     } = supabaseClient.storage.from(PAYMENT_RECEIPTS_BUCKET).getPublicUrl(filePath);
 
+    console.log("✅ Receipt uploaded successfully:", publicUrl);
+
+    // Validate the returned URL
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!publicUrl || !supabaseUrl || !publicUrl.startsWith(supabaseUrl)) {
+      console.error("❌ Invalid public URL generated:", publicUrl);
+      return { url: null, error: "Failed to generate valid public URL" };
+    }
+
     return { url: publicUrl, error: null };
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error in uploadPaymentReceipt:", error);
-    }
+    console.error("❌ Error in uploadPaymentReceipt:", error);
     return { url: null, error: "Failed to upload receipt" };
   }
 }
@@ -154,6 +192,12 @@ export async function uploadPhoto(file: File): Promise<{ url: string | null; err
     if (!supabaseClient) {
       throw new Error("Supabase client not initialized");
     }
+    
+    console.log("📤 Uploading to bucket:", BUCKET_NAME);
+    console.log("📤 File path:", filePath);
+    console.log("📤 File size:", optimizedFile.size);
+    console.log("📤 Content type:", optimizedFile.type);
+    
     const { error: uploadError } = await supabaseClient.storage
       .from(BUCKET_NAME)
       .upload(filePath, optimizedFile, {
@@ -163,16 +207,21 @@ export async function uploadPhoto(file: File): Promise<{ url: string | null; err
       });
 
     if (uploadError) {
+      console.error("❌ Upload error details:", uploadError);
       if (process.env.NODE_ENV === "development") {
         console.error("Error uploading file:", uploadError);
       }
       return { url: null, error: uploadError.message };
     }
 
+    console.log("✅ Upload successful!");
+
     // Get public URL
     const {
       data: { publicUrl },
     } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+
+    console.log("🔗 Public URL generated:", publicUrl);
 
     return { url: publicUrl, error: null };
   } catch (error) {
