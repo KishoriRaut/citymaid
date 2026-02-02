@@ -39,17 +39,45 @@ export async function POST(request: NextRequest) {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    // Insert contact submission using the function
-    const { data, error } = await supabase.rpc('insert_contact_submission', {
-      p_name: name.trim(),
-      p_email: email.trim().toLowerCase(),
-      p_message: message.trim(),
-      p_source: 'website',
-      p_visitor_id: visitorId,
-      p_user_agent: userAgent,
-      p_ip_address: ipAddress,
-      p_referrer: referrer
-    });
+    // Try to insert using the function first, fallback to direct insert
+    let data, error;
+    
+    try {
+      const result = await supabase.rpc('insert_contact_submission', {
+        p_name: name.trim(),
+        p_email: email.trim().toLowerCase(),
+        p_message: message.trim(),
+        p_source: 'website',
+        p_visitor_id: visitorId,
+        p_user_agent: userAgent,
+        p_ip_address: ipAddress,
+        p_referrer: referrer
+      });
+      
+      data = result.data;
+      error = result.error;
+    } catch (rpcError) {
+      // Fallback to direct insert if function doesn't exist
+      console.log('RPC function not found, using direct insert');
+      const result = await supabase
+        .from('contact_submissions')
+        .insert({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          message: message.trim(),
+          source: 'website',
+          visitor_id: visitorId,
+          user_agent: userAgent,
+          ip_address: ipAddress,
+          referrer: referrer,
+          priority: 'normal'
+        })
+        .select()
+        .single();
+      
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) {
       console.error('Error inserting contact submission:', error);
@@ -93,13 +121,57 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY || supabaseAnonKey
     );
 
-    const { data, error } = await supabase.rpc('get_contact_submissions', {
-      p_page: page,
-      p_limit: limit,
-      p_status: status,
-      p_priority: priority,
-      p_search: search
-    });
+    let data, error;
+
+    try {
+      // Try to use the function first
+      const result = await supabase.rpc('get_contact_submissions', {
+        p_page: page,
+        p_limit: limit,
+        p_status: status,
+        p_priority: priority,
+        p_search: search
+      });
+      
+      data = result.data;
+      error = result.error;
+    } catch (rpcError) {
+      // Fallback to direct query if function doesn't exist
+      console.log('RPC function not found, using direct query');
+      
+      let query = supabase
+        .from('contact_submissions')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
+
+      // Apply filters
+      if (status) {
+        query = query.eq('status', status);
+      }
+      if (priority) {
+        query = query.eq('priority', priority);
+      }
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,message.ilike.%${search}%`);
+      }
+
+      // Apply pagination
+      const fromRow = (page - 1) * limit;
+      const toRow = fromRow + limit - 1;
+      
+      const result = await query.range(fromRow, toRow);
+      
+      data = result.data;
+      error = result.error;
+      
+      // Add total_count for compatibility
+      if (data && !error) {
+        data = data.map(item => ({
+          ...item,
+          total_count: result.count || 0
+        }));
+      }
+    }
 
     if (error) {
       console.error('Error fetching contact submissions:', error);
