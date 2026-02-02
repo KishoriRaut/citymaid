@@ -306,7 +306,7 @@ function HomePageContent() {
                       <h3 className="text-lg font-bold">Feature Your Post</h3>
                     </div>
                     <p className="text-white/90 text-sm mb-2">
-                      Get maximum visibility on homepage for <span className="font-bold text-yellow-300">NRs. 299</span>
+                      Get maximum visibility on homepage for <span className="font-bold text-yellow-300">NRs. 300</span>
                     </p>
                     <div className="flex flex-wrap gap-1">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
@@ -325,7 +325,7 @@ function HomePageContent() {
                         Start Today
                       </div>
                       <div className="text-xs text-white/80 text-center">
-                        From NRs. 299
+                        NRs. 300
                       </div>
                     </div>
                     <Button 

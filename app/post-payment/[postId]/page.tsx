@@ -413,7 +413,7 @@ export default function PostPaymentPage() {
                           {!isContactUnlock && <span className="text-xs bg-yellow-300 text-purple-900 px-2 py-1 rounded-full font-medium">Selected</span>}
                         </div>
                         <p className="text-white/90 text-xs mb-1">
-                          Get homepage visibility for <span className="font-bold text-yellow-300">NRs. 299</span>
+                          Get homepage visibility for <span className="font-bold text-yellow-300">NRs. 300</span>
                         </p>
                         <div className="flex flex-wrap gap-1">
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
@@ -428,7 +428,7 @@ export default function PostPaymentPage() {
                       {/* Price Section */}
                       <div className="flex flex-col items-center gap-1">
                         <div className="text-xl font-bold text-yellow-300">
-                          {isContactUnlock ? 'NRs. 300' : 'NRs. 299'}
+                          NRs. 300
                         </div>
                         <div className="text-xs text-white/80 text-center">
                           {isContactUnlock ? 'Contact Unlock' : 'Post Feature'}
@@ -473,7 +473,7 @@ export default function PostPaymentPage() {
                     {isContactUnlock ? ' Get contact details for this job opportunity.' : ' Get your post displayed prominently on the homepage for 30 days.'}
                   </p>
                   <p className="text-blue-800 text-sm">
-                    <strong>Price:</strong> Rs. 299
+                    <strong>Price:</strong> Rs. 300
                   </p>
                 </div>
 
@@ -497,7 +497,7 @@ export default function PostPaymentPage() {
                           <p><strong>Company Name:</strong> City Maid Services Pvt. Ltd.</p>
                         </div>
                         <div className="mt-2 pt-2 border-t border-green-200">
-                          <p className="text-xs text-gray-600">Open eSewa app → Send Money → Enter details → Pay Rs. 299</p>
+                          <p className="text-xs text-gray-600">Open eSewa app → Send Money → Enter details → Pay Rs. 300</p>
                         </div>
                       </div>
                     </div>
@@ -544,7 +544,7 @@ export default function PostPaymentPage() {
                             <li>1. Open eSewa app</li>
                             <li>2. Tap "Send Money"</li>
                             <li>3. Enter eSewa ID: +9779841317273</li>
-                            <li>4. Enter amount: Rs. 299</li>
+                            <li>4. Enter amount: Rs. 300</li>
                             <li>5. Complete payment</li>
                             <li>6. Save transaction screenshot</li>
                           </ol>
@@ -555,7 +555,7 @@ export default function PostPaymentPage() {
                           <h5 className="font-medium text-blue-800 mb-2 text-sm">For Sanima Bank Users:</h5>
                           <ol className="text-xs text-blue-700 space-y-1">
                             <li>1. Scan QR code with Sanima Bank app</li>
-                            <li>2. Enter amount: Rs. 299</li>
+                            <li>2. Enter amount: Rs. 300</li>
                             <li>3. Complete the payment</li>
                             <li>4. Save the transaction ID or screenshot</li>
                           </ol>
@@ -569,7 +569,7 @@ export default function PostPaymentPage() {
                             <p><strong>Account Name:</strong> City Maid Services Pvt. Ltd.</p>
                             <p><strong>Branch Name:</strong> Kumaripati</p>
                             <p><strong>Bank Code:</strong> SNMANPKA</p>
-                            <p className="mt-2 font-medium">Transfer Rs. 299 and save receipt</p>
+                            <p className="mt-2 font-medium">Transfer Rs. 300 and save receipt</p>
                           </div>
                         </div>
                       </div>
