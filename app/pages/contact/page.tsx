@@ -29,16 +29,37 @@ export default function ContactPage() {
     setIsSubmitting(true);
     setSubmitMessage("");
 
-    // Simulate form submission
-    setTimeout(() => {
-      setSubmitMessage("Thank you! We'll get back to you soon.");
-      setFormData({
-        name: "",
-        email: "",
-        message: ""
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
+        }),
       });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSubmitMessage("Thank you! We'll get back to you soon.");
+        setFormData({
+          name: "",
+          email: "",
+          message: ""
+        });
+      } else {
+        setSubmitMessage(result.error || "Failed to send message. Please try again.");
+      }
+    } catch (error) {
+      console.error('Contact form submission error:', error);
+      setSubmitMessage("Failed to send message. Please try again.");
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
