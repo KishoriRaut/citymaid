@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 // GET /api/contact-unlock-requests - Get all contact unlock requests
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
 
     let query = supabase
