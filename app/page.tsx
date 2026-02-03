@@ -107,33 +107,56 @@ function MarketingBanner() {
   );
 }
 
-// Custom Stable Tabs Component - No re-renders except for active state
+// Individual Tab Components - No props that change, completely stable
+const EmployeeTab = React.memo(function EmployeeTab({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      data-tab="employee"
+      className="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
+      onClick={onClick}
+    >
+      Find a Job
+    </button>
+  );
+});
+
+const EmployerTab = React.memo(function EmployerTab({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      data-tab="employer"
+      className="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
+      onClick={onClick}
+    >
+      Hire a Worker
+    </button>
+  );
+});
+
+// Tabs Container - Handles active state with CSS, individual tabs never re-render
 function StableTabs({ activeTab, onTabChange }: { 
   activeTab: "all" | "employer" | "employee";
   onTabChange: (tab: "all" | "employer" | "employee") => void;
 }) {
+  // Update CSS to show active state
+  useEffect(() => {
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-button').forEach(tab => {
+      tab.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+      tab.classList.add('text-gray-600');
+    });
+    
+    // Add active class to current tab
+    const activeTabElement = document.querySelector(`[data-tab="${activeTab}"]`);
+    if (activeTabElement) {
+      activeTabElement.classList.remove('text-gray-600');
+      activeTabElement.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+    }
+  }, [activeTab]);
+
   return (
     <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg">
-      <button
-        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-          activeTab === "employee"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "text-gray-600 hover:text-gray-900"
-        }`}
-        onClick={() => onTabChange("employee")}
-      >
-        Find a Job
-      </button>
-      <button
-        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-          activeTab === "employer"
-            ? "bg-white text-gray-900 shadow-sm"
-            : "text-gray-600 hover:text-gray-900"
-        }`}
-        onClick={() => onTabChange("employer")}
-      >
-        Hire a Worker
-      </button>
+      <EmployeeTab onClick={() => onTabChange("employee")} />
+      <EmployerTab onClick={() => onTabChange("employer")} />
     </div>
   );
 }
