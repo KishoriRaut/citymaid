@@ -183,12 +183,7 @@ function PostsGrid({
           </div>
         </div>
         
-        <div className="flex flex-col gap-4 mb-8 w-full opacity-30 border-4 border-orange-500 bg-orange-50">
-          {/* TAB CHANGING OVERLAY MARKER */}
-          <div className="bg-orange-600 text-white p-2 text-center text-sm font-bold">
-            🟠 TAB CHANGING OVERLAY - Line 192 - Now using flex-col
-          </div>
-          
+        <div className="flex flex-col gap-4 mb-8 w-full opacity-30">
           {posts.map((post) => (
             <PostCard 
               key={post.id} 
@@ -200,72 +195,11 @@ function PostsGrid({
     );
   }
 
-  return (
-    <div className="w-full min-w-0" style={{ border: '4px solid #FFFF00', backgroundColor: '#FFFFE0' }}>
-      {/* VERY OBVIOUS TEST - THIS SHOULD SHOW IF CHANGES ARE WORKING */}
-      <div style={{ 
-        backgroundColor: '#FF0000', 
-        color: '#FFFFFF', 
-        padding: '20px', 
-        fontSize: '24px', 
-        fontWeight: 'bold',
-        textAlign: 'center',
-        margin: '20px 0'
-      }}>
-        🚨 IF YOU SEE THIS RED BOX - CHANGES ARE WORKING! 🚨
-      </div>
-      
-      {/* ANCESTOR 1 - TabSection */}
-      <div className="w-full min-w-0" style={{ border: '4px solid #FF8C00', backgroundColor: '#FFF5E6' }}>
-        {/* ANCESTOR 2 - Posts Container */}
-        <div className="w-full min-w-0" style={{ border: '4px solid #00FF00', backgroundColor: '#E6FFE6' }}>
-          {/* GRID CONTAINER WITH DEBUG */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full !min-w-0 !w-full relative" style={{ border: '8px solid #800080', backgroundColor: '#F0E6FF' }}>
-            {/* GRID DEBUG INFO */}
-            <div className="col-span-full bg-purple-600 text-white p-4 text-center text-lg font-bold">
-              🟣 GRID CONTAINER - grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
-            </div>
-            
-            {/* Mobile Debug Indicator */}
-            <div className="sm:hidden col-span-full bg-red-600 text-white p-4 text-center text-lg font-bold">
-              📱 MOBILE MODE ACTIVE - Should show 1 column
-            </div>
-            <div className="hidden sm:block lg:hidden col-span-full bg-yellow-600 text-black p-4 text-center text-lg font-bold">
-              📱 TABLET MODE ACTIVE - Should show 2 columns
-            </div>
-            <div className="hidden lg:block col-span-full bg-green-600 text-white p-4 text-center text-lg font-bold">
-              🖥️ DESKTOP MODE ACTIVE - Should show 3 columns
-            </div>
-            
-            {posts.map((post, index) => (
-              <div
-                key={post.id}
-                style={{ 
-                  border: '6px solid #FF4500', 
-                  backgroundColor: '#FFE4E1',
-                  padding: '8px',
-                  marginBottom: '8px',
-                  position: 'relative'
-                }}
-              >
-                <span style={{ 
-                  position: 'absolute', 
-                  top: '0', 
-                  left: '0', 
-                  backgroundColor: '#000000', 
-                  color: '#FFFFFF', 
-                  fontSize: '14px', 
-                  padding: '4px',
-                  zIndex: 20 
-                }}>
-                  Grid Col {index + 1} | Post: {post.id}
-                </span>
-                <PostCard post={post} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      {posts.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
     </div>
   );
 }
@@ -302,7 +236,7 @@ const StaticFilterBar = React.memo(function StaticFilterBar({
 });
 function PageHeader() {
   return (
-    <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl">Opportunities</CardTitle>
@@ -315,7 +249,7 @@ function PageHeader() {
 // Stable Section Component - Completely separate from tab logic
 function StableSection() {
   return (
-    <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       <PageHeader />
       <MarketingBanner />
     </div>
@@ -355,7 +289,7 @@ function TabSection({
   handleLoadMore: () => void;
 }) {
   return (
-    <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
       <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
       
       {/* Only Posts Grid should change */}
@@ -364,7 +298,7 @@ function TabSection({
       {/* Page change loading indicator */}
       {isPageChanging && (
         <div className="flex justify-center py-4">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       )}
 
@@ -548,7 +482,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
@@ -598,7 +532,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   // Show empty state
   if (filteredPosts.length === 0) {
     return (
-      <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
         <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
         
         <EmptyState 
@@ -634,25 +568,6 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
   
-  // VERY OBVIOUS TEST AT THE TOP OF HOMEPAGE
-  return (
-    <div style={{ 
-      backgroundColor: '#FF0000', 
-      color: '#FFFFFF', 
-      padding: '40px', 
-      fontSize: '32px', 
-      fontWeight: 'bold',
-      textAlign: 'center',
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      right: '0',
-      zIndex: 9999
-    }}>
-      🚨 HOMEPAGE TEST - IF YOU SEE THIS, CHANGES WORK! 🚨
-    </div>
-  );
-  
   const handleTabChange = useCallback((tab: "all" | "employer" | "employee") => {
     setActiveTab(tab);
     setIsTabChanging(true);
@@ -661,13 +576,15 @@ export default function HomePage() {
   }, []);
   
   return (
-    <div className="min-h-screen bg-background w-full min-w-0" style={{ border: '8px solid #0000FF', backgroundColor: '#E6F3FF' }}>
-      {/* ANCESTOR 0 - Main Page Container */}
-      <div className="w-full min-w-0" style={{ border: '6px solid #800080', backgroundColor: '#F0E6FF' }}>
-        {/* ANCESTOR 1 - Posts Part */}
-        <div className="w-full min-w-0" style={{ border: '5px solid #FF0000', backgroundColor: '#FFE6E6' }}>
-          <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
-        </div>
+    <div className="min-h-screen bg-background">
+      <StableSection />
+      
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+        <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
+      </div>
+      
+      <div className="w-full">
+        <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
       </div>
     </div>
   );
