@@ -634,6 +634,25 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
   
+  // VERY OBVIOUS TEST AT THE TOP OF HOMEPAGE
+  return (
+    <div style={{ 
+      backgroundColor: '#FF0000', 
+      color: '#FFFFFF', 
+      padding: '40px', 
+      fontSize: '32px', 
+      fontWeight: 'bold',
+      textAlign: 'center',
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      right: '0',
+      zIndex: 9999
+    }}>
+      🚨 HOMEPAGE TEST - IF YOU SEE THIS, CHANGES WORK! 🚨
+    </div>
+  );
+  
   const handleTabChange = useCallback((tab: "all" | "employer" | "employee") => {
     setActiveTab(tab);
     setIsTabChanging(true);
