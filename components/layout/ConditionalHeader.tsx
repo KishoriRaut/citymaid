@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetHeader, SheetClose } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { appConfig } from "@/lib/config";
+import AdminButton from "@/components/AdminButton";
 
 export function ConditionalHeader() {
   const pathname = usePathname();
@@ -42,11 +43,7 @@ export function ConditionalHeader() {
                 + Create Post
               </Button>
             </Link>
-            <Link href="/login">
-              <Button variant="outline" className="text-xs sm:text-sm font-medium hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200 whitespace-nowrap">
-                Admin
-              </Button>
-            </Link>
+            <AdminButton />
           </div>
 
           {/* Mobile Navigation */}
@@ -79,13 +76,9 @@ export function ConditionalHeader() {
                         </Button>
                       </Link>
                     </SheetClose>
-                    <SheetClose asChild>
-                      <Link href="/login">
-                        <Button variant="outline" className="w-full justify-start hover:bg-primary/10 hover:border-primary/30 transition-colors duration-200">
-                          Admin
-                        </Button>
-                      </Link>
-                    </SheetClose>
+                    <div className="w-full">
+                      <AdminButton />
+                    </div>
                   </div>
                 </div>
               </SheetContent>

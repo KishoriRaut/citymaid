@@ -3,11 +3,13 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setSession } from "@/lib/session";
+import { supabaseClient } from "@/lib/supabase-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Shared loading component to eliminate duplication
 const LoadingSpinner = () => (
@@ -28,13 +30,17 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [supabaseSubmitting, setSupabaseSubmitting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [supabaseEmail, setSupabaseEmail] = useState("kishorirut369@gmail.com");
   const [error, setError] = useState("");
+  const [supabaseError, setSupabaseError] = useState("");
   const [message, setMessage] = useState("");
+  const [supabaseMessage, setSupabaseMessage] = useState("");
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         // Check if user is already logged in via localStorage
         const userStr = localStorage.getItem("user");
@@ -48,6 +54,20 @@ function LoginContent() {
             router.push('/admin/requests');
           }
           return;
+        }
+
+        // Also check Supabase auth
+        if (supabaseClient) {
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          if (user?.email === 'kishorirut369@gmail.com') {
+            const redirectTo = searchParams.get('redirect');
+            if (redirectTo) {
+              router.push(redirectTo);
+            } else {
+              router.push('/admin/requests');
+            }
+            return;
+          }
         }
       } catch (error) {
         console.error("Error checking auth:", error);
@@ -99,11 +119,53 @@ function LoginContent() {
     }
   };
 
+  const handleSupabaseLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSupabaseSubmitting(true);
+    setSupabaseError("");
+
+    try {
+      if (!supabaseClient) {
+        setSupabaseError("Supabase client not available");
+        return;
+      }
+
+      // For demo purposes, we'll use magic link or OAuth
+      // Since you're using kishorirut369@gmail.com, let's try OAuth with Google
+      const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/admin/requests`
+        }
+      });
+
+      if (error) {
+        // If OAuth fails, try magic link
+        const { error: magicError } = await supabaseClient.auth.signInWithOtp({
+          email: supabaseEmail,
+          options: {
+            emailRedirectTo: `${window.location.origin}/admin/requests`
+          }
+        });
+
+        if (magicError) {
+          setSupabaseError(magicError.message);
+        } else {
+          setSupabaseMessage("Check your email for a magic link to sign in!");
+        }
+      }
+    } catch (error) {
+      console.error("Supabase login error:", error);
+      setSupabaseError("An unexpected error occurred");
+    } finally {
+      setSupabaseSubmitting(false);
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
 
-  // Regular admin login
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <Card className="w-full max-w-md">
@@ -113,51 +175,104 @@ function LoginContent() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {message && (
-            <Alert className="mb-6">
-              <AlertDescription className="text-green-800">{message}</AlertDescription>
-            </Alert>
-          )}
+          <Tabs defaultValue="supabase" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="supabase">Supabase Auth</TabsTrigger>
+              <TabsTrigger value="legacy">Legacy Login</TabsTrigger>
+            </TabsList>
 
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+            <TabsContent value="supabase" className="space-y-4">
+              {supabaseMessage && (
+                <Alert className="mb-6">
+                  <AlertDescription className="text-green-800">{supabaseMessage}</AlertDescription>
+                </Alert>
+              )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="admin@citymaid.com"
-              />
-            </div>
+              {supabaseError && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertDescription>{supabaseError}</AlertDescription>
+                </Alert>
+              )}
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Enter your password"
-              />
-            </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="supabase-email">Admin Email</Label>
+                  <Input
+                    id="supabase-email"
+                    type="email"
+                    value={supabaseEmail}
+                    onChange={(e) => setSupabaseEmail(e.target.value)}
+                    required
+                    placeholder="kishorirut369@gmail.com"
+                  />
+                </div>
 
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full"
-            >
-              {submitting ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
+                <Button
+                  onClick={handleSupabaseLogin}
+                  disabled={supabaseSubmitting}
+                  className="w-full"
+                >
+                  {supabaseSubmitting ? "Sending magic link..." : "Sign in with Supabase"}
+                </Button>
+
+                <div className="text-center text-xs text-muted-foreground">
+                  <p>Recommended: Use Supabase authentication for better security</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="legacy" className="space-y-4">
+              {message && (
+                <Alert className="mb-6">
+                  <AlertDescription className="text-green-800">{message}</AlertDescription>
+                </Alert>
+              )}
+
+              {error && (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="admin@citymaid.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Enter your password"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full"
+                >
+                  {submitting ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+
+              <div className="text-center text-xs text-muted-foreground">
+                <p>Legacy login system (limited functionality)</p>
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="space-y-4">
             <Button

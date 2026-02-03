@@ -24,7 +24,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { clearSession, type User } from "@/lib/session";
+import { supabaseClient } from "@/lib/supabase-client";
+import { isUserAdminClient } from "@/lib/auth/admin-client";
+
+// List of admin emails
+const ADMIN_EMAILS = [
+  'kishorirut369@gmail.com',
+  // Add more admin emails here
+];
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -34,19 +41,72 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Immediate authentication check without delay
-    const mockUser: User = {
-      id: 'admin',
-      email: 'admin@citymaid.com',
-      name: 'Admin User',
-      role: 'admin',
-      created_at: new Date().toISOString()
+    const checkAuth = async () => {
+      try {
+        // First check client-side (localStorage)
+        const clientIsAdmin = isUserAdminClient()
+        console.log('AdminLayout: Client-side admin check:', clientIsAdmin)
+        
+        if (clientIsAdmin) {
+          // Get user from localStorage
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const userData = JSON.parse(userStr);
+            setUser(userData);
+          }
+        } else {
+          // Try Supabase as fallback
+          if (supabaseClient) {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user?.email === 'kishorirut369@gmail.com') {
+              setUser(user);
+            } else {
+              router.push('/unauthorized');
+              return;
+            }
+          } else {
+            router.push('/unauthorized');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('AdminLayout: Auth check failed:', error);
+        router.push('/unauthorized');
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setUser(mockUser);
-  }, []);
+
+    checkAuth();
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      // Clear localStorage
+      localStorage.removeItem('user');
+      
+      // Also clear Supabase if available
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      
+      router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const navigation = [
     {
@@ -78,19 +138,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       description: "Account settings"
     },
   ];
-
-  const handleLogout = async () => {
-    try {
-      clearSession();
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
-
-  if (!user) {
-    return null; // Will redirect automatically
-  }
 
   return (
     <div className="min-h-screen bg-background">
