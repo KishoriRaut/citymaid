@@ -183,7 +183,7 @@ function PostsGrid({
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 w-full opacity-30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full opacity-30">
           {posts.map((post) => (
             <PostCard 
               key={post.id} 
@@ -195,35 +195,14 @@ function PostsGrid({
     );
   }
 
-  return (
-    <div className="w-full">
-      {/* Debug info */}
-      <div className="text-xs text-red-500 mb-2 block sm:hidden">
-        DEBUG: Mobile detected - should be 1 column
-      </div>
-      <div className="text-xs text-blue-500 mb-2 hidden sm:block">
-        DEBUG: Tablet+ detected - should be 2+ columns
-      </div>
-      
-      {/* Post count debug */}
-      <div className="text-xs text-green-500 mb-2">
-        DEBUG: {posts.length} posts loaded
-      </div>
-      
-      {/* Force mobile layout with custom CSS */}
-      <div className="posts-grid-mobile">
-        {posts.map((post, index) => (
-          <div key={post.id} className="post-wrapper">
-            {/* Debug index */}
-            <div className="text-xs text-purple-500 mb-1">
-              Post #{index + 1}
-            </div>
-            <PostCard 
-              post={post}
-            />
-          </div>
-        ))}
-      </div>
+    return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      {posts.map((post) => (
+        <PostCard 
+          key={post.id} 
+          post={post}
+        />
+      ))}
     </div>
   );
 }
@@ -313,7 +292,7 @@ function TabSection({
   handleLoadMore: () => void;
 }) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
       <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
       
       {/* Only Posts Grid should change */}
@@ -506,12 +485,12 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
                 <Skeleton className="h-4 w-3/4 mb-2" />
@@ -556,7 +535,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   // Show empty state
   if (filteredPosts.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
         <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
         
         <EmptyState 
@@ -612,7 +591,7 @@ export default function HomePage() {
           </div>
           
           {/* POSTS PART - Only this part has posts state and re-renders */}
-          <div className="w-full max-w-full overflow-hidden">
+          <div className="w-full">
             <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
           </div>
         </div>

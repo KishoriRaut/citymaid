@@ -118,39 +118,3 @@
     @apply text-muted-foreground/60;
   }
 }
-
-/* Custom mobile grid styles */
-.posts-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  width: 100%;
-}
-
-.posts-grid-mobile .post-wrapper {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  display: block !important;
-  visibility: visible !important;
-}
-
-.posts-grid-mobile .post-card {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  display: block !important;
-  visibility: visible !important;
-}
-
-@media (min-width: 640px) {
-  .posts-grid-mobile {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .posts-grid-mobile {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-}
