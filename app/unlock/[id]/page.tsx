@@ -90,7 +90,7 @@ export default function UnlockPage() {
           <div className="bg-white shadow rounded-lg">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">Unlock Request</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Unlock Request</h1>
                 <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
                   request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                   request.status === 'paid' ? 'bg-blue-100 text-blue-800' :
@@ -105,7 +105,7 @@ export default function UnlockPage() {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Request Details</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Request Details</h3>
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm font-medium text-gray-500">Request ID</p>
@@ -131,13 +131,13 @@ export default function UnlockPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
                   <div className="space-y-3">
                     {request.status === 'approved' && request.posts?.contact ? (
                       <div>
                         <p className="text-sm font-medium text-gray-500">Contact Number</p>
                         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <p className="text-lg font-semibold text-green-800">{request.posts.contact}</p>
+                          <p className="text-base sm:text-lg font-semibold text-green-800">{request.posts.contact}</p>
                           <p className="text-sm text-green-600 mt-1">✅ Payment approved - contact unlocked</p>
                         </div>
                       </div>
@@ -166,7 +166,7 @@ export default function UnlockPage() {
 
               {request.payment_proof && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Proof</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Payment Proof</h3>
                   <a
                     href={request.payment_proof}
                     target="_blank"

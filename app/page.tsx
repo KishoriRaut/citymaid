@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import React from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
@@ -9,14 +10,328 @@ import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
-function HomePageContent() {
+// Static Marketing Banner Component - Won't re-render on tab changes
+function MarketingBanner() {
+  const router = useRouter();
+  
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+      <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden">
+        <CardContent className="p-0">
+          <div className="relative">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-black/10">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+            </div>
+            
+            {/* Content */}
+            <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-white">
+              <div className="flex flex-col xl:flex-row items-center justify-between gap-4 sm:gap-6">
+                {/* Contact Unlock Section */}
+                <div className="flex-1 w-full xl:w-auto">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-lg sm:text-xl">🔓</span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold">Unlock Contacts</h3>
+                  </div>
+                  <p className="text-white/90 text-xs sm:text-sm mb-2">
+                    Get instant access to contact details for just <span className="font-bold text-yellow-300">NRs. 300</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                      ✓ Verified
+                    </span>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                      ✓ Instant
+                    </span>
+                  </div>
+                </div>
+
+                {/* Post Promotion Section */}
+                <div className="flex-1 w-full xl:w-auto">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-lg sm:text-xl">⭐</span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold">Feature Your Post</h3>
+                  </div>
+                  <p className="text-white/90 text-xs sm:text-sm mb-2">
+                    Get maximum visibility on homepage for <span className="font-bold text-yellow-300">NRs. 300</span>
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                      ✓ 30 Days
+                    </span>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                      ✓ Top Placement
+                    </span>
+                  </div>
+                </div>
+                
+                {/* CTA Section */}
+                <div className="flex flex-col items-center gap-2 sm:gap-3 lg:gap-4 w-full xl:w-auto">
+                  <div className="text-center">
+                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-300">
+                      Start Today
+                    </div>
+                    <div className="text-xs text-white/80 text-center">
+                      NRs. 300
+                    </div>
+                  </div>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    className="bg-white text-purple-600 hover:bg-white/90 font-semibold px-4 sm:px-6 py-2 shadow-lg w-full sm:w-auto xl:w-auto"
+                    onClick={() => {
+                      // Navigate to create post page
+                      router.push('/post');
+                    }}
+                  >
+                    Create Post
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Individual Tab Components - No props that change, completely stable
+const EmployeeTab = React.memo(function EmployeeTab({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      data-tab="employee"
+      className="tab-button flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
+      onClick={onClick}
+    >
+      <span className="text-xs sm:text-sm">Find a Job</span>
+    </button>
+  );
+});
+
+const EmployerTab = React.memo(function EmployerTab({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      data-tab="employer"
+      className="tab-button flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
+      onClick={onClick}
+    >
+      <span className="text-xs sm:text-sm">Hire a Worker</span>
+    </button>
+  );
+});
+
+// Tabs Container - Handles active state with CSS, individual tabs never re-render
+function StableTabs({ activeTab, onTabChange }: { 
+  activeTab: "all" | "employer" | "employee";
+  onTabChange: (tab: "all" | "employer" | "employee") => void;
+}) {
+  // Update CSS to show active state
+  useEffect(() => {
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-button').forEach(tab => {
+      tab.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+      tab.classList.add('text-gray-600');
+    });
+    
+    // Add active class to current tab
+    const activeTabElement = document.querySelector(`[data-tab="${activeTab}"]`);
+    if (activeTabElement) {
+      activeTabElement.classList.remove('text-gray-600');
+      activeTabElement.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+    }
+  }, [activeTab]);
+
+  return (
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 mb-6 sm:mb-8 bg-gray-100 p-2 sm:p-1 rounded-lg">
+      <EmployeeTab onClick={() => onTabChange("employee")} />
+      <EmployerTab onClick={() => onTabChange("employer")} />
+    </div>
+  );
+}
+
+// Posts Grid Component - Only this part should re-render
+function PostsGrid({ 
+  posts, 
+  isLoading, 
+  isTabChanging 
+}: { 
+  posts: PostWithMaskedContact[];
+  isLoading: boolean;
+  isTabChanging: boolean;
+}) {
+  if (isTabChanging) {
+    return (
+      <div className="relative">
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-lg">
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span className="text-sm text-muted-foreground">Loading posts...</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col gap-4 mb-8 w-full opacity-30">
+          {posts.map((post) => (
+            <PostCard 
+              key={post.id} 
+              post={post}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+    return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      {posts.map((post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </div>
+  );
+}
+
+// Static FilterBar Component - Memoized to prevent re-renders
+const StaticFilterBar = React.memo(function StaticFilterBar({ 
+  filters, 
+  onFilterChange 
+}: { 
+  filters: {
+    work: string;
+    time: string;
+    postedTime: string;
+    place: string;
+    salary: string;
+  };
+  onFilterChange: (filters: any) => void;
+}) {
+  return (
+    <FilterBar 
+      workFilter={filters.work}
+      timeFilter={filters.time}
+      postedTimeFilter={filters.postedTime}
+      placeFilter={filters.place}
+      salaryFilter={filters.salary}
+      onWorkChange={(value) => onFilterChange({ ...filters, work: value })}
+      onTimeChange={(value) => onFilterChange({ ...filters, time: value })}
+      onPostedTimeChange={(value) => onFilterChange({ ...filters, postedTime: value })}
+      onPlaceChange={(value) => onFilterChange({ ...filters, place: value })}
+      onSalaryChange={(value) => onFilterChange({ ...filters, salary: value })}
+      onReset={() => onFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
+    />
+  );
+});
+function PageHeader() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl sm:text-3xl lg:text-4xl">Opportunities</CardTitle>
+        </CardHeader>
+      </Card>
+    </div>
+  );
+}
+
+// Stable Section Component - Completely separate from tab logic
+function StableSection() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8">
+      <PageHeader />
+      <MarketingBanner />
+    </div>
+  );
+}
+
+// Tab Section Component - Only this re-renders
+function TabSection({ 
+  activeTab, 
+  filters, 
+  onFilterChange, 
+  filteredPosts, 
+  isLoading, 
+  isTabChanging, 
+  isPageChanging, 
+  currentPage, 
+  totalPages, 
+  hasNextPage, 
+  hasPrevPage, 
+  onPageChange, 
+  totalPosts, 
+  handleLoadMore 
+}: {
+  activeTab: "all" | "employer" | "employee";
+  filters: any;
+  onFilterChange: (filters: any) => void;
+  filteredPosts: PostWithMaskedContact[];
+  isLoading: boolean;
+  isTabChanging: boolean;
+  isPageChanging: boolean;
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  onPageChange: (page: number) => void;
+  totalPosts: number;
+  handleLoadMore: () => void;
+}) {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
+      
+      {/* Only Posts Grid should change */}
+      <PostsGrid posts={filteredPosts} isLoading={isLoading} isTabChanging={isTabChanging} />
+
+      {/* Page change loading indicator */}
+      {isPageChanging && (
+        <div className="flex justify-center py-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="space-y-4">
+        {/* Traditional pagination for desktop */}
+        <div className="hidden md:block">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            onPageChange={onPageChange}
+            isLoading={isPageChanging}
+            totalPosts={totalPosts}
+          />
+        </div>
+
+        {/* Load more button for mobile */}
+        <div className="md:hidden">
+          <LoadMoreButton
+            hasNextPage={hasNextPage}
+            isLoading={isPageChanging}
+            onLoadMore={handleLoadMore}
+            remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "employer" | "employee"; isTabChanging: boolean }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -40,13 +355,11 @@ function HomePageContent() {
     setMounted(true);
   }, []);
 
-  // Primary tab: "employee" (Find a Job) is now default
-  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
-
   // Filters
   const [filters, setFilters] = useState({
     work: "All",
     time: "All",
+    postedTime: "all",
     place: "",
     salary: "",
   });
@@ -66,7 +379,7 @@ function HomePageContent() {
       console.log(`🔍 Loading posts from Supabase...`);
       
       // INDUSTRY STANDARD: Server-side filtering + fixed 12 posts per page
-      const result = await getPublicPostsClient(page, 12, activeTab);
+      const result = await getPublicPostsClient(page, 12, activeTab, filters.postedTime);
       
       if (result.error) {
         throw new Error(result.error);
@@ -93,7 +406,7 @@ function HomePageContent() {
       setIsLoading(false);
       setIsPageChanging(false);
     }
-  }, [activeTab]);
+  }, [activeTab, filters.postedTime]);
 
   // Initialize page state from URL
   useEffect(() => {
@@ -106,6 +419,14 @@ function HomePageContent() {
       loadPosts(initialPage, true);
     }
   }, [initialPage, loadPosts, mounted]);
+
+  // Reload posts when posted time filter changes
+  useEffect(() => {
+    if (mounted) {
+      setCurrentPage(1); // Reset to first page when filter changes
+      loadPosts(1, true);
+    }
+  }, [filters.postedTime, loadPosts, mounted]);
 
   // No client-side filtering needed - server handles it
   const filteredPosts = posts;
@@ -130,14 +451,6 @@ function HomePageContent() {
   const handleFilterChange = useCallback((newFilters: typeof filters) => {
     setFilters(newFilters);
   }, []);
-
-  // Handle tab change
-  const handleTabChange = useCallback((tab: typeof activeTab) => {
-    setActiveTab(tab);
-    setCurrentPage(1); // Reset to first page when tab changes
-    // Load posts with new tab filter
-    loadPosts(1, true);
-  }, [loadPosts]);
 
   // Handle page change
   const handlePageChange = useCallback((page: number) => {
@@ -169,12 +482,12 @@ function HomePageContent() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
                 <Skeleton className="h-4 w-3/4 mb-2" />
@@ -219,104 +532,63 @@ function HomePageContent() {
   // Show empty state
   if (filteredPosts.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
-          <FilterBar 
-            workFilter={filters.work}
-            timeFilter={filters.time}
-            placeFilter={filters.place}
-            salaryFilter={filters.salary}
-            onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
-            onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
-            onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
-            onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
-            onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
-          />
-          
-          <EmptyState 
-            activeTab={activeTab}
-          />
-        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+        <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
+        
+        <EmptyState 
+          activeTab={activeTab}
+        />
       </div>
     );
   }
 
-  // Show posts
+  // Show posts - Only tab section
   return (
-    <div className="min-h-screen bg-background">
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Opportunities</CardTitle>
-          </CardHeader>
-        </Card>
-        
-        <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
-        <FilterBar 
-          workFilter={filters.work}
-          timeFilter={filters.time}
-          placeFilter={filters.place}
-          salaryFilter={filters.salary}
-          onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
-          onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
-          onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
-          onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
-          onReset={() => handleFilterChange({ work: "All", time: "All", place: "", salary: "" })}
-        />
-        
-        <div className="grid grid-cols-3 gap-6 mb-8 w-full">
-          {filteredPosts.map((post) => (
-            <PostCard 
-              key={post.id} 
-              post={post}
-            />
-          ))}
-        </div>
-
-        {/* Page change loading indicator */}
-        {isPageChanging && (
-          <div className="flex justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        )}
-
-        {/* Pagination */}
-        <div className="space-y-4">
-          {/* Traditional pagination for desktop */}
-          <div className="hidden md:block">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              hasNextPage={hasNextPage}
-              hasPrevPage={hasPrevPage}
-              onPageChange={handlePageChange}
-              isLoading={isPageChanging}
-              totalPosts={totalPosts}
-            />
-          </div>
-
-          {/* Load more button for mobile */}
-          <div className="md:hidden">
-            <LoadMoreButton
-              hasNextPage={hasNextPage}
-              isLoading={isPageChanging}
-              onLoadMore={handleLoadMore}
-              remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <TabSection 
+      activeTab={activeTab}
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      filteredPosts={filteredPosts}
+      isLoading={isLoading}
+      isTabChanging={isTabChanging}
+      isPageChanging={isPageChanging}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      hasNextPage={hasNextPage}
+      hasPrevPage={hasPrevPage}
+      onPageChange={handlePageChange}
+      totalPosts={totalPosts}
+      handleLoadMore={handleLoadMore}
+    />
   );
 }
 
+// Main HomePage Component - Tabs outside stateful component
 export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
+  const [isTabChanging, setIsTabChanging] = useState(false);
+  
+  const handleTabChange = useCallback((tab: "all" | "employer" | "employee") => {
+    setActiveTab(tab);
+    setIsTabChanging(true);
+    // Reset tab changing after a short delay
+    setTimeout(() => setIsTabChanging(false), 500);
+  }, []);
+  
   return (
     <EnvironmentCheck>
       <Suspense fallback={<div>Loading...</div>}>
-        <HomePageContent />
+        <div className="min-h-screen bg-background">
+          <StableSection />
+          
+          <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+            <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
+          </div>
+          
+          <div className="w-full">
+            <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
+          </div>
+        </div>
       </Suspense>
     </EnvironmentCheck>
   );

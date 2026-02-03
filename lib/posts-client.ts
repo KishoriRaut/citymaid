@@ -4,9 +4,15 @@ import { supabaseClient, isSupabaseConfigured } from "./supabase-client";
 import { createClient } from "@supabase/supabase-js";
 import type { PostWithMaskedContact } from "./types";
 import { maskContact } from "./utils";
+import { getPostedTimeDays, getPostedDateRange } from "./posted-time";
 
 // Get public posts with pagination
-export async function getPublicPostsClient(page: number = 1, limit: number = 12, postType?: "all" | "employer" | "employee") {
+export async function getPublicPostsClient(
+  page: number = 1, 
+  limit: number = 12, 
+  postType?: "all" | "employer" | "employee",
+  postedTimeFilter?: string
+) {
   try {
     // Check if Supabase is configured
     if (!isSupabaseConfigured || !supabaseClient) {
@@ -36,6 +42,15 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12,
     // Apply post_type filter if specified
     if (postType && postType !== "all") {
       countQuery = countQuery.eq('post_type', postType);
+    }
+    
+    // Apply posted time filter if specified
+    if (postedTimeFilter && postedTimeFilter !== "all") {
+      const days = getPostedTimeDays(postedTimeFilter);
+      if (days > 0) {
+        const { startDate } = getPostedDateRange(days);
+        countQuery = countQuery.gte('created_at', startDate.toISOString());
+      }
     }
     
     const { count: totalCount, error: countError } = await countQuery;
@@ -75,6 +90,15 @@ export async function getPublicPostsClient(page: number = 1, limit: number = 12,
     // Apply post_type filter if specified
     if (postType && postType !== "all") {
       dataQuery = dataQuery.eq('post_type', postType);
+    }
+    
+    // Apply posted time filter if specified
+    if (postedTimeFilter && postedTimeFilter !== "all") {
+      const days = getPostedTimeDays(postedTimeFilter);
+      if (days > 0) {
+        const { startDate } = getPostedDateRange(days);
+        dataQuery = dataQuery.gte('created_at', startDate.toISOString());
+      }
     }
     
     const { data, error } = await dataQuery

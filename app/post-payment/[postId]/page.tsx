@@ -369,6 +369,80 @@ export default function PostPaymentPage() {
               </p>
             </div>
 
+            {/* Marketing Banner - Platform Features Promotion */}
+            <div className="mx-6 mb-6">
+              <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden rounded-lg">
+                <div className="relative">
+                  {/* Background Pattern */}
+                  <div className="absolute inset-0 bg-black/10">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative px-6 py-4 text-white">
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+                      {/* Contact Unlock Section */}
+                      <div className={`flex-1 ${isContactUnlock ? 'ring-2 ring-yellow-300 ring-opacity-50 rounded-lg p-2' : ''}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <span className="text-lg">🔓</span>
+                          </div>
+                          <h3 className="text-base font-bold">Unlock Contacts</h3>
+                          {isContactUnlock && <span className="text-xs bg-yellow-300 text-purple-900 px-2 py-1 rounded-full font-medium">Selected</span>}
+                        </div>
+                        <p className="text-white/90 text-xs mb-1">
+                          Get instant access for <span className="font-bold text-yellow-300">NRs. 300</span>
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                            ✓ Verified
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                            ✓ Instant
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Post Promotion Section */}
+                      <div className={`flex-1 ${!isContactUnlock ? 'ring-2 ring-yellow-300 ring-opacity-50 rounded-lg p-2' : ''}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <span className="text-lg">⭐</span>
+                          </div>
+                          <h3 className="text-base font-bold">Feature Post</h3>
+                          {!isContactUnlock && <span className="text-xs bg-yellow-300 text-purple-900 px-2 py-1 rounded-full font-medium">Selected</span>}
+                        </div>
+                        <p className="text-white/90 text-xs mb-1">
+                          Get homepage visibility for <span className="font-bold text-yellow-300">NRs. 300</span>
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                            ✓ 30 Days
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                            ✓ Top Placement
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Price Section */}
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="text-xl font-bold text-yellow-300">
+                          NRs. 300
+                        </div>
+                        <div className="text-xs text-white/80 text-center">
+                          {isContactUnlock ? 'Contact Unlock' : 'Post Feature'}
+                        </div>
+                        <div className="text-xs text-white/60 italic text-center">
+                          Complete payment below
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="p-6">
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Post Details</h3>
@@ -399,16 +473,44 @@ export default function PostPaymentPage() {
                     {isContactUnlock ? ' Get contact details for this job opportunity.' : ' Get your post displayed prominently on the homepage for 30 days.'}
                   </p>
                   <p className="text-blue-800 text-sm">
-                    <strong>Price:</strong> Rs. 299
+                    <strong>Price:</strong> Rs. 300
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* QR Code Section */}
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Scan QR Code</h4>
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 text-center">
-                      <div className="w-48 h-48 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <h4 className="font-medium text-gray-900 mb-3">Payment Methods</h4>
+                    
+                    {/* eSewa Section */}
+                    <div className="bg-white border-2 border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center mb-3">
+                        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-2">
+                          <span className="text-white font-bold text-sm">e</span>
+                        </div>
+                        <h5 className="font-medium text-gray-900">eSewa Payment</h5>
+                      </div>
+                      <div className="bg-green-50 rounded p-3 text-sm">
+                        <p className="font-medium text-gray-900 mb-2">eSewa Details:</p>
+                        <div className="space-y-1 text-xs text-gray-700">
+                          <p><strong>eSewa ID:</strong> +9779841317273</p>
+                          <p><strong>Company Name:</strong> City Maid Services Pvt. Ltd.</p>
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-green-200">
+                          <p className="text-xs text-gray-600">Open eSewa app → Send Money → Enter details → Pay Rs. 300</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sanima Bank QR Section */}
+                    <div className="bg-white border-2 border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center mb-3">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-2">
+                          <span className="text-white font-bold text-sm">S</span>
+                        </div>
+                        <h5 className="font-medium text-gray-900">Sanima Bank QR</h5>
+                      </div>
+                      <div className="w-40 h-40 mx-auto mb-3 bg-gray-100 rounded-lg flex items-center justify-center">
                         <img 
                           src="/sanima-qr.png" 
                           alt="Sanima Bank QR Code" 
@@ -420,13 +522,13 @@ export default function PostPaymentPage() {
                           }}
                         />
                         <div className="hidden text-gray-500 text-sm">
-                          <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                           </svg>
                           <p>QR Code</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">Scan with Sanima Bank app</p>
+                      <p className="text-xs text-gray-600 text-center">Scan with Sanima Bank app</p>
                     </div>
                   </div>
 
@@ -434,15 +536,42 @@ export default function PostPaymentPage() {
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Payment Instructions</h4>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. Scan the QR code with Sanima Bank app</li>
-                        <li>2. Enter amount: Rs. 299</li>
-                        <li>3. Complete the payment</li>
-                        <li>4. Save the transaction ID or screenshot</li>
-                        <li>5. Upload payment proof below</li>
-                      </ol>
-                      <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                        <strong>Bank:</strong> Sanima Bank
+                      <div className="space-y-4">
+                        {/* eSewa Instructions */}
+                        <div className="bg-green-50 border border-green-200 rounded p-3">
+                          <h5 className="font-medium text-green-800 mb-2 text-sm">For eSewa Users:</h5>
+                          <ol className="text-xs text-green-700 space-y-1">
+                            <li>1. Open eSewa app</li>
+                            <li>2. Tap "Send Money"</li>
+                            <li>3. Enter eSewa ID: +9779841317273</li>
+                            <li>4. Enter amount: Rs. 300</li>
+                            <li>5. Complete payment</li>
+                            <li>6. Save transaction screenshot</li>
+                          </ol>
+                        </div>
+
+                        {/* Sanima Bank Instructions */}
+                        <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                          <h5 className="font-medium text-blue-800 mb-2 text-sm">For Sanima Bank Users:</h5>
+                          <ol className="text-xs text-blue-700 space-y-1">
+                            <li>1. Scan QR code with Sanima Bank app</li>
+                            <li>2. Enter amount: Rs. 300</li>
+                            <li>3. Complete the payment</li>
+                            <li>4. Save the transaction ID or screenshot</li>
+                          </ol>
+                        </div>
+
+                        {/* Bank Transfer Instructions */}
+                        <div className="bg-purple-50 border border-purple-200 rounded p-3">
+                          <h5 className="font-medium text-purple-800 mb-2 text-sm">For Bank Transfer:</h5>
+                          <div className="text-xs text-purple-700 space-y-1">
+                            <p><strong>Account Number:</strong> 005010010001200</p>
+                            <p><strong>Account Name:</strong> City Maid Services Pvt. Ltd.</p>
+                            <p><strong>Branch Name:</strong> Kumaripati</p>
+                            <p><strong>Bank Code:</strong> SNMANPKA</p>
+                            <p className="mt-2 font-medium">Transfer Rs. 300 and save receipt</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

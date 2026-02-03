@@ -277,61 +277,136 @@ export default function NewPostPage() {
           </CardContent>
         </Card>
 
+        {/* Marketing Banner - Platform Features Promotion */}
+        <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="relative">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-black/10">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              </div>
+              
+              {/* Content */}
+              <div className="relative px-8 py-6 text-white">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+                  {/* Contact Unlock Section */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <span className="text-xl">🔓</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Unlock Contacts</h3>
+                    </div>
+                    <p className="text-white/90 text-sm mb-2">
+                      Get instant access to contact details for <span className="font-bold text-yellow-300">NRs. 300</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ Verified
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ Instant
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Post Promotion Section */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <span className="text-xl">⭐</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Feature Your Post</h3>
+                    </div>
+                    <p className="text-white/90 text-sm mb-2">
+                      Get maximum visibility for <span className="font-bold text-yellow-300">NRs. 300</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ 30 Days
+                      </span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        ✓ Top Placement
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Info Section */}
+                  <div className="flex flex-col items-center gap-3 lg:gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl lg:text-3xl font-bold text-yellow-300">
+                        Boost Your
+                      </div>
+                      <div className="text-xs text-white/80 text-center">
+                        Success Rate
+                      </div>
+                    </div>
+                    <div className="text-xs text-white/60 italic text-center max-w-[150px]">
+                      Complete your post to unlock premium features
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Main Form Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {postType === "employer" ? (
-                <>
-                  <span className="text-2xl">📋</span>
-                  Job Details
-                </>
-              ) : (
-                <>
-                  <span className="text-2xl">📝</span>
-                  Profile Information
-                </>
-              )}
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b">
+            <CardTitle className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                {postType === "employer" ? (
+                  <span className="text-2xl">�</span>
+                ) : (
+                  <span className="text-2xl">👤</span>
+                )}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {postType === "employer" ? "Job Details" : "Profile Information"}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {postType === "employer" 
+                    ? "Provide details about the job you're offering"
+                    : "Tell us about your skills and what you're looking for"
+                  }
+                </p>
+              </div>
             </CardTitle>
-            <CardDescription>
-              {postType === "employer" 
-                ? "Provide details about the job you're offering"
-                : "Tell us about your skills and what you're looking for"
-              }
-            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
             {/* Work Type Dropdown */}
-            <FormField
-              control={form.control}
-              name="work"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">🔧</span> Job Category
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">💪</span> Skills & Services
-                      </>
-                    )}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={
-                          postType === "employer" 
-                            ? "Select job category" 
-                            : "Select your skills/services"
-                        } />
-                      </SelectTrigger>
-                    </FormControl>
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="work"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        {postType === "employer" ? (
+                          <span className="text-primary">🔧</span>
+                        ) : (
+                          <span className="text-primary">💪</span>
+                        )}
+                      </div>
+                      {postType === "employer" ? "Job Category" : "Skills & Services"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                          <SelectValue placeholder={
+                            postType === "employer" 
+                              ? "Select job category" 
+                              : "Select your skills/services"
+                          } />
+                        </SelectTrigger>
+                      </FormControl>
                     <SelectContent>
                       {getGroupedWorkTypes().map((group) => (
                         <div key={group.label}>
@@ -347,86 +422,69 @@ export default function NewPostPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Choose the category that best describes the work needed"
-                      : "Select the services you can provide"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            </div>
 
             {/* Other Work Type Input */}
             {isOtherWorkType(workValue) && (
-              <FormField
-                control={form.control}
-                name="workOther"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      {postType === "employer" ? (
-                        <>
-                          <span className="text-primary">📝</span> Specify Job Type
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-primary">📝</span> Describe Your Skills
-                        </>
-                      )}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder={
-                          postType === "employer" 
-                            ? "e.g., Custom furniture making, Event planning" 
-                            : "e.g., Graphic design, Content writing, Plumbing"
-                        } 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {postType === "employer" 
-                        ? "Provide a clear description of the specific work needed"
-                        : "Describe your specialized skills and services"
-                      }
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <FormField
+                  control={form.control}
+                  name="workOther"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-primary">📝</span>
+                        </div>
+                        {postType === "employer" ? "Specify Job Type" : "Describe Your Skills"}
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={
+                            postType === "employer" 
+                              ? "e.g., Custom work, Specialized service" 
+                              : "e.g., Design, Writing, Plumbing"
+                          } 
+                          className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
 
             {/* Time Options */}
-            <FormField
-              control={form.control}
-              name="time"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">⏰</span> Work Schedule
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">⏰</span> Availability
-                      </>
-                    )}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={
-                          postType === "employer" 
-                            ? "Select work schedule" 
-                            : "Select your availability"
-                        } />
-                      </SelectTrigger>
-                    </FormControl>
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span className="text-primary">⏰</span>
+                      </div>
+                      {postType === "employer" ? "Work Schedule" : "Availability"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                          <SelectValue placeholder={
+                            postType === "employer" 
+                              ? "Select work schedule" 
+                              : "Select your availability"
+                          } />
+                        </SelectTrigger>
+                      </FormControl>
                     <SelectContent>
                       {getGroupedTimeOptions().map((group) => (
                         <div key={group.label}>
@@ -442,271 +500,221 @@ export default function NewPostPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Specify when the work needs to be done"
-                      : "Let employers know when you're available to work"
-                    }
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            </div>
 
             {/* Other Time Input */}
             {isOtherTimeOption(timeValue) && (
-              <FormField
-                control={form.control}
-                name="timeOther"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      {postType === "employer" ? (
-                        <>
-                          <span className="text-primary">📅</span> Specify Schedule Details
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-primary">📅</span> Describe Your Availability
-                        </>
-                      )}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder={
-                          postType === "employer" 
-                            ? "e.g., Weekends only, Evenings after 6 PM, Flexible hours" 
-                            : "e.g., Available weekdays 9-5, Weekend work preferred"
-                        } 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {postType === "employer" 
-                        ? "Provide specific timing requirements for the work"
-                        : "Describe your preferred working hours and flexibility"
-                      }
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <FormField
+                  control={form.control}
+                  name="timeOther"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-primary">📅</span>
+                        </div>
+                        {postType === "employer" ? "Specify Schedule Details" : "Describe Your Availability"}
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={
+                            postType === "employer" 
+                              ? "e.g., Weekends, Evenings, Flexible" 
+                              : "e.g., Weekdays 9-5, Weekends preferred"
+                          } 
+                          className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
 
             <Separator />
 
             {/* Place Input */}
-            <FormField
-              control={form.control}
-              name="place"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">📍</span> Job Location
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">📍</span> Work Location
-                      </>
-                    )}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={
-                        postType === "employer" 
-                          ? "e.g., Kathmandu, Lalitpur, Remote work available" 
-                          : "e.g., Kathmandu, Lalitpur, Can work remotely"
-                      } 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Where will the work be performed?"
-                      : "Where are you located or willing to work?"
-                    }
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="place"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span className="text-primary">📍</span>
+                      </div>
+                      {postType === "employer" ? "Job Location" : "Work Location"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder={
+                          postType === "employer" 
+                            ? "e.g., Kathmandu, Lalitpur, Remote" 
+                            : "e.g., Kathmandu, Lalitpur, Remote"
+                        } 
+                        className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Salary Input */}
-            <FormField
-              control={form.control}
-              name="salary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">💰</span> Compensation
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">💰</span> Expected Salary
-                      </>
-                    )}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={
-                        postType === "employer" 
-                          ? "e.g., NPR 15,000 per month, Negotiable, Based on experience" 
-                          : "e.g., NPR 15,000-20,000 per month, Negotiable, Market rate"
-                      } 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Specify the salary range or compensation details"
-                      : "Indicate your salary expectations"
-                    }
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="salary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span className="text-primary">💰</span>
+                      </div>
+                      {postType === "employer" ? "Compensation" : "Expected Salary"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder={
+                          postType === "employer" 
+                            ? "e.g., NPR 15,000/month, Negotiable" 
+                            : "e.g., NPR 15,000-20,000/month"
+                        } 
+                        className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Contact Input */}
-            <FormField
-              control={form.control}
-              name="contact"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">📞</span> Contact Information
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">📞</span> Contact Details
-                      </>
-                    )}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder={
-                        postType === "employer" 
-                          ? "Phone number, email, and best time to contact you" 
-                          : "Phone number, email, LinkedIn profile, portfolio link"
-                      } 
-                      className="min-h-[100px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Provide multiple ways for interested workers to reach you"
-                      : "Share your professional contact information for employers"
-                    }
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="contact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span className="text-primary">📞</span>
+                      </div>
+                      {postType === "employer" ? "Contact Information" : "Contact Details"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder={
+                          postType === "employer" 
+                            ? "Phone, email, best time to contact" 
+                            : "Phone, email, LinkedIn, portfolio"
+                        } 
+                        className="min-h-[120px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Details Input */}
-            <FormField
-              control={form.control}
-              name="details"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">📋</span> Job Details
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">👤</span> Personal Details
-                      </>
-                    )}
-                    <span className="text-destructive">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder={
-                        postType === "employer" 
-                          ? "Describe the job responsibilities, requirements, work environment, and any other relevant details that will help candidates understand the position better..." 
-                          : "Describe your skills, experience, qualifications, and what makes you a great candidate. Include your strengths, achievements, and what you're looking for in a position..."
-                      } 
-                      className="min-h-[150px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {postType === "employer" 
-                      ? "Provide comprehensive details about the position to attract the right candidates (10-500 characters)"
-                      : "Share detailed information about yourself to help employers understand your capabilities (10-500 characters)"
-                    }
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="details"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        {postType === "employer" ? (
+                          <span className="text-primary">📋</span>
+                        ) : (
+                          <span className="text-primary">👤</span>
+                        )}
+                      </div>
+                      {postType === "employer" ? "Job Details" : "Personal Details"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder={
+                          postType === "employer" 
+                            ? "Job responsibilities, requirements, work environment..." 
+                            : "Your skills, experience, qualifications, achievements..."
+                        } 
+                        className="min-h-[150px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <Separator />
 
             {/* Photo Upload - Mandatory for Employee, Optional for Employer */}
-            <FormField
-              control={form.control}
-              name="photo"
-              render={({ field: { onChange, ref } }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium">
-                    {postType === "employer" ? (
-                      <>
-                        <span className="text-primary">📷</span> Job Photo
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-primary">📷</span> Professional Photo
-                      </>
-                    )}
-                    <span className="text-muted-foreground">
-                      {postType === "employee" ? " (Required)" : " (Optional)"}
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        onChange(file);
-                      }}
-                      ref={ref}
-                      required={postType === "employee"}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {postType === "employee" 
-                      ? "Upload a professional photo - this helps employers get to know you (required)"
-                      : "Add a relevant photo for your job posting (optional but recommended)"
-                    }
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <FormField
+                control={form.control}
+                name="photo"
+                render={({ field: { onChange, ref } }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span className="text-primary">📷</span>
+                      </div>
+                      {postType === "employer" ? "Job Photo" : "Professional Photo"}
+                      <span className="text-muted-foreground ml-2">
+                        {postType === "employee" ? "(Required)" : "(Optional)"}
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          onChange(file);
+                        }}
+                        ref={ref}
+                        required={postType === "employee"}
+                        className="text-base border-gray-300 focus:border-primary focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Form Actions */}
-            <div className="flex justify-end gap-4 pt-6 border-t">
+            <div className="flex justify-between items-center pt-8 border-t border-gray-200 bg-gray-50/50 -mx-8 px-8 rounded-b-2xl">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={isSubmitting}
                 size="lg"
+                className="h-12 px-8 text-base font-medium border-gray-300 hover:bg-gray-50 hover:border-gray-400"
               >
                 Cancel
               </Button>
@@ -714,11 +722,11 @@ export default function NewPostPage() {
                 type="submit" 
                 disabled={isSubmitting}
                 size="lg"
-                className="min-w-[140px]"
+                className="h-12 px-8 text-base font-medium bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200 min-w-[160px]"
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
