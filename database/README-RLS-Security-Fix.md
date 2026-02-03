@@ -6,6 +6,11 @@
 1. **Table `public.payments`** - RLS not enabled (EXTERNAL FACING)
 2. **Table `public.contact_submissions`** - RLS not enabled (EXTERNAL FACING)
 
+### **⚠️ ADDITIONAL ISSUE IDENTIFIED:**
+- **Tables showing as "unrestricted"** even after enabling RLS
+- **RLS policies not working correctly**
+- **Potential policy configuration issues**
+
 ### **Risk Level: CRITICAL**
 - **Category**: SECURITY
 - **Impact**: Data exposure, unauthorized access
@@ -13,26 +18,30 @@
 
 ---
 
-## 🛠️ Immediate Fix Required
+## 🛠️ IMMEDIATE FIX REQUIRED
 
-### **Step 1: Enable RLS on Tables**
-Run `database/fix-rls-security.sql` in Supabase SQL Editor:
+### **🔍 STEP 1: Diagnose the Issue First**
+Run `database/rls-diagnostic.sql` in Supabase SQL Editor:
 
 ```sql
--- Enable RLS on payments table
-ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
-
--- Enable RLS on contact_submissions table  
-ALTER TABLE public.contact_submissions ENABLE ROW LEVEL SECURITY;
+-- This will help identify:
+-- ✅ Current RLS status
+-- ✅ Existing policies
+-- ✅ Authentication issues
+-- ✅ Table structure problems
+-- ✅ PostgREST configuration
 ```
 
-### **Step 2: Create RLS Policies**
-Run `database/create-rls-policies.sql` in Supabase SQL Editor:
+### **🔧 STEP 2: Apply Comprehensive Fix**
+Run `database/comprehensive-rls-fix.sql` in Supabase SQL Editor:
 
 ```sql
--- Creates comprehensive RLS policies for:
--- - payments table (user access + admin management)
--- - contact_submissions table (public submission + admin management)
+-- This comprehensive script:
+-- ✅ Forces RLS enablement
+-- ✅ Clears conflicting policies
+-- ✅ Creates restrictive RLS policies
+-- ✅ Tests RLS functionality
+-- ✅ Adds additional security measures
 ```
 
 ---
@@ -40,21 +49,35 @@ Run `database/create-rls-policies.sql` in Supabase SQL Editor:
 ## 📋 RLS Policy Details
 
 ### **Payments Table Policies:**
-- **Users can view their own payments** - Based on user_id
-- **Users can insert their own payments** - Payment creation
-- **Admins can view all payments** - Full admin access
-- **Admins can update payment status** - Payment approval workflow
+- **Enable read for users based on user_id** - Proper user isolation
+- **Enable insert for all users** - Payment creation
+- **Enable update for admin users** - Payment approval workflow
 
 ### **Contact Submissions Table Policies:**
-- **Anyone can submit contact forms** - Public form submissions
-- **Admins can view all contact submissions** - Admin management
-- **Admins can update contact submissions** - Status updates
+- **Enable insert for all users** - Public form submissions
+- **Enable read for admin users** - Admin management only
+- **Enable update for admin users** - Status updates
 
 ---
 
-## 🔍 Verification Steps
+## 🔍 Troubleshooting "Unrestricted" Access
 
-### **1. Check RLS Status:**
+### **Common Causes:**
+1. **RLS not actually enabled** (despite showing as enabled)
+2. **Missing or incorrect RLS policies**
+3. **Policy conditions too permissive**
+4. **Authentication issues**
+5. **PostgREST configuration problems**
+
+### **Diagnostic Steps:**
+
+#### **1. Run Diagnostic Script:**
+```sql
+-- Run database/rls-diagnostic.sql
+-- Check the output for specific issues
+```
+
+#### **2. Check RLS Status:**
 ```sql
 SELECT schemaname, tablename, rowsecurity
 FROM pg_tables 
@@ -62,7 +85,7 @@ WHERE schemaname = 'public'
     AND tablename IN ('payments', 'contact_submissions');
 ```
 
-### **2. Check RLS Policies:**
+#### **3. Verify Policies:**
 ```sql
 SELECT schemaname, tablename, policyname, permissive, roles, cmd
 FROM pg_policies 
@@ -70,10 +93,44 @@ WHERE schemaname = 'public'
     AND tablename IN ('payments', 'contact_submissions');
 ```
 
-### **3. Test Access Control:**
-- Test as regular user: Should only see their own payments
-- Test as admin: Should see all payments and contact submissions
-- Test as anonymous: Should be able to submit forms but not see data
+#### **4. Test Access Control:**
+```sql
+-- This should return 0 or restricted results if RLS is working
+SELECT COUNT(*) FROM public.payments;
+SELECT COUNT(*) FROM public.contact_submissions;
+```
+
+---
+
+## 🚀 Emergency Fix Procedure
+
+### **If Tables Still Show Unrestricted:**
+
+#### **Option 1: Force Reset (Recommended)**
+```sql
+-- Run comprehensive-rls-fix.sql
+-- This will completely reset RLS and policies
+```
+
+#### **Option 2: Manual Step-by-Step**
+```sql
+-- 1. Disable RLS completely
+ALTER TABLE public.payments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_submissions DISABLE ROW LEVEL SECURITY;
+
+-- 2. Re-enable RLS
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_submissions ENABLE ROW LEVEL SECURITY;
+
+-- 3. Create restrictive policies (see comprehensive-rls-fix.sql)
+```
+
+#### **Option 3: Check PostgREST Settings**
+```sql
+-- Ensure PostgREST respects RLS
+ALTER ROLE postgres SET "request.jwt.claim.role" = '';
+SELECT pg_reload_conf();
+```
 
 ---
 
@@ -81,65 +138,67 @@ WHERE schemaname = 'public'
 
 ### **Before Running:**
 1. **Backup your database** before making changes
-2. **Test in development environment first**
-3. **Review existing RLS policies** to avoid conflicts
+2. **Run diagnostic script first** to understand issues
+3. **Test in development environment first**
+4. **Review existing RLS policies** to avoid conflicts
 
 ### **After Running:**
 1. **Verify all functionality** still works
 2. **Test payment workflows** end-to-end
 3. **Test contact form submissions**
 4. **Test admin panel access**
+5. **Verify tables show as "restricted"**
 
-### **User Impact:**
-- **Existing functionality preserved**
-- **Security significantly improved**
-- **No breaking changes** to application logic
-
----
-
-## 🚀 Deployment Steps
-
-### **1. Development Environment:**
-```bash
-# Run SQL scripts in dev Supabase project
-# Test all functionality
-# Verify RLS policies work correctly
-```
-
-### **2. Staging Environment:**
-```bash
-# Apply same fixes to staging
-# Run comprehensive tests
-# Get security team approval
-```
-
-### **3. Production Environment:**
-```bash
-# Schedule maintenance window
-# Apply fixes to production
-# Monitor for any issues
-# Verify security improvements
-```
+### **Expected Results:**
+- **Tables should show as "restricted"** in Supabase
+- **Anonymous users** should have limited/no access
+- **Authenticated users** should see only their data
+- **Admin users** should have full access
 
 ---
 
-## 📞 Support
+## � Support
 
-If you encounter issues:
-1. Check Supabase logs for RLS policy errors
-2. Verify user roles and permissions
-3. Test with different user types
-4. Review policy logic for edge cases
+### **If Issues Persist:**
+1. **Check diagnostic output** for specific errors
+2. **Verify user authentication** is working
+3. **Test with different user roles**
+4. **Check PostgREST logs** for RLS violations
+5. **Review policy logic** for edge cases
+
+### **Common Solutions:**
+- **Run comprehensive fix** instead of manual fixes
+- **Check JWT claims** are being passed correctly
+- **Verify admin role** exists in profiles table
+- **Test with actual API calls** not just SQL queries
 
 ---
 
 ## ✅ Security Improvement Summary
 
 After applying these fixes:
-- **✅ RLS enabled** on all public tables
+- **✅ RLS properly enabled** on all public tables
+- **✅ Restrictive RLS policies** implemented
+- **✅ Tables show as "restricted"** in Supabase
 - **✅ Proper access control** implemented
 - **✅ Admin workflows** preserved
 - **✅ Public functionality** maintained
 - **✅ Security vulnerabilities** resolved
 
 **This is a CRITICAL security fix that should be applied immediately!** 🔒
+
+---
+
+## 🔄 Verification Checklist
+
+### **Post-Fix Verification:**
+- [ ] Tables show "restricted" in Supabase dashboard
+- [ ] Anonymous API calls return limited/no data
+- [ ] Authenticated users see only their data
+- [ ] Admin users can access all data
+- [ ] Payment workflows still function
+- [ ] Contact forms still work
+- [ ] No errors in application logs
+- [ ] PostgREST respects RLS policies
+
+**Only proceed to production after ALL items are verified!** ✅
