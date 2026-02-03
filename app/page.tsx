@@ -195,8 +195,19 @@ function PostsGrid({
     );
   }
 
-    return (
+  return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      {/* Mobile Debug Indicator */}
+      <div className="sm:hidden col-span-full bg-red-500 text-white p-2 text-center text-sm font-bold">
+        📱 MOBILE MODE ACTIVE - Should show 1 column
+      </div>
+      <div className="hidden sm:block lg:hidden col-span-full bg-yellow-500 text-black p-2 text-center text-sm font-bold">
+        📱 TABLET MODE ACTIVE - Should show 2 columns
+      </div>
+      <div className="hidden lg:block col-span-full bg-green-500 text-white p-2 text-center text-sm font-bold">
+        🖥️ DESKTOP MODE ACTIVE - Should show 3 columns
+      </div>
+      
       {posts.map((post) => (
         <PostCard 
           key={post.id} 
@@ -239,7 +250,7 @@ const StaticFilterBar = React.memo(function StaticFilterBar({
 });
 function PageHeader() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl">Opportunities</CardTitle>
@@ -252,7 +263,7 @@ function PageHeader() {
 // Stable Section Component - Completely separate from tab logic
 function StableSection() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       <PageHeader />
       <MarketingBanner />
     </div>
@@ -586,7 +597,7 @@ export default function HomePage() {
           <StableSection />
           
           {/* TABS PART - Outside posts state, only tabs re-render */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
             <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
           </div>
           
