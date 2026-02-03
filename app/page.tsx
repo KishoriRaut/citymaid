@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import React from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { getPublicPostsClient } from "@/lib/posts-client";
 import type { PostWithMaskedContact } from "@/lib/types";
@@ -106,7 +107,49 @@ function MarketingBanner() {
   );
 }
 
-// Static Header Component - Won't re-render on tab changes
+// Static Tabs Component - Optimized to prevent re-renders
+const StaticTabs = React.memo(function StaticTabs({ 
+  activeTab, 
+  onTabChange 
+}: { 
+  activeTab: "all" | "employer" | "employee";
+  onTabChange: (tab: "all" | "employer" | "employee") => void;
+}) {
+  return (
+    <Tabs activeTab={activeTab} onTabChange={onTabChange} />
+  );
+});
+
+// Static FilterBar Component - Memoized to prevent re-renders
+const StaticFilterBar = React.memo(function StaticFilterBar({ 
+  filters, 
+  onFilterChange 
+}: { 
+  filters: {
+    work: string;
+    time: string;
+    postedTime: string;
+    place: string;
+    salary: string;
+  };
+  onFilterChange: (filters: any) => void;
+}) {
+  return (
+    <FilterBar 
+      workFilter={filters.work}
+      timeFilter={filters.time}
+      postedTimeFilter={filters.postedTime}
+      placeFilter={filters.place}
+      salaryFilter={filters.salary}
+      onWorkChange={(value) => onFilterChange({ ...filters, work: value })}
+      onTimeChange={(value) => onFilterChange({ ...filters, time: value })}
+      onPostedTimeChange={(value) => onFilterChange({ ...filters, postedTime: value })}
+      onPlaceChange={(value) => onFilterChange({ ...filters, place: value })}
+      onSalaryChange={(value) => onFilterChange({ ...filters, salary: value })}
+      onReset={() => onFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
+    />
+  );
+});
 function PageHeader() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -369,20 +412,8 @@ function HomePageContent() {
       
       {/* Main Content Area - Only this part should reload */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
-        <FilterBar 
-          workFilter={filters.work}
-          timeFilter={filters.time}
-          postedTimeFilter={filters.postedTime}
-          placeFilter={filters.place}
-          salaryFilter={filters.salary}
-          onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
-          onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
-          onPostedTimeChange={(value) => handleFilterChange({ ...filters, postedTime: value })}
-          onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
-          onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
-          onReset={() => handleFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
-        />
+        <StaticTabs activeTab={activeTab} onTabChange={handleTabChange} />
+        <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
         
         {/* Tab change loading indicator */}
         {isTabChanging ? (
