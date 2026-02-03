@@ -556,39 +556,40 @@ function HomePageContent() {
     );
   }
 
-  // Show posts
+  // Show posts - Only tab section
   return (
-    <div className="min-h-screen bg-background">
-      {/* STABLE PART - Never re-renders */}
-      <StableSection />
-      
-      {/* TAB PART - Can re-render */}
-      <TabSection 
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        filteredPosts={filteredPosts}
-        isLoading={isLoading}
-        isTabChanging={isTabChanging}
-        isPageChanging={isPageChanging}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        hasNextPage={hasNextPage}
-        hasPrevPage={hasPrevPage}
-        onPageChange={handlePageChange}
-        totalPosts={totalPosts}
-        handleLoadMore={handleLoadMore}
-      />
-    </div>
+    <TabSection 
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      filteredPosts={filteredPosts}
+      isLoading={isLoading}
+      isTabChanging={isTabChanging}
+      isPageChanging={isPageChanging}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      hasNextPage={hasNextPage}
+      hasPrevPage={hasPrevPage}
+      onPageChange={handlePageChange}
+      totalPosts={totalPosts}
+      handleLoadMore={handleLoadMore}
+    />
   );
 }
 
+// Main HomePage Component - Stable section outside stateful component
 export default function HomePage() {
   return (
     <EnvironmentCheck>
       <Suspense fallback={<div>Loading...</div>}>
-        <HomePageContent />
+        <div className="min-h-screen bg-background">
+          {/* STABLE PART - Outside stateful component, never re-renders */}
+          <StableSection />
+          
+          {/* TAB PART - Only this part has state and re-renders */}
+          <HomePageContent />
+        </div>
       </Suspense>
     </EnvironmentCheck>
   );
