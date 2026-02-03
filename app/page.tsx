@@ -183,7 +183,7 @@ function PostsGrid({
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 w-full opacity-30">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 w-full opacity-30">
           {posts.map((post) => (
             <PostCard 
               key={post.id} 
@@ -196,7 +196,7 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 w-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 w-full">
       {posts.map((post) => (
         <PostCard 
           key={post.id} 
@@ -490,7 +490,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
                 <Skeleton className="h-4 w-3/4 mb-2" />
@@ -591,7 +591,9 @@ export default function HomePage() {
           </div>
           
           {/* POSTS PART - Only this part has posts state and re-renders */}
-          <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
+          <div className="w-full max-w-full overflow-hidden">
+            <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
+          </div>
         </div>
       </Suspense>
     </EnvironmentCheck>

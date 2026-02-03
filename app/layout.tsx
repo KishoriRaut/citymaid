@@ -16,6 +16,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: `${appConfig.brand.name} - ${appConfig.brand.tagline}`,
   description: appConfig.brand.description,
+  viewport: "width=device-width, initial-scale=1",
   icons: {
     icon: '/favicon.ico',
   },
