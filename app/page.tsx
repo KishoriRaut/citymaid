@@ -260,7 +260,7 @@ const StaticFilterBar = React.memo(function StaticFilterBar({
 });
 function PageHeader() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-8">
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl">Opportunities</CardTitle>
@@ -273,7 +273,7 @@ function PageHeader() {
 // Stable Section Component - Completely separate from tab logic
 function StableSection() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8">
+    <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8">
       <PageHeader />
       <MarketingBanner />
     </div>
@@ -313,7 +313,7 @@ function TabSection({
   handleLoadMore: () => void;
 }) {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
       <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
       
       {/* Only Posts Grid should change */}
@@ -506,7 +506,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
@@ -556,7 +556,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   // Show empty state
   if (filteredPosts.length === 0) {
     return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
         <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
         
         <EmptyState 
@@ -602,17 +602,17 @@ export default function HomePage() {
   return (
     <EnvironmentCheck>
       <Suspense fallback={<div>Loading...</div>}>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background w-full min-w-0">
           {/* STABLE PART - Outside stateful component, never re-renders */}
           <StableSection />
           
           {/* TABS PART - Outside posts state, only tabs re-render */}
-          <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
             <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
           </div>
           
           {/* POSTS PART - Only this part has posts state and re-renders */}
-          <div className="w-full">
+          <div className="w-full min-w-0">
             <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
           </div>
         </div>
