@@ -30,7 +30,7 @@ export function PostCard({ post }: PostCardProps) {
   const isFresh = isFreshPost(post.created_at);
 
   return (
-    <Card className="w-full group hover:shadow-lg transition-all duration-300 overflow-hidden border-0 shadow-md hover:shadow-xl hover:-translate-y-1">
+    <Card className="w-full max-w-none flex-shrink-0 group hover:shadow-lg transition-all duration-300 overflow-hidden border-0 shadow-md hover:shadow-xl hover:-translate-y-1">
       {/* Header with Image */}
       <div className="relative">
         <div className="aspect-video sm:aspect-square lg:aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
