@@ -4,6 +4,7 @@ import { appConfig } from "@/lib/config";
 import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { Toaster } from "@/components/ui/toaster";
+import { EnvironmentIndicator } from "@/components/EnvironmentIndicator";
 import "./globals.css";
 
 const inter = Inter({
@@ -40,6 +41,7 @@ export default function RootLayout({
           <ConditionalFooter />
         </div>
         <Toaster />
+        <EnvironmentIndicator />
       </body>
     </html>
   );
