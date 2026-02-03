@@ -262,7 +262,6 @@ function StableSection() {
 // Tab Section Component - Only this re-renders
 function TabSection({ 
   activeTab, 
-  onTabChange, 
   filters, 
   onFilterChange, 
   filteredPosts, 
@@ -278,7 +277,6 @@ function TabSection({
   handleLoadMore 
 }: {
   activeTab: "all" | "employer" | "employee";
-  onTabChange: (tab: "all" | "employer" | "employee") => void;
   filters: any;
   onFilterChange: (filters: any) => void;
   filteredPosts: PostWithMaskedContact[];
@@ -295,7 +293,6 @@ function TabSection({
 }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-      <StableTabs activeTab={activeTab} onTabChange={onTabChange} />
       <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
       
       {/* Only Posts Grid should change */}
@@ -337,7 +334,7 @@ function TabSection({
   );
 }
 
-function HomePageContent() {
+function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "employer" | "employee"; isTabChanging: boolean }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -351,7 +348,6 @@ function HomePageContent() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [isPageChanging, setIsPageChanging] = useState(false);
-  const [isTabChanging, setIsTabChanging] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Get initial page from URL or default to 1
@@ -361,9 +357,6 @@ function HomePageContent() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Primary tab: "employee" (Find a Job) is now default
-  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
 
   // Filters
   const [filters, setFilters] = useState({
@@ -462,18 +455,6 @@ function HomePageContent() {
     setFilters(newFilters);
   }, []);
 
-  // Handle tab change
-  const handleTabChange = useCallback((tab: typeof activeTab) => {
-    setActiveTab(tab);
-    setCurrentPage(1); // Reset to first page when tab changes
-    setIsTabChanging(true); // Show tab loading state
-    
-    // Load posts with new tab filter
-    loadPosts(1, false).finally(() => {
-      setIsTabChanging(false); // Hide tab loading state
-    });
-  }, [loadPosts]);
-
   // Handle page change
   const handlePageChange = useCallback((page: number) => {
     console.log(`🔄 handlePageChange called: requesting page ${page}, current page is ${currentPage}`);
@@ -554,27 +535,12 @@ function HomePageContent() {
   // Show empty state
   if (filteredPosts.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
-          <FilterBar 
-            workFilter={filters.work}
-            timeFilter={filters.time}
-            postedTimeFilter={filters.postedTime}
-            placeFilter={filters.place}
-            salaryFilter={filters.salary}
-            onWorkChange={(value) => handleFilterChange({ ...filters, work: value })}
-            onTimeChange={(value) => handleFilterChange({ ...filters, time: value })}
-            onPostedTimeChange={(value) => handleFilterChange({ ...filters, postedTime: value })}
-            onPlaceChange={(value) => handleFilterChange({ ...filters, place: value })}
-            onSalaryChange={(value) => handleFilterChange({ ...filters, salary: value })}
-            onReset={() => handleFilterChange({ work: "All", time: "All", postedTime: "all", place: "", salary: "" })}
-          />
-          
-          <EmptyState 
-            activeTab={activeTab}
-          />
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
+        
+        <EmptyState 
+          activeTab={activeTab}
+        />
       </div>
     );
   }
@@ -583,7 +549,6 @@ function HomePageContent() {
   return (
     <TabSection 
       activeTab={activeTab}
-      onTabChange={handleTabChange}
       filters={filters}
       onFilterChange={handleFilterChange}
       filteredPosts={filteredPosts}
@@ -601,8 +566,18 @@ function HomePageContent() {
   );
 }
 
-// Main HomePage Component - Stable section outside stateful component
+// Main HomePage Component - Tabs outside stateful component
 export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
+  const [isTabChanging, setIsTabChanging] = useState(false);
+  
+  const handleTabChange = useCallback((tab: "all" | "employer" | "employee") => {
+    setActiveTab(tab);
+    setIsTabChanging(true);
+    // Reset tab changing after a short delay
+    setTimeout(() => setIsTabChanging(false), 500);
+  }, []);
+  
   return (
     <EnvironmentCheck>
       <Suspense fallback={<div>Loading...</div>}>
@@ -610,8 +585,13 @@ export default function HomePage() {
           {/* STABLE PART - Outside stateful component, never re-renders */}
           <StableSection />
           
-          {/* TAB PART - Only this part has state and re-renders */}
-          <HomePageContent />
+          {/* TABS PART - Outside posts state, only tabs re-render */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+            <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
+          </div>
+          
+          {/* POSTS PART - Only this part has posts state and re-renders */}
+          <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
         </div>
       </Suspense>
     </EnvironmentCheck>
