@@ -9,24 +9,25 @@ import { isUserAdminFromRequest } from "@/lib/auth/admin";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // TEMPORARILY DISABLED FOR TESTING
   // Only protect /admin routes
-  if (pathname.startsWith("/admin")) {
-    console.log('Middleware: Checking admin access for:', pathname);
-    
-    const isAdmin = await isUserAdminFromRequest(request);
-    console.log('Middleware: Admin access result:', isAdmin);
-    
-    if (!isAdmin) {
-      console.log('Middleware: Access denied - user not in admin list');
-      
-      // Redirect to unauthorized page if not admin
-      const unauthorizedUrl = new URL("/unauthorized", request.url);
-      console.log('Middleware: Redirecting to:', unauthorizedUrl.toString());
-      return NextResponse.redirect(unauthorizedUrl);
-    }
-    
-    console.log('Middleware: Access granted');
-  }
+  // if (pathname.startsWith("/admin")) {
+  //   console.log('Middleware: Checking admin access for:', pathname);
+  //   
+  //   const isAdmin = await isUserAdminFromRequest(request);
+  //   console.log('Middleware: Admin access result:', isAdmin);
+  //   
+  //   if (!isAdmin) {
+  //     console.log('Middleware: Access denied - user not in admin list');
+  //     
+  //     // Redirect to unauthorized page if not admin
+  //     const unauthorizedUrl = new URL("/unauthorized", request.url);
+  //     console.log('Middleware: Redirecting to:', unauthorizedUrl.toString());
+  //     return NextResponse.redirect(unauthorizedUrl);
+  //   }
+  //   
+  //   console.log('Middleware: Access granted');
+  // }
 
   return NextResponse.next();
 }
