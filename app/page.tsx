@@ -205,13 +205,23 @@ function PostsGrid({
         DEBUG: Tablet+ detected - should be 2+ columns
       </div>
       
+      {/* Post count debug */}
+      <div className="text-xs text-green-500 mb-2">
+        DEBUG: {posts.length} posts loaded
+      </div>
+      
       {/* Force mobile layout with custom CSS */}
       <div className="posts-grid-mobile">
-        {posts.map((post) => (
-          <PostCard 
-            key={post.id} 
-            post={post}
-          />
+        {posts.map((post, index) => (
+          <div key={post.id} className="post-wrapper">
+            {/* Debug index */}
+            <div className="text-xs text-purple-500 mb-1">
+              Post #{index + 1}
+            </div>
+            <PostCard 
+              post={post}
+            />
+          </div>
         ))}
       </div>
     </div>
