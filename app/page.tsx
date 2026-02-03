@@ -183,7 +183,12 @@ function PostsGrid({
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full opacity-30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full opacity-30 border-4 border-orange-500 bg-orange-50">
+          {/* TAB CHANGING OVERLAY MARKER */}
+          <div className="col-span-full bg-orange-600 text-white p-2 text-center text-sm font-bold">
+            🟠 TAB CHANGING OVERLAY - This is the 3-column grid!
+          </div>
+          
           {posts.map((post) => (
             <PostCard 
               key={post.id} 
@@ -196,7 +201,12 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full border-4 border-purple-500 bg-purple-50">
+      {/* UNIQUE MARKER - This is PostsGrid in PostsGrid.tsx */}
+      <div className="col-span-full bg-purple-600 text-white p-2 text-center text-sm font-bold">
+        🟣 POSTS GRID MARKER - This should be 1 column on mobile
+      </div>
+      
       {/* Mobile Debug Indicator */}
       <div className="sm:hidden col-span-full bg-red-500 text-white p-2 text-center text-sm font-bold">
         📱 MOBILE MODE ACTIVE - Should show 1 column
