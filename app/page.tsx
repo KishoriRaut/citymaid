@@ -201,10 +201,10 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full border-4 border-purple-500 bg-purple-50">
-      {/* UNIQUE MARKER - This is PostsGrid in PostsGrid.tsx */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 !w-full min-w-0 border-4 border-purple-500 bg-purple-50">
+      {/* GRID CONTAINER DEBUG INFO */}
       <div className="col-span-full bg-purple-600 text-white p-2 text-center text-sm font-bold">
-        🟣 POSTS GRID MARKER - Line 221 - Responsive grid restored
+        🟣 GRID CONTAINER - !w-full min-w-0 - Should be full viewport width
       </div>
       
       {/* Mobile Debug Indicator */}
