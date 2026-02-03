@@ -196,13 +196,24 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8 w-full">
-      {posts.map((post) => (
-        <PostCard 
-          key={post.id} 
-          post={post}
-        />
-      ))}
+    <div className="w-full">
+      {/* Debug info */}
+      <div className="text-xs text-red-500 mb-2 block sm:hidden">
+        DEBUG: Mobile detected - should be 1 column
+      </div>
+      <div className="text-xs text-blue-500 mb-2 hidden sm:block">
+        DEBUG: Tablet+ detected - should be 2+ columns
+      </div>
+      
+      {/* Force mobile layout */}
+      <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <PostCard 
+            key={post.id} 
+            post={post}
+          />
+        ))}
+      </div>
     </div>
   );
 }
