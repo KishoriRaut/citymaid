@@ -84,7 +84,7 @@ export function PostCard({ post }: PostCardProps) {
       {/* Content */}
       <CardContent className="p-4 sm:p-5">
         {/* Title */}
-        <h3 className="font-bold text-base sm:text-lg text-foreground mb-3 sm:mb-4 line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-sm sm:text-base lg:text-lg text-foreground mb-3 sm:mb-4 line-clamp-2 group-hover:text-primary transition-colors">
           {post.work}
         </h3>
 

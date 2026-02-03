@@ -76,10 +76,10 @@ function SuccessPageContent() {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Payment Submitted Successfully!
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-base sm:text-lg text-gray-600">
             {(() => {
               console.log('🔍 Message Display Debug:');
               console.log('  - paymentData?.type:', paymentData?.type);

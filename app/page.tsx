@@ -239,7 +239,7 @@ function PageHeader() {
     <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl">Opportunities</CardTitle>
+          <CardTitle className="text-2xl sm:text-3xl lg:text-4xl">Opportunities</CardTitle>
         </CardHeader>
       </Card>
     </div>
@@ -576,16 +576,20 @@ export default function HomePage() {
   }, []);
   
   return (
-    <div className="min-h-screen bg-background">
-      <StableSection />
-      
-      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
-        <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
-      </div>
-      
-      <div className="w-full">
-        <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
-      </div>
-    </div>
+    <EnvironmentCheck>
+      <Suspense fallback={<div>Loading...</div>}>
+        <div className="min-h-screen bg-background">
+          <StableSection />
+          
+          <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+            <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
+          </div>
+          
+          <div className="w-full">
+            <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
+          </div>
+        </div>
+      </Suspense>
+    </EnvironmentCheck>
   );
 }
