@@ -226,6 +226,94 @@ function PageHeader() {
   );
 }
 
+// Stable Section Component - Completely separate from tab logic
+function StableSection() {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <PageHeader />
+      <MarketingBanner />
+    </div>
+  );
+}
+
+// Tab Section Component - Only this re-renders
+function TabSection({ 
+  activeTab, 
+  onTabChange, 
+  filters, 
+  onFilterChange, 
+  filteredPosts, 
+  isLoading, 
+  isTabChanging, 
+  isPageChanging, 
+  currentPage, 
+  totalPages, 
+  hasNextPage, 
+  hasPrevPage, 
+  onPageChange, 
+  totalPosts, 
+  handleLoadMore 
+}: {
+  activeTab: "all" | "employer" | "employee";
+  onTabChange: (tab: "all" | "employer" | "employee") => void;
+  filters: any;
+  onFilterChange: (filters: any) => void;
+  filteredPosts: PostWithMaskedContact[];
+  isLoading: boolean;
+  isTabChanging: boolean;
+  isPageChanging: boolean;
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  onPageChange: (page: number) => void;
+  totalPosts: number;
+  handleLoadMore: () => void;
+}) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <StableTabs activeTab={activeTab} onTabChange={onTabChange} />
+      <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
+      
+      {/* Only Posts Grid should change */}
+      <PostsGrid posts={filteredPosts} isLoading={isLoading} isTabChanging={isTabChanging} />
+
+      {/* Page change loading indicator */}
+      {isPageChanging && (
+        <div className="flex justify-center py-4">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      )}
+
+      {/* Pagination */}
+      <div className="space-y-4">
+        {/* Traditional pagination for desktop */}
+        <div className="hidden md:block">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+            onPageChange={onPageChange}
+            isLoading={isPageChanging}
+            totalPosts={totalPosts}
+          />
+        </div>
+
+        {/* Load more button for mobile */}
+        <div className="md:hidden">
+          <LoadMoreButton
+            hasNextPage={hasNextPage}
+            isLoading={isPageChanging}
+            onLoadMore={handleLoadMore}
+            remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HomePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -472,52 +560,26 @@ function HomePageContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* STABLE PART - Never re-renders */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <PageHeader />
-        <MarketingBanner />
-      </div>
-
+      <StableSection />
+      
       {/* TAB PART - Can re-render */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
-        <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
-        
-        {/* Only Posts Grid should change */}
-        <PostsGrid posts={filteredPosts} isLoading={isLoading} isTabChanging={isTabChanging} />
-
-        {/* Page change loading indicator */}
-        {isPageChanging && (
-          <div className="flex justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        )}
-
-        {/* Pagination */}
-        <div className="space-y-4">
-          {/* Traditional pagination for desktop */}
-          <div className="hidden md:block">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              hasNextPage={hasNextPage}
-              hasPrevPage={hasPrevPage}
-              onPageChange={handlePageChange}
-              isLoading={isPageChanging}
-              totalPosts={totalPosts}
-            />
-          </div>
-
-          {/* Load more button for mobile */}
-          <div className="md:hidden">
-            <LoadMoreButton
-              hasNextPage={hasNextPage}
-              isLoading={isPageChanging}
-              onLoadMore={handleLoadMore}
-              remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
-            />
-          </div>
-        </div>
-      </div>
+      <TabSection 
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        filteredPosts={filteredPosts}
+        isLoading={isLoading}
+        isTabChanging={isTabChanging}
+        isPageChanging={isPageChanging}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        hasNextPage={hasNextPage}
+        hasPrevPage={hasPrevPage}
+        onPageChange={handlePageChange}
+        totalPosts={totalPosts}
+        handleLoadMore={handleLoadMore}
+      />
     </div>
   );
 }
