@@ -205,8 +205,8 @@ function PostsGrid({
         DEBUG: Tablet+ detected - should be 2+ columns
       </div>
       
-      {/* Force mobile layout */}
-      <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Force mobile layout with custom CSS */}
+      <div className="posts-grid-mobile">
         {posts.map((post) => (
           <PostCard 
             key={post.id} 
