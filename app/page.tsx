@@ -107,18 +107,82 @@ function MarketingBanner() {
   );
 }
 
-// Static Tabs Component - Optimized to prevent re-renders
-const StaticTabs = React.memo(function StaticTabs({ 
-  activeTab, 
-  onTabChange 
-}: { 
+// Custom Stable Tabs Component - No re-renders except for active state
+function StableTabs({ activeTab, onTabChange }: { 
   activeTab: "all" | "employer" | "employee";
   onTabChange: (tab: "all" | "employer" | "employee") => void;
 }) {
   return (
-    <Tabs activeTab={activeTab} onTabChange={onTabChange} />
+    <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg">
+      <button
+        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+          activeTab === "employee"
+            ? "bg-white text-gray-900 shadow-sm"
+            : "text-gray-600 hover:text-gray-900"
+        }`}
+        onClick={() => onTabChange("employee")}
+      >
+        Find a Job
+      </button>
+      <button
+        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+          activeTab === "employer"
+            ? "bg-white text-gray-900 shadow-sm"
+            : "text-gray-600 hover:text-gray-900"
+        }`}
+        onClick={() => onTabChange("employer")}
+      >
+        Hire a Worker
+      </button>
+    </div>
   );
-});
+}
+
+// Posts Grid Component - Only this part should re-render
+function PostsGrid({ 
+  posts, 
+  isLoading, 
+  isTabChanging 
+}: { 
+  posts: PostWithMaskedContact[];
+  isLoading: boolean;
+  isTabChanging: boolean;
+}) {
+  if (isTabChanging) {
+    return (
+      <div className="relative">
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-lg">
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-2">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span className="text-sm text-muted-foreground">Loading posts...</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-6 mb-8 w-full opacity-30">
+          {posts.map((post) => (
+            <PostCard 
+              key={post.id} 
+              post={post}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-6 mb-8 w-full">
+      {posts.map((post) => (
+        <PostCard 
+          key={post.id} 
+          post={post}
+        />
+      ))}
+    </div>
+  );
+}
 
 // Static FilterBar Component - Memoized to prevent re-renders
 const StaticFilterBar = React.memo(function StaticFilterBar({ 
@@ -412,40 +476,11 @@ function HomePageContent() {
       
       {/* Main Content Area - Only this part should reload */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <StaticTabs activeTab={activeTab} onTabChange={handleTabChange} />
+        <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
         <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
         
-        {/* Tab change loading indicator */}
-        {isTabChanging ? (
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-lg">
-              <div className="flex items-center justify-center h-64">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                  <span className="text-sm text-muted-foreground">Loading posts...</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-6 mb-8 w-full opacity-30">
-              {filteredPosts.map((post) => (
-                <PostCard 
-                  key={post.id} 
-                  post={post}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-6 mb-8 w-full">
-            {filteredPosts.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post}
-              />
-            ))}
-          </div>
-        )}
+        {/* Only Posts Grid should change */}
+        <PostsGrid posts={filteredPosts} isLoading={isLoading} isTabChanging={isTabChanging} />
 
         {/* Page change loading indicator */}
         {isPageChanging && (
