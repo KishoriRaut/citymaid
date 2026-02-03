@@ -202,6 +202,19 @@ function PostsGrid({
 
   return (
     <div className="w-full min-w-0" style={{ border: '4px solid #FFFF00', backgroundColor: '#FFFFE0' }}>
+      {/* VERY OBVIOUS TEST - THIS SHOULD SHOW IF CHANGES ARE WORKING */}
+      <div style={{ 
+        backgroundColor: '#FF0000', 
+        color: '#FFFFFF', 
+        padding: '20px', 
+        fontSize: '24px', 
+        fontWeight: 'bold',
+        textAlign: 'center',
+        margin: '20px 0'
+      }}>
+        🚨 IF YOU SEE THIS RED BOX - CHANGES ARE WORKING! 🚨
+      </div>
+      
       {/* ANCESTOR 1 - TabSection */}
       <div className="w-full min-w-0" style={{ border: '4px solid #FF8C00', backgroundColor: '#FFF5E6' }}>
         {/* ANCESTOR 2 - Posts Container */}
