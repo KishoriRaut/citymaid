@@ -201,29 +201,44 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 !w-full min-w-0 border-4 border-purple-500 bg-purple-50">
-      {/* GRID CONTAINER DEBUG INFO */}
-      <div className="col-span-full bg-purple-600 text-white p-2 text-center text-sm font-bold">
-        🟣 GRID CONTAINER - !w-full min-w-0 - Should be full viewport width
+    <div className="w-full min-w-0 border-2 border-red-500 bg-red-50">
+      {/* ANCESTOR 1 - TabSection */}
+      <div className="w-full min-w-0 border-2 border-yellow-500 bg-yellow-50">
+        {/* ANCESTOR 2 - Posts Container */}
+        <div className="w-full min-w-0 border-2 border-green-500 bg-green-50">
+          {/* GRID CONTAINER WITH DEBUG */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full !min-w-0 !w-full border-4 border-purple-500 relative">
+            {/* GRID DEBUG INFO */}
+            <div className="col-span-full bg-purple-600 text-white p-2 text-center text-sm font-bold">
+              🟣 GRID CONTAINER - grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+            </div>
+            
+            {/* Mobile Debug Indicator */}
+            <div className="sm:hidden col-span-full bg-red-500 text-white p-2 text-center text-sm font-bold">
+              📱 MOBILE MODE ACTIVE - Should show 1 column
+            </div>
+            <div className="hidden sm:block lg:hidden col-span-full bg-yellow-500 text-black p-2 text-center text-sm font-bold">
+              📱 TABLET MODE ACTIVE - Should show 2 columns
+            </div>
+            <div className="hidden lg:block col-span-full bg-green-500 text-white p-2 text-center text-sm font-bold">
+              🖥️ DESKTOP MODE ACTIVE - Should show 3 columns
+            </div>
+            
+            {posts.map((post, index) => (
+              <div
+                key={post.id}
+                className="relative border-2 border-orange-500 p-1 mb-2"
+                style={{ position: 'relative' }}
+              >
+                <span className="absolute top-0 left-0 bg-black text-white text-xs px-1 z-20">
+                  Grid Col {index + 1} | Post: {post.id}
+                </span>
+                <PostCard post={post} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      
-      {/* Mobile Debug Indicator */}
-      <div className="sm:hidden col-span-full bg-red-500 text-white p-2 text-center text-sm font-bold">
-        📱 MOBILE MODE ACTIVE - Should show 1 column
-      </div>
-      <div className="hidden sm:block lg:hidden col-span-full bg-yellow-500 text-black p-2 text-center text-sm font-bold">
-        📱 TABLET MODE ACTIVE - Should show 2 columns
-      </div>
-      <div className="hidden lg:block col-span-full bg-green-500 text-white p-2 text-center text-sm font-bold">
-        🖥️ DESKTOP MODE ACTIVE - Should show 3 columns
-      </div>
-      
-      {posts.map((post) => (
-        <PostCard 
-          key={post.id} 
-          post={post}
-        />
-      ))}
     </div>
   );
 }
@@ -600,23 +615,14 @@ export default function HomePage() {
   }, []);
   
   return (
-    <EnvironmentCheck>
-      <Suspense fallback={<div>Loading...</div>}>
-        <div className="min-h-screen bg-background w-full min-w-0">
-          {/* STABLE PART - Outside stateful component, never re-renders */}
-          <StableSection />
-          
-          {/* TABS PART - Outside posts state, only tabs re-render */}
-          <div className="w-full min-w-0 px-4 sm:px-6 lg:px-8 pb-8">
-            <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
-          </div>
-          
-          {/* POSTS PART - Only this part has posts state and re-renders */}
-          <div className="w-full min-w-0">
-            <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
-          </div>
+    <div className="min-h-screen bg-background w-full min-w-0 border-2 border-blue-500 bg-blue-50">
+      {/* ANCESTOR 0 - Main Page Container */}
+      <div className="w-full min-w-0 border-2 border-purple-500 bg-purple-50">
+        {/* ANCESTOR 1 - Posts Part */}
+        <div className="w-full min-w-0 border-2 border-red-500 bg-red-50">
+          <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
         </div>
-      </Suspense>
-    </EnvironmentCheck>
+      </div>
+    </div>
   );
 }
