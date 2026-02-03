@@ -32,17 +32,17 @@ function MarketingBanner() {
             </div>
             
             {/* Content */}
-            <div className="relative px-8 py-6 text-white">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-white">
+              <div className="flex flex-col xl:flex-row items-center justify-between gap-4 sm:gap-6">
                 {/* Contact Unlock Section */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-xl">🔓</span>
+                <div className="flex-1 w-full xl:w-auto">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-lg sm:text-xl">🔓</span>
                     </div>
-                    <h3 className="text-lg font-bold">Unlock Contacts</h3>
+                    <h3 className="text-base sm:text-lg font-bold">Unlock Contacts</h3>
                   </div>
-                  <p className="text-white/90 text-sm mb-2">
+                  <p className="text-white/90 text-xs sm:text-sm mb-2">
                     Get instant access to contact details for just <span className="font-bold text-yellow-300">NRs. 300</span>
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -56,14 +56,14 @@ function MarketingBanner() {
                 </div>
 
                 {/* Post Promotion Section */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-xl">⭐</span>
+                <div className="flex-1 w-full xl:w-auto">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      <span className="text-lg sm:text-xl">⭐</span>
                     </div>
-                    <h3 className="text-lg font-bold">Feature Your Post</h3>
+                    <h3 className="text-base sm:text-lg font-bold">Feature Your Post</h3>
                   </div>
-                  <p className="text-white/90 text-sm mb-2">
+                  <p className="text-white/90 text-xs sm:text-sm mb-2">
                     Get maximum visibility on homepage for <span className="font-bold text-yellow-300">NRs. 300</span>
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -77,9 +77,9 @@ function MarketingBanner() {
                 </div>
                 
                 {/* CTA Section */}
-                <div className="flex flex-col items-center gap-3 lg:gap-4">
+                <div className="flex flex-col items-center gap-2 sm:gap-3 lg:gap-4 w-full xl:w-auto">
                   <div className="text-center">
-                    <div className="text-2xl lg:text-3xl font-bold text-yellow-300">
+                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-300">
                       Start Today
                     </div>
                     <div className="text-xs text-white/80 text-center">
@@ -89,7 +89,7 @@ function MarketingBanner() {
                   <Button 
                     variant="secondary" 
                     size="sm"
-                    className="bg-white text-purple-600 hover:bg-white/90 font-semibold px-6 py-2 shadow-lg w-full lg:w-auto"
+                    className="bg-white text-purple-600 hover:bg-white/90 font-semibold px-4 sm:px-6 py-2 shadow-lg w-full sm:w-auto xl:w-auto"
                     onClick={() => {
                       // Navigate to create post page
                       router.push('/post');
@@ -112,10 +112,10 @@ const EmployeeTab = React.memo(function EmployeeTab({ onClick }: { onClick: () =
   return (
     <button
       data-tab="employee"
-      className="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
+      className="tab-button flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
       onClick={onClick}
     >
-      Find a Job
+      <span className="text-xs sm:text-sm">Find a Job</span>
     </button>
   );
 });
@@ -124,10 +124,10 @@ const EmployerTab = React.memo(function EmployerTab({ onClick }: { onClick: () =
   return (
     <button
       data-tab="employer"
-      className="tab-button flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
+      className="tab-button flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
       onClick={onClick}
     >
-      Hire a Worker
+      <span className="text-xs sm:text-sm">Hire a Worker</span>
     </button>
   );
 });
@@ -154,7 +154,7 @@ function StableTabs({ activeTab, onTabChange }: {
   }, [activeTab]);
 
   return (
-    <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg">
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 mb-6 sm:mb-8 bg-gray-100 p-2 sm:p-1 rounded-lg">
       <EmployeeTab onClick={() => onTabChange("employee")} />
       <EmployerTab onClick={() => onTabChange("employer")} />
     </div>
@@ -183,7 +183,7 @@ function PostsGrid({
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-6 mb-8 w-full opacity-30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 w-full opacity-30">
           {posts.map((post) => (
             <PostCard 
               key={post.id} 
@@ -196,7 +196,7 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-6 mb-8 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 w-full">
       {posts.map((post) => (
         <PostCard 
           key={post.id} 
@@ -490,7 +490,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
             <Skeleton className="h-8 w-1/4 mb-4" />
             <Skeleton className="h-10 w-full" />
           </div>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="p-6">
                 <Skeleton className="h-4 w-3/4 mb-2" />

@@ -33,7 +33,7 @@ export function PostCard({ post }: PostCardProps) {
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-0 shadow-md hover:shadow-xl hover:-translate-y-1">
       {/* Header with Image */}
       <div className="relative">
-        <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+        <div className="aspect-video sm:aspect-square lg:aspect-video bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
           {displayPhoto && !imageError ? (
             <img
               src={displayPhoto}
@@ -49,9 +49,9 @@ export function PostCard({ post }: PostCardProps) {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 {isHiring ? (
-                  <User className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <User className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/50 mx-auto mb-2" />
                 ) : (
-                  <MapPin className="w-16 h-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <MapPin className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground/50 mx-auto mb-2" />
                 )}
                 <p className="text-xs text-muted-foreground/50">
                   {isHiring ? "No Photo" : "No Photo"}
@@ -82,16 +82,16 @@ export function PostCard({ post }: PostCardProps) {
       </div>
 
       {/* Content */}
-      <CardContent className="p-5">
+      <CardContent className="p-4 sm:p-5">
         {/* Title */}
-        <h3 className="font-bold text-lg text-foreground mb-4 line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-bold text-base sm:text-lg text-foreground mb-3 sm:mb-4 line-clamp-2 group-hover:text-primary transition-colors">
           {post.work}
         </h3>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Two Column Layout - Responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
           {/* Left Column */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {/* Location */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4 flex-shrink-0" />
@@ -106,7 +106,7 @@ export function PostCard({ post }: PostCardProps) {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {/* Posted Time */}
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
