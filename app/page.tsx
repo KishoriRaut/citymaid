@@ -471,10 +471,13 @@ function HomePageContent() {
   // Show posts
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader />
-      <MarketingBanner />
-      
-      {/* Main Content Area - Only this part should reload */}
+      {/* STABLE PART - Never re-renders */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <PageHeader />
+        <MarketingBanner />
+      </div>
+
+      {/* TAB PART - Can re-render */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
         <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
