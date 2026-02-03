@@ -268,8 +268,10 @@ function HomePageContent() {
             <CardTitle className="text-3xl">Opportunities</CardTitle>
           </CardHeader>
         </Card>
+      </div>
 
-        {/* Marketing Banner - Platform Features Promotion */}
+      {/* Marketing Banner - Fixed Position Outside Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
         <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden">
           <CardContent className="p-0">
             <div className="relative">
@@ -350,7 +352,10 @@ function HomePageContent() {
             </div>
           </CardContent>
         </Card>
-        
+      </div>
+
+      {/* Main Content Area - Only this part should reload */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
         <FilterBar 
           workFilter={filters.work}
