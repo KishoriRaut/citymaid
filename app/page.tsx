@@ -186,7 +186,7 @@ function PostsGrid({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 w-full opacity-30 border-4 border-orange-500 bg-orange-50">
           {/* TAB CHANGING OVERLAY MARKER */}
           <div className="col-span-full bg-orange-600 text-white p-2 text-center text-sm font-bold">
-            🟠 TAB CHANGING OVERLAY - This is the 3-column grid!
+            🟠 TAB CHANGING OVERLAY - Line 192 - This is the 3-column grid!
           </div>
           
           {posts.map((post) => (
@@ -201,28 +201,27 @@ function PostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full border-4 border-purple-500 bg-purple-50">
+    <div className="flex flex-col bg-red-600 border-4 border-purple-500">
       {/* UNIQUE MARKER - This is PostsGrid in PostsGrid.tsx */}
-      <div className="col-span-full bg-purple-600 text-white p-2 text-center text-sm font-bold">
-        🟣 POSTS GRID MARKER - This should be 1 column on mobile
+      <div className="bg-purple-600 text-white p-2 text-center text-sm font-bold">
+        🟣 POSTS GRID MARKER - Line 221 - FLEX TEST - Should be vertical stack
       </div>
       
       {/* Mobile Debug Indicator */}
-      <div className="sm:hidden col-span-full bg-red-500 text-white p-2 text-center text-sm font-bold">
+      <div className="sm:hidden bg-red-500 text-white p-2 text-center text-sm font-bold">
         📱 MOBILE MODE ACTIVE - Should show 1 column
       </div>
-      <div className="hidden sm:block lg:hidden col-span-full bg-yellow-500 text-black p-2 text-center text-sm font-bold">
+      <div className="hidden sm:block lg:hidden bg-yellow-500 text-black p-2 text-center text-sm font-bold">
         📱 TABLET MODE ACTIVE - Should show 2 columns
       </div>
-      <div className="hidden lg:block col-span-full bg-green-500 text-white p-2 text-center text-sm font-bold">
+      <div className="hidden lg:block bg-green-500 text-white p-2 text-center text-sm font-bold">
         🖥️ DESKTOP MODE ACTIVE - Should show 3 columns
       </div>
       
       {posts.map((post) => (
-        <PostCard 
-          key={post.id} 
-          post={post}
-        />
+        <div key={post.id} className="bg-white p-4 m-2 border-2 border-black">
+          <PostCard post={post} />
+        </div>
       ))}
     </div>
   );
