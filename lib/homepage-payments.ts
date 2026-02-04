@@ -42,7 +42,6 @@ export async function getPendingHomepagePayments(): Promise<{
           created_at
         )
       `)
-      .eq("payment_type", "post_promotion")
       .eq("status", "pending")
       .eq("posts.status", "approved") // Only approved posts can request homepage feature
       .order("created_at", { ascending: false });
@@ -92,7 +91,6 @@ export async function getAllHomepagePayments(
           created_at
         )
       `)
-      .eq("payment_type", "post_promotion")
       .order("created_at", { ascending: false });
 
     if (status && status !== 'none') {
@@ -130,8 +128,7 @@ export async function approveHomepagePayment(
     const { error } = await supabase
       .from("payments")
       .update({ status: 'approved', approved_at: new Date().toISOString() })
-      .eq("post_id", postId)
-      .eq("payment_type", "post_promotion");
+      .eq("post_id", postId);
 
     if (error) {
       console.error("Error approving homepage payment:", error);
@@ -165,8 +162,7 @@ export async function rejectHomepagePayment(
     const { error } = await supabase
       .from("payments")
       .update({ status: 'rejected' })
-      .eq("post_id", postId)
-      .eq("payment_type", "post_promotion");
+      .eq("post_id", postId);
 
     if (error) {
       console.error("Error rejecting homepage payment:", error);
@@ -192,9 +188,7 @@ export async function updateHomepagePaymentProof(
     const { data, error } = await supabase
       .from("payments")
       .insert({
-        payment_type: 'post_promotion',
         post_id: postId,
-        user_id: null, // Anonymous for post promotion
         visitor_id: null, // Can add visitor tracking if needed
         amount: 299,
         method: 'qr',
