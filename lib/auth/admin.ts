@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 
 // List of admin emails
 const ADMIN_EMAILS = [
-  'kishorirut369@gmail.com',
+  'kishoriraut369@gmail.com',
   // Add more admin emails here
 ]
 
@@ -19,6 +19,24 @@ export async function isUserAdminFromRequest(request?: Request) {
     }
   } catch (error) {
     console.log('Supabase auth check failed, trying fallback...')
+  }
+
+  // Check profiles table for admin role
+  try {
+    const { data: { user } } = await supabaseClientServer.auth.getUser()
+    if (user?.id) {
+      const { data: profile } = await supabaseClientServer
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile?.role === 'admin') {
+        return true;
+      }
+    }
+  } catch (error) {
+    console.log('Profile check failed, trying fallback...')
   }
 
   // Fallback: Check if we have a user session from the legacy system

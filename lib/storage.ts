@@ -29,7 +29,7 @@ function optimizeImage(file: File): Promise<File> {
 }
 
 const BUCKET_NAME = "post-photos";
-const PAYMENT_RECEIPTS_BUCKET = "payment-receipts";
+const PAYMENT_RECEIPTS_BUCKET = "payment-proofs";
 
 // Validate payment receipt file (images or PDF)
 export function validateReceiptFile(file: File): { valid: boolean; error?: string } {
@@ -57,109 +57,6 @@ export function validateReceiptFile(file: File): { valid: boolean; error?: strin
   }
 
   return { valid: true };
-}
-
-// Upload payment receipt to Supabase Storage (server-side compatible)
-export async function uploadPaymentReceipt(file: File): Promise<{ url: string | null; error: string | null }> {
-  try {
-    // Validate file first
-    const validation = validateReceiptFile(file);
-    if (!validation.valid) {
-      return { url: null, error: validation.error || "Invalid file" };
-    }
-
-    // Additional defensive checks
-    if (!file || file.size === 0) {
-      return { url: null, error: "Invalid file: File is empty or undefined" };
-    }
-
-    if (!file.name || file.name.trim() === '') {
-      return { url: null, error: "Invalid file: File name is empty" };
-    }
-
-    // Optimize image if it's an image (not PDF)
-    let fileToUpload: File = file;
-    if (file.type.startsWith("image/")) {
-      try {
-        fileToUpload = await optimizeImage(file);
-      } catch (optimizeError) {
-        if (process.env.NODE_ENV === "development") {
-          console.error("Error optimizing image:", optimizeError);
-        }
-        // If optimization fails, use original file
-        fileToUpload = file;
-      }
-    }
-
-    // Generate unique filename with timestamp and random string
-    const fileExt = fileToUpload.name.split(".").pop();
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(7);
-    const fileName = `receipt-${timestamp}-${randomString}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    console.log("📤 Uploading payment receipt:", {
-      originalName: file.name,
-      fileName,
-      filePath,
-      fileSize: fileToUpload.size,
-      fileType: fileToUpload.type
-    });
-
-    // Check if we're on server-side and import appropriate supabase client
-    let supabaseClient;
-    if (typeof window === 'undefined') {
-      // Server-side - use server supabase client
-      const { supabase } = await import('./supabase');
-      supabaseClient = supabase;
-    } else {
-      // Client-side - use client supabase client
-      const { supabaseClient: client } = await import('./supabase-client');
-      supabaseClient = client;
-    }
-
-    if (!supabaseClient) {
-      return {
-        error: "Supabase client not initialized - missing environment variables",
-        url: null
-      };
-    }
-    
-    const { error: uploadError } = await supabaseClient.storage
-      .from(PAYMENT_RECEIPTS_BUCKET)
-      .upload(filePath, fileToUpload, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: fileToUpload.type,
-      });
-
-    if (uploadError) {
-      console.error("❌ Storage upload error:", uploadError);
-      if (process.env.NODE_ENV === "development") {
-        console.error("Error uploading file:", uploadError);
-      }
-      return { url: null, error: uploadError.message };
-    }
-
-    // Get public URL - this will be the exact path stored in database
-    const {
-      data: { publicUrl },
-    } = supabaseClient.storage.from(PAYMENT_RECEIPTS_BUCKET).getPublicUrl(filePath);
-
-    console.log("✅ Receipt uploaded successfully:", publicUrl);
-
-    // Validate the returned URL
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!publicUrl || !supabaseUrl || !publicUrl.startsWith(supabaseUrl)) {
-      console.error("❌ Invalid public URL generated:", publicUrl);
-      return { url: null, error: "Failed to generate valid public URL" };
-    }
-
-    return { url: publicUrl, error: null };
-  } catch (error) {
-    console.error("❌ Error in uploadPaymentReceipt:", error);
-    return { url: null, error: "Failed to upload receipt" };
-  }
 }
 
 // Upload photo to Supabase Storage with optimization

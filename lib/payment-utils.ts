@@ -28,8 +28,8 @@ export function getSupabaseUrl(path: string | null): string | null {
     // Path includes bucket/filename format
     return `${supabaseUrl}/storage/v1/object/public/${path}`;
   } else {
-    // Path is just filename, assume it's in payment-receipts bucket
-    return `${supabaseUrl}/storage/v1/object/public/payment-receipts/${path}`;
+    // Path is just filename, assume it's in payment-proofs bucket
+    return `${supabaseUrl}/storage/v1/object/public/payment-proofs/${path}`;
   }
 }
 

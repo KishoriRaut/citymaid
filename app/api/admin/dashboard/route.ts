@@ -7,36 +7,32 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    // Temporarily bypass auth for deployment
-    // return withAdminAuth(async (request: Request) => {
+    return withAdminAuth(async (request: Request) => {
     
     console.log('Dashboard API: Fetching stats...')
     
     // Get dashboard stats
     const [
       postsResult,
-      usersResult,
       paymentsResult
     ] = await Promise.all([
       supabaseClientServer.from('posts').select('count', { count: 'exact' }),
-      supabaseClientServer.from('profiles').select('count', { count: 'exact' }),
       supabaseClientServer.from('payments').select('count', { count: 'exact' })
     ])
 
     console.log('Dashboard API: Stats fetched:', {
       posts: postsResult.count,
-      users: usersResult.count,
       payments: paymentsResult.count
     })
 
     return NextResponse.json({
       stats: {
         totalPosts: postsResult.count || 0,
-        totalUsers: usersResult.count || 0,
+        totalUsers: 0, // Profiles table doesn't exist yet
         totalPayments: paymentsResult.count || 0
       }
     })
-    // })
+    })
   } catch (error) {
     console.error('Dashboard API error details:', error)
     return NextResponse.json(

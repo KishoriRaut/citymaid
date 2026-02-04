@@ -2,7 +2,7 @@
 
 // List of admin emails (must match server-side list)
 const ADMIN_EMAILS = [
-  'kishorirut369@gmail.com',
+  'kishoriraut369@gmail.com',
   // Add more admin emails here
 ]
 

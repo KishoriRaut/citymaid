@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
-import { uploadPaymentReceipt } from "@/lib/storage";
+import { uploadReceipt } from "@/lib/upload-helper";
 import { getOrCreateVisitorId } from "@/lib/visitor-id";
 
 // Check if Supabase is configured
@@ -196,7 +196,7 @@ export default function PostPaymentPage() {
         
         if (paymentProof) {
           // Upload file to Supabase Storage first
-          const uploadResult = await uploadPaymentReceipt(paymentProof);
+          const uploadResult = await uploadReceipt(paymentProof);
           
           if (uploadResult.error || !uploadResult.url) {
             throw new Error(`Failed to upload receipt: ${uploadResult.error}`);
