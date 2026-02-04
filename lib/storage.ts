@@ -29,7 +29,7 @@ function optimizeImage(file: File): Promise<File> {
 }
 
 const BUCKET_NAME = "post-photos";
-const PAYMENT_RECEIPTS_BUCKET = "payment-receipts";
+const PAYMENT_RECEIPTS_BUCKET = "payment-proofs";
 
 // Validate payment receipt file (images or PDF)
 export function validateReceiptFile(file: File): { valid: boolean; error?: string } {

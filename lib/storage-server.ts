@@ -3,7 +3,7 @@
 
 import { supabase } from './supabase';
 
-const PAYMENT_RECEIPTS_BUCKET = "payment-receipts";
+const PAYMENT_RECEIPTS_BUCKET = "payment-proofs";
 
 // Validate payment receipt file (images or PDF)
 function validateReceiptFile(file: File): { valid: boolean; error?: string } {
