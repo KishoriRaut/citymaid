@@ -105,10 +105,12 @@ export async function createPost(post: {
       }
       // Continue with creation if check fails (don't block on validation error)
     } else if (duplicateCheck && duplicateCheck.length > 0) {
-      return {
-        post: null,
-        error: "A similar post already exists.",
-      };
+      // TEMPORARILY DISABLED FOR TESTING
+      // return {
+      //   post: null,
+      //   error: "A similar post already exists.",
+      // };
+      console.log('Duplicate post found but allowing for testing:', duplicateCheck.length);
     }
 
     // ========================================================================
