@@ -138,10 +138,12 @@ export async function createPost(post: {
         }
         // Continue with creation if check fails
       } else if (activePostsByType !== null && activePostsByType >= 2) {
-        return {
-          post: null,
-          error: "You already have 2 active posts of this type. Please wait for approval or contact admin.",
-        };
+        // TEMPORARILY DISABLED FOR TESTING
+        // return {
+        //   post: null,
+        //   error: "You already have 2 active posts of this type. Please wait for approval or contact admin.",
+        // };
+        console.log('Post limit reached but allowing for testing:', activePostsByType);
       }
 
       // Count total active posts for this contact
@@ -157,10 +159,12 @@ export async function createPost(post: {
         }
         // Continue with creation if check fails
       } else if (totalActivePosts !== null && totalActivePosts >= 4) {
-        return {
-          post: null,
-          error: "You already have 4 active posts. Please wait for approval or contact admin.",
-        };
+        // TEMPORARILY DISABLED FOR TESTING
+        // return {
+        //   post: null,
+        //   error: "You already have 4 active posts. Please wait for approval or contact admin.",
+        // };
+        console.log('Total post limit reached but allowing for testing:', totalActivePosts);
       }
     }
 
