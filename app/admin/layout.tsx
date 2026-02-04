@@ -47,39 +47,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // TEMPORARILY DISABLED FOR TESTING
-        // First check client-side (localStorage)
-        // const clientIsAdmin = isUserAdminClient()
-        // console.log('AdminLayout: Client-side admin check:', clientIsAdmin)
-        
-        // if (clientIsAdmin) {
-        //   // Get user from localStorage
-        //   const userStr = localStorage.getItem('user');
-        //   if (userStr) {
-        //     const userData = JSON.parse(userStr);
-        //     setUser(userData);
-        //   }
-        // } else {
-        //   // Try Supabase as fallback
-        //   if (supabaseClient) {
-        //     const { data: { user } } = await supabaseClient.auth.getUser();
-        //     if (user?.email === 'kishorirut369@gmail.com') {
-        //       setUser(user);
-        //     } else {
-        //       router.push('/unauthorized');
-        //       return;
-        //     }
-        //   } else {
-        //     router.push('/unauthorized');
-        //     return;
-        //   }
-        // }
-        
-        // TEMPORARY: Set mock user for testing
-        setUser({ email: 'kishorirut369@gmail.com' });
+        // Check Supabase auth
+        if (supabaseClient) {
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          if (user?.email === 'kishoriraut369@gmail.com') {
+            setUser(user);
+          } else {
+            router.push('/login?redirect=/admin');
+            return;
+          }
+        } else {
+          router.push('/login?redirect=/admin');
+          return;
+        }
       } catch (error) {
         console.error('AdminLayout: Auth check failed:', error);
-        // router.push('/unauthorized');
+        router.push('/login?redirect=/admin');
       } finally {
         setIsLoading(false);
       }
@@ -98,9 +81,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         await supabaseClient.auth.signOut();
       }
       
-      router.push("/");
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
+      router.push("/login");
     }
   };
 

@@ -33,7 +33,8 @@ function LoginContent() {
   const [supabaseSubmitting, setSupabaseSubmitting] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [supabaseEmail, setSupabaseEmail] = useState("kishorirut369@gmail.com");
+  const [supabaseEmail, setSupabaseEmail] = useState("kishoriraut369@gmail.com");
+  const [supabasePassword, setSupabasePassword] = useState("admin123k");
   const [error, setError] = useState("");
   const [supabaseError, setSupabaseError] = useState("");
   const [message, setMessage] = useState("");
@@ -130,33 +131,39 @@ function LoginContent() {
         return;
       }
 
-      // For demo purposes, we'll use magic link or OAuth
-      // Since you're using kishorirut369@gmail.com, let's try OAuth with Google
-      const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/admin/requests`
-        }
+      // Use email/password authentication
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: supabaseEmail,
+        password: supabasePassword,
       });
 
       if (error) {
-        // If OAuth fails, try magic link
-        const { error: magicError } = await supabaseClient.auth.signInWithOtp({
-          email: supabaseEmail,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin/requests`
-          }
-        });
+        setSupabaseError(error.message);
+        return;
+      }
 
-        if (magicError) {
-          setSupabaseError(magicError.message);
+      if (data.user) {
+        // Check if user is admin
+        if (data.user.email === 'kishoriraut369@gmail.com') {
+          setSupabaseMessage("Login successful! Redirecting to admin...");
+          
+          // Redirect to admin
+          const redirectTo = searchParams.get('redirect');
+          setTimeout(() => {
+            if (redirectTo) {
+              router.push(redirectTo);
+            } else {
+              router.push('/admin/requests');
+            }
+          }, 1000);
         } else {
-          setSupabaseMessage("Check your email for a magic link to sign in!");
+          setSupabaseError("Access denied. Admin privileges required.");
+          await supabaseClient.auth.signOut();
         }
       }
     } catch (error) {
       console.error("Supabase login error:", error);
-      setSupabaseError("An unexpected error occurred");
+      setSupabaseError("Login failed. Please try again.");
     } finally {
       setSupabaseSubmitting(false);
     }
@@ -203,7 +210,19 @@ function LoginContent() {
                     value={supabaseEmail}
                     onChange={(e) => setSupabaseEmail(e.target.value)}
                     required
-                    placeholder="kishorirut369@gmail.com"
+                    placeholder="kishoriraut369@gmail.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="supabase-password">Password</Label>
+                  <Input
+                    id="supabase-password"
+                    type="password"
+                    value={supabasePassword}
+                    onChange={(e) => setSupabasePassword(e.target.value)}
+                    required
+                    placeholder="Enter your password"
                   />
                 </div>
 
@@ -212,7 +231,7 @@ function LoginContent() {
                   disabled={supabaseSubmitting}
                   className="w-full"
                 >
-                  {supabaseSubmitting ? "Sending magic link..." : "Sign in with Supabase"}
+                  {supabaseSubmitting ? "Signing in..." : "Sign in with Supabase"}
                 </Button>
 
                 <div className="text-center text-xs text-muted-foreground">

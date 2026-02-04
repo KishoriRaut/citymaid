@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup:storage": "ts-node --skip-project scripts/ensure-bucket.ts"
+    "setup:storage": "ts-node --skip-project scripts/ensure-bucket.ts",
+    "create:admin": "ts-node --skip-project scripts/create-admin-user.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

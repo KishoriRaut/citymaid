@@ -24,6 +24,7 @@ import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy } from "lucide-react";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
+import AdminAuthWrapper from "@/components/admin/AdminAuthWrapper";
 
 // Define the unified request interface
 interface UnifiedRequest {
@@ -316,7 +317,8 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <AdminAuthWrapper>
+      <div className="space-y-6">
       {/* Page Title */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
@@ -708,5 +710,6 @@ export default function RequestsPage() {
         </div>
       </div>
     </div>
+    </AdminAuthWrapper>
   );
 }
