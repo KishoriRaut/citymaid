@@ -52,7 +52,8 @@ async function getPostsFromClient(
   let countQuery = supabaseClient!
     .from('posts')
     .select('id', { count: 'exact', head: true })
-    .eq('status', 'approved');
+    .eq('status', 'approved')
+    .neq('status', 'hidden');
   
   // Apply post_type filter if specified
   if (postType && postType !== "all") {
@@ -92,7 +93,8 @@ async function getPostsFromClient(
       status,
       created_at
     `)
-    .eq('status', 'approved');
+    .eq('status', 'approved')
+    .neq('status', 'hidden');
   
   // Apply post_type filter if specified
   if (postType && postType !== "all") {
