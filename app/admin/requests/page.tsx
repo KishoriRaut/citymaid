@@ -714,6 +714,24 @@ export default function RequestsPage() {
                           </div>
                         )}
                       </div>
+                    ) : request.type === "Post" && request.postContact ? (
+                      <div className={`space-y-1 ${request.paymentProof ? '' : 'opacity-50'}`}>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm">{request.postContact}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => copyToClipboard(request.postContact!)}
+                            className="h-4 w-4 p-0"
+                            disabled={!request.paymentProof}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        {!request.paymentProof && (
+                          <div className="text-xs text-red-600">⚠️ Verify payment first</div>
+                        )}
+                      </div>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}
@@ -765,27 +783,25 @@ export default function RequestsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {request.type === "Contact Unlock" && request.postContact ? (
-                      <div className={`space-y-1 ${request.paymentProof ? '' : 'opacity-50'}`}>
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm">{request.postContact}</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(request.postContact!)}
-                            className="h-4 w-4 p-0"
-                            disabled={!request.paymentProof}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        {!request.paymentProof && (
-                          <div className="text-xs text-red-600">⚠️ Verify payment first</div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
+                    <Badge 
+                      variant={
+                        request.status === "approved" ? "default" :
+                        request.status === "rejected" ? "destructive" :
+                        request.status === "hidden" ? "secondary" :
+                        "outline"
+                      }
+                      className={
+                        request.status === "approved" ? "bg-green-100 text-green-800" :
+                        request.status === "rejected" ? "bg-red-100 text-red-800" :
+                        request.status === "hidden" ? "bg-gray-100 text-gray-800" :
+                        ""
+                      }
+                    >
+                      {request.status === "approved" && "✅ Approved"}
+                      {request.status === "rejected" && "❌ Rejected"}  
+                      {request.status === "hidden" && "👁️ Hidden"}
+                      {request.status === "pending" && "⏳ Pending"}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {formatDate(request.submittedAt)}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabaseClient } from "@/lib/supabase-client";
 import { isUserAdminClient } from "@/lib/auth/admin-client";
+
+// Memoized UserAvatar component to prevent re-renders
+const UserAvatar = memo(({ email, className }: { email: string; className?: string }) => {
+  const userInitial = useMemo(() => {
+    return email?.charAt(0).toUpperCase() || 'A';
+  }, [email]);
+
+  return (
+    <Avatar className={`h-10 w-10 border-2 border-border ${className || ''}`}>
+      <AvatarImage src="" alt={email} />
+      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+        {userInitial}
+      </AvatarFallback>
+    </Avatar>
+  );
+});
+
+UserAvatar.displayName = 'UserAvatar';
 
 // List of admin emails
 const ADMIN_EMAILS = [
@@ -263,24 +281,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-accent/50 transition-colors">
-                    <Avatar className="h-10 w-10 border-2 border-border">
-                      <AvatarImage src="" alt={user.email} />
-                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                        {user.email?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar email={user.email} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-64" align="end" style={{ zIndex: 40 }}>
                   <DropdownMenuLabel className="font-normal p-4">
                     <div className="flex flex-col space-y-2">
                       <div className="flex items-center space-x-3">
-                        <Avatar className="h-10 w-10 border-2 border-border">
-                          <AvatarImage src="" alt={user.email} />
-                          <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                            {user.email?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar email={user.email} />
                         <div className="flex flex-col space-y-1 leading-none">
                           <p className="text-sm font-medium">{user.email}</p>
                           <p className="text-xs text-muted-foreground">
