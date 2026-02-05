@@ -14,15 +14,25 @@ export async function POST(request: Request) {
       case 'approve':
         // Test approve functionality
         if (postId) {
-          const { error } = await supabase
+          // Update payments table status
+          const { error: paymentError } = await supabase
             .from('payments')
             .update({ status: 'approved' })
             .eq('post_id', postId);
 
-          if (error) {
-            result = { success: false, message: `Approve failed: ${error.message}` };
+          // Also update posts table status to make it visible on homepage
+          const { error: postError } = await supabase
+            .from('posts')
+            .update({ status: 'approved' })
+            .eq('id', postId);
+
+          if (paymentError || postError) {
+            result = { 
+              success: false, 
+              message: `Approve failed: ${paymentError?.message || postError?.message}` 
+            };
           } else {
-            result = { success: true, message: 'Post approved successfully' };
+            result = { success: true, message: 'Post approved successfully and visible on homepage' };
           }
         }
         break;
@@ -30,15 +40,25 @@ export async function POST(request: Request) {
       case 'hide':
         // Test hide functionality
         if (postId) {
-          const { error } = await supabase
+          // Update payments table status
+          const { error: paymentError } = await supabase
             .from('payments')
             .update({ status: 'hidden' })
             .eq('post_id', postId);
 
-          if (error) {
-            result = { success: false, message: `Hide failed: ${error.message}` };
+          // Also update posts table status to hide from homepage
+          const { error: postError } = await supabase
+            .from('posts')
+            .update({ status: 'hidden' })
+            .eq('id', postId);
+
+          if (paymentError || postError) {
+            result = { 
+              success: false, 
+              message: `Hide failed: ${paymentError?.message || postError?.message}` 
+            };
           } else {
-            result = { success: true, message: 'Post hidden successfully' };
+            result = { success: true, message: 'Post hidden successfully and removed from homepage' };
           }
         }
         break;
