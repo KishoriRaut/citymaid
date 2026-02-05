@@ -422,7 +422,7 @@ export default function RequestsPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const receiptUrl = paymentProof.startsWith('http') 
       ? paymentProof 
-      : `${supabaseUrl}/storage/v1/object/public/${paymentProof}`;
+      : `${supabaseUrl}/storage/v1/object/public/payment-proofs/${paymentProof}`;
     window.open(receiptUrl, '_blank');
   };
 
