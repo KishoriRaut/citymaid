@@ -230,7 +230,7 @@ export default function RequestsPage() {
     setProcessing(request.id);
     try {
       if (request.type === "Post") {
-        const response = await fetch(`/api/debug-button-actions`, {
+        const response = await fetch(`/api/debug-button-actions-enhanced`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ export default function RequestsPage() {
           throw new Error(result.result?.message || 'Failed to approve post');
         }
       } else {
-        const response = await fetch(`/api/debug-button-actions`, {
+        const response = await fetch(`/api/debug-button-actions-enhanced`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ export default function RequestsPage() {
     setProcessing(request.id);
     try {
       if (request.type === "Post") {
-        const response = await fetch(`/api/debug-button-actions`, {
+        const response = await fetch(`/api/debug-button-actions-enhanced`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -332,6 +332,44 @@ export default function RequestsPage() {
     } else {
       // For contact unlock requests, you could implement an edit modal or navigate to an edit page
       console.log("Edit contact unlock request:", request.id);
+    }
+  };
+
+  const handleShow = async (request: UnifiedRequest) => {
+    setProcessing(request.id);
+    try {
+      if (request.type === "Post") {
+        const response = await fetch(`/api/debug-button-actions-enhanced`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'show',
+            postId: (request.originalData as AdminPayment).post_id
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to show post');
+        }
+        
+        const result = await response.json();
+        if (!result.result?.success) {
+          throw new Error(result.result?.message || 'Failed to show post');
+        }
+      } else {
+        // For contact unlock requests, we could implement a similar show functionality
+        console.log("Show contact unlock request:", request.id);
+      }
+      
+      await loadRequests(currentPage, false);
+      console.log(`✅ Successfully shown ${request.type}: ${request.id}`);
+    } catch (error) {
+      console.error(`❌ Error showing ${request.type.toLowerCase()}:`, error);
+      alert(`Failed to show ${request.type.toLowerCase()}. Please try again.`);
+    } finally {
+      setProcessing(null);
     }
   };
 
@@ -870,6 +908,15 @@ export default function RequestsPage() {
                           Hidden
                         </Badge>
                         <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleShow(request)}
+                            disabled={processing === request.id}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
                           <Button
                             size="sm"
                             onClick={() => handleApprove(request)}
