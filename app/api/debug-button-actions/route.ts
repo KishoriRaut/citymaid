@@ -23,11 +23,6 @@ export async function POST(request: Request) {
             result = { success: false, message: `Approve failed: ${error.message}` };
           } else {
             result = { success: true, message: 'Post approved successfully' };
-            // Reset back to pending
-            await supabase
-              .from('payments')
-              .update({ status: 'pending' })
-              .eq('post_id', postId);
           }
         }
         break;
@@ -44,11 +39,6 @@ export async function POST(request: Request) {
             result = { success: false, message: `Hide failed: ${error.message}` };
           } else {
             result = { success: true, message: 'Post hidden successfully' };
-            // Reset back to pending
-            await supabase
-              .from('payments')
-              .update({ status: 'pending' })
-              .eq('post_id', postId);
           }
         }
         break;
