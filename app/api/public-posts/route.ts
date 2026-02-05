@@ -22,9 +22,12 @@ export async function GET(request: Request) {
       .eq('status', 'approved')
       .neq('status', 'hidden');
 
+    console.log(`🔍 Count query: status=approved, status!=hidden`);
+
     // Apply post_type filter if specified
     if (postType && postType !== "all") {
       countQuery = countQuery.eq('post_type', postType);
+      console.log(`🔍 Applied post_type filter: ${postType}`);
     }
 
     // Apply posted time filter if specified
@@ -33,6 +36,7 @@ export async function GET(request: Request) {
       if (days > 0) {
         const { startDate } = getPostedDateRange(days);
         countQuery = countQuery.gte('created_at', startDate.toISOString());
+        console.log(`🔍 Applied time filter: ${postedTimeFilter} (${days} days)`);
       }
     }
 
@@ -42,6 +46,8 @@ export async function GET(request: Request) {
       console.error('❌ Count query error:', countError);
       return NextResponse.json({ error: countError.message }, { status: 500 });
     }
+
+    console.log(`✅ Count query result: ${totalCount} total posts`);
 
     // Get paginated data
     let dataQuery = supabase
@@ -62,6 +68,8 @@ export async function GET(request: Request) {
       `)
       .eq('status', 'approved')
       .neq('status', 'hidden');
+
+    console.log(`🔍 Data query: status=approved, status!=hidden`);
 
     // Apply post_type filter if specified
     if (postType && postType !== "all") {
@@ -85,6 +93,8 @@ export async function GET(request: Request) {
       console.error('❌ Data query error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    console.log(`✅ Data query result: ${data?.length || 0} posts returned`);
 
     // Mask contact info for public posts
     const maskedPosts = (data || []).map(post => ({

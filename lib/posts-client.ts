@@ -14,14 +14,18 @@ export async function getPublicPostsClient(
   postedTimeFilter?: string
 ) {
   try {
-    // Use client-side Supabase if configured, otherwise fallback to API
-    if (isSupabaseConfigured && supabaseClient) {
-      console.log("🟢 Using client-side Supabase");
-      return await getPostsFromClient(page, limit, postType, postedTimeFilter);
-    } else {
-      console.log("🟡 Client-side Supabase not configured, using API fallback");
-      return await getPostsFromAPI(page, limit, postType, postedTimeFilter);
-    }
+    // Force API fallback to ensure posts show up
+    console.log("🟡 Forcing API fallback to ensure posts display correctly");
+    return await getPostsFromAPI(page, limit, postType, postedTimeFilter);
+    
+    // Original logic (commented out for now)
+    // if (isSupabaseConfigured && supabaseClient) {
+    //   console.log("🟢 Using client-side Supabase");
+    //   return await getPostsFromClient(page, limit, postType, postedTimeFilter);
+    // } else {
+    //   console.log("🟡 Client-side Supabase not configured, using API fallback");
+    //   return await getPostsFromAPI(page, limit, postType, postedTimeFilter);
+    // }
   } catch (error) {
     console.error("❌ Error in getPublicPostsClient:", error);
     return {
