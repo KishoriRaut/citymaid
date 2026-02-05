@@ -11,7 +11,7 @@ export interface AdminPayment {
   reference_id: string | null;
   customer_name: string | null;
   receipt_url: string | null;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "hidden";
   created_at: string;
   posts?: {
     work: string;
@@ -116,7 +116,7 @@ export async function getAllAdminPayments(
 
 export async function updateAdminPaymentStatus(
   paymentId: string, 
-  status: 'approved' | 'rejected'
+  status: 'approved' | 'rejected' | 'hidden'
 ): Promise<{ success: boolean, error: string | null }> {
   try {
     // First get the post_id for this payment

@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
-import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy } from "lucide-react";
+import { Eye, CheckCircle, XCircle, FileText, Unlock, Phone, Mail, MessageSquare, Copy, Edit, Trash2, EyeOff } from "lucide-react";
 import { getAllAdminPayments, updateAdminPaymentStatus, type AdminPayment } from "@/lib/admin-payments";
 import { getAllUnlockRequests, approveUnlockRequest, rejectUnlockRequest, type ContactUnlockRequest } from "@/lib/unlock-requests";
 import AdminAuthWrapper from "@/components/admin/AdminAuthWrapper";
@@ -230,29 +230,157 @@ export default function RequestsPage() {
     setProcessing(request.id);
     try {
       if (request.type === "Post") {
-        await updateAdminPaymentStatus(request.id, "approved");
+        const response = await fetch(`/api/debug-button-actions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'approve',
+            postId: (request.originalData as AdminPayment).post_id
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to approve post');
+        }
+        
+        const result = await response.json();
+        if (!result.result?.success) {
+          throw new Error(result.result?.message || 'Failed to approve post');
+        }
       } else {
-        await approveUnlockRequest(request.id);
+        const response = await fetch(`/api/debug-button-actions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'approve',
+            requestId: request.id
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to approve unlock request');
+        }
+        
+        const result = await response.json();
+        if (!result.result?.success) {
+          throw new Error(result.result?.message || 'Failed to approve unlock request');
+        }
       }
+      
       await loadRequests(currentPage, false);
+      console.log(`✅ Successfully approved ${request.type}: ${request.id}`);
     } catch (error) {
-      console.error("Error approving request:", error);
+      console.error(`❌ Error approving ${request.type.toLowerCase()}:`, error);
+      alert(`Failed to approve ${request.type.toLowerCase()}. Please try again.`);
     } finally {
       setProcessing(null);
     }
   };
 
-  const handleReject = async (request: UnifiedRequest) => {
+  const handleHide = async (request: UnifiedRequest) => {
     setProcessing(request.id);
     try {
       if (request.type === "Post") {
-        await updateAdminPaymentStatus(request.id, "rejected");
+        const response = await fetch(`/api/debug-button-actions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'hide',
+            postId: (request.originalData as AdminPayment).post_id
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to hide post');
+        }
+        
+        const result = await response.json();
+        if (!result.result?.success) {
+          throw new Error(result.result?.message || 'Failed to hide post');
+        }
       } else {
-        await rejectUnlockRequest(request.id);
+        // For contact unlock requests, we could implement a similar hide functionality
+        // For now, we'll reject them (you can extend this later)
+        const { error } = await rejectUnlockRequest(request.id);
+        if (error) {
+          throw new Error('Failed to hide unlock request');
+        }
       }
+      
       await loadRequests(currentPage, false);
+      console.log(`✅ Successfully hidden ${request.type}: ${request.id}`);
     } catch (error) {
-      console.error("Error rejecting request:", error);
+      console.error(`❌ Error hiding ${request.type.toLowerCase()}:`, error);
+      alert(`Failed to hide ${request.type.toLowerCase()}. Please try again.`);
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleEdit = (request: UnifiedRequest) => {
+    if (request.type === "Post") {
+      // Get post ID from originalData
+      const postData = request.originalData as AdminPayment;
+      // Navigate to edit post page
+      window.open(`/post/${postData.post_id}/edit`, '_blank');
+    } else {
+      // For contact unlock requests, you could implement an edit modal or navigate to an edit page
+      console.log("Edit contact unlock request:", request.id);
+    }
+  };
+
+  const handleDelete = async (request: UnifiedRequest) => {
+    if (!confirm(`Are you sure you want to delete this ${request.type.toLowerCase()}? This action cannot be undone.`)) {
+      return;
+    }
+
+    setProcessing(request.id);
+    try {
+      if (request.type === "Post") {
+        // Get post ID from originalData
+        const postData = request.originalData as AdminPayment;
+        // Delete the post and associated payment
+        const response = await fetch(`/api/posts/${postData.post_id}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to delete post: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to delete post');
+        }
+      } else {
+        // Delete the contact unlock request
+        const response = await fetch(`/api/contact-unlock-requests/${request.id}`, {
+          method: 'DELETE',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to delete contact unlock request: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to delete contact unlock request');
+        }
+      }
+      
+      await loadRequests(currentPage, false);
+      console.log(`✅ Successfully deleted ${request.type}: ${request.id}`);
+    } catch (error) {
+      console.error(`❌ Error deleting ${request.type.toLowerCase()}:`, error);
+      alert(`Failed to delete ${request.type.toLowerCase()}. Please try again.`);
     } finally {
       setProcessing(null);
     }
@@ -626,41 +754,150 @@ export default function RequestsPage() {
                   </TableCell>
                   <TableCell>
                     {request.status === "pending" && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-1 flex-wrap">
                         <Button
                           size="sm"
                           onClick={() => handleApprove(request)}
                           disabled={processing === request.id}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-green-600 hover:bg-green-700 px-3"
                         >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Approve
+                          <CheckCircle className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleHide(request)}
+                          disabled={processing === request.id}
+                          className="px-3"
+                        >
+                          <EyeOff className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(request)}
+                          disabled={processing === request.id}
+                          className="px-3"
+                        >
+                          <Edit className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleReject(request)}
+                          onClick={() => handleDelete(request)}
                           disabled={processing === request.id}
+                          className="px-3"
                         >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Reject
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     )}
                     {request.status === "approved" && (
-                      <Badge variant="default" className="bg-green-100 text-green-800">
-                        Approved
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                          Approved
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleHide(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <EyeOff className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     )}
                     {request.status === "rejected" && (
-                      <Badge variant="destructive">
-                        Rejected
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="destructive" className="text-xs">
+                          Rejected
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleHide(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <EyeOff className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     )}
                     {request.status === "hidden" && (
-                      <Badge variant="secondary">
-                        Hidden
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          Hidden
+                        </Badge>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => handleApprove(request)}
+                            disabled={processing === request.id}
+                            className="bg-green-600 hover:bg-green-700 px-3"
+                          >
+                            <CheckCircle className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(request)}
+                            disabled={processing === request.id}
+                            className="px-3"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     )}
                   </TableCell>
                 </TableRow>
