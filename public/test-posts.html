@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Posts</title>
+</head>
+<body>
+    <h1>Test Posts Fetching</h1>
+    <div id="posts"></div>
+    
+    <script>
+        async function testPosts() {
+            try {
+                const response = await fetch('/api/public-posts?page=1&limit=12&postType=all');
+                const data = await response.json();
+                
+                console.log('Fetched data:', data);
+                
+                const postsDiv = document.getElementById('posts');
+                if (data.posts && data.posts.length > 0) {
+                    postsDiv.innerHTML = `<h2>Found ${data.posts.length} posts:</h2>`;
+                    data.posts.forEach(post => {
+                        postsDiv.innerHTML += `
+                            <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                                <h3>${post.work}</h3>
+                                <p>Type: ${post.post_type}</p>
+                                <p>Status: ${post.status}</p>
+                                <p>Place: ${post.place}</p>
+                                <p>Salary: ${post.salary}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    postsDiv.innerHTML = '<p>No posts found</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('posts').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        testPosts();
+    </script>
+</body>
+</html>
