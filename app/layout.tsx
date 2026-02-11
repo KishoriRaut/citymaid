@@ -41,7 +41,6 @@ export default function RootLayout({
             {children}
           </ConditionalHeader>
           <RegularHeader />
-          <main className="flex-1">{children}</main>
           <ConditionalFooter />
         </div>
         <Toaster />
