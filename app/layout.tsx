@@ -1,5 +1,3 @@
-"use client";
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { appConfig } from "@/lib/config";
@@ -35,17 +33,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const handleCreatePost = () => {
-    // This will be handled by the homepage component
-    // We'll dispatch a custom event to open the post creation form
-    window.dispatchEvent(new CustomEvent('openCreatePost'));
-  };
-
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <div className="flex min-h-screen flex-col">
-          <ConditionalHeader onCreatePost={handleCreatePost}>
+          <ConditionalHeader>
             {children}
           </ConditionalHeader>
           <RegularHeader />

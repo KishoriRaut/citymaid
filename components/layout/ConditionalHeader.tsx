@@ -5,10 +5,15 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "./DashboardLayout";
 import { appConfig } from "@/lib/config";
 
-export function ConditionalHeader({ children, onCreatePost }: { children?: React.ReactNode; onCreatePost?: () => void }) {
+export function ConditionalHeader({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
   const [isAdminPage, setIsAdminPage] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const handleCreatePost = () => {
+    // Dispatch custom event to open the post creation form
+    window.dispatchEvent(new CustomEvent('openCreatePost'));
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -24,7 +29,7 @@ export function ConditionalHeader({ children, onCreatePost }: { children?: React
   const isHomePage = pathname === appConfig.routes.home;
   
   if (isHomePage) {
-    return <DashboardLayout onCreatePost={onCreatePost}>{children}</DashboardLayout>;
+    return <DashboardLayout onCreatePost={handleCreatePost}>{children}</DashboardLayout>;
   }
 
   // For other pages, return null (they'll use their own layouts)
