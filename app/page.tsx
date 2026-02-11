@@ -249,7 +249,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      post_type: postType,
+      post_type: selectedPostType,
       work: "",
       workOther: "",
       workTime: "",
@@ -263,7 +263,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   });
 
   // Watch post_type to show/hide photo upload - always called in same order
-  const postType = form.watch("post_type");
+  const currentPostType = form.watch("post_type");
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
 
@@ -421,7 +421,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                           >
                             <div className="space-y-3">
                               <div className="text-4xl">💼</div>
-                              <div className="text-lg font-semibold">Hire a Worker</div>
+                              <div className="text-lg font-semibold">Post a Job</div>
                               <div className="text-sm text-muted-foreground">Post a job requirement and find talent</div>
                             </div>
                           </label>
@@ -442,7 +442,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                           >
                             <div className="space-y-3">
                               <div className="text-4xl">👤</div>
-                              <div className="text-lg font-semibold">Find a Job</div>
+                              <div className="text-lg font-semibold">Create Your Work Profile</div>
                               <div className="text-sm text-muted-foreground">Create your professional work profile</div>
                             </div>
                           </label>
@@ -451,31 +451,23 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
+                )
+              }
               />
 
               {/* Work Type */}
               <FormField
-                control={form.control}
-                name="work"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                        {postType === "employer" ? (
-                          <span className="text-primary">🔧</span>
-                        ) : (
-                          <span className="text-primary">💪</span>
-                        )}
-                      </div>
-                      {postType === "employer" ? "Job Category" : "Skills & Services"}
-                      <span className="text-red-500 ml-1">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
-                          <SelectValue placeholder={
-                            postType === "employer" 
+                    control={form.control}
+                    name="work"
+                    render={({ field }) => (
+                      <>
+                        <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                            {currentPostType === "employer" ? (
+                              <span className="text-primary">�</span>
+                            ) : (
+                              <span className="text-primary">💪</span>
+                            )}
                               ? "Select job category" 
                               : "Select your skills/services"
                           } />
@@ -1059,7 +1051,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
   const [currentView, setCurrentView] = useState<"home" | "faq" | "contact" | "createPost" | "howItWorks" | "createProfile" | "postJob">("home");
-  const [postType, setPostType] = useState<"employee" | "employer">("employee");
+  const [selectedPostType, setSelectedPostType] = useState<"employee" | "employer">("employee");
   
   // Handle mounting
   useEffect(() => {
@@ -1088,12 +1080,12 @@ export default function HomePage() {
 
   const handleCreateProfile = useCallback(() => {
     setCurrentView("createProfile");
-    setPostType("employee"); // Pre-select employee type for profile
+    setSelectedPostType("employee"); // Pre-select employee type for profile
   }, []);
 
   const handlePostJob = useCallback(() => {
     setCurrentView("postJob");
-    setPostType("employer"); // Pre-select employer type for job posting
+    setSelectedPostType("employer"); // Pre-select employer type for job posting
   }, []);
 
   const handleCreatePost = useCallback(() => {
