@@ -1,6 +1,6 @@
 /* Restore original post card layout */
 .post-card {
-  width: 100%;
+  width: 100vw;
   max-width: 1200px;
   margin: 0 auto;
 }
