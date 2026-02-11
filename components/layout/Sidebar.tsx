@@ -41,12 +41,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
   const menuItems = [
     {
-      icon: Home,
-      label: "Home",
-      href: appConfig.routes.home,
-      isActive: pathname === appConfig.routes.home,
-    },
-    {
       icon: PlusCircle,
       label: "Create Post",
       href: appConfig.routes.post,
@@ -130,6 +124,27 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 <Users className="h-5 w-5" />
                 <span className="font-medium">Hire a Worker</span>
               </Button>
+
+              {/* Home Navigation */}
+              <Link href={appConfig.routes.home}>
+                <Button
+                  variant={pathname === appConfig.routes.home ? "default" : "ghost"}
+                  className={`w-full justify-start gap-3 h-12 ${
+                    pathname === appConfig.routes.home 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                  onClick={() => {
+                    // Close mobile menu after navigation
+                    if (window.innerWidth < 1024) {
+                      onToggle();
+                    }
+                  }}
+                >
+                  <Home className="h-5 w-5" />
+                  <span className="font-medium">Home</span>
+                </Button>
+              </Link>
 
               {/* Main Navigation */}
               {menuItems.map((item) => {
