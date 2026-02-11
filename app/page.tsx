@@ -225,6 +225,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   // Listen for create post events
   useEffect(() => {
     const handleOpenCreatePost = () => {
+      console.log('openCreatePost event received');
       setShowCreatePost(true);
     };
 
@@ -329,9 +330,13 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
       {showCreatePost ? (
-        <PostCreation onClose={handleCloseCreatePost} />
+        <>
+          {console.log('Rendering PostCreation component')}
+          <PostCreation onClose={handleCloseCreatePost} />
+        </>
       ) : (
         <>
+          {console.log('Rendering normal content')}
           {/* Job Type Tabs */}
           <JobTypeTabs 
             activeTab={activeTab} 

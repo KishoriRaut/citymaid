@@ -11,6 +11,7 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
   const [mounted, setMounted] = useState(false);
 
   const handleCreatePost = () => {
+    console.log('Create Post button clicked, dispatching event');
     // Dispatch custom event to open the post creation form
     window.dispatchEvent(new CustomEvent('openCreatePost'));
   };
