@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -11,9 +10,7 @@ import {
   Settings, 
   HelpCircle, 
   Menu, 
-  X,
-  Briefcase,
-  Users
+  X 
 } from "lucide-react";
 import { appConfig } from "@/lib/config";
 import AdminButton from "@/components/AdminButton";
@@ -25,21 +22,14 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const [activeTab, setActiveTab] = useState<"employee" | "employer">("employee");
-
-  const handleTabChange = (tab: "employee" | "employer") => {
-    setActiveTab(tab);
-    // Dispatch custom event to notify homepage
-    window.dispatchEvent(new CustomEvent('sidebarTabChange', { 
-      detail: { tab } 
-    }));
-    // Close mobile menu after tab selection
-    if (window.innerWidth < 1024) {
-      onToggle();
-    }
-  };
 
   const menuItems = [
+    {
+      icon: Home,
+      label: "Home",
+      href: appConfig.routes.home,
+      isActive: pathname === appConfig.routes.home,
+    },
     {
       icon: PlusCircle,
       label: "Create Post",
@@ -99,53 +89,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           {/* Navigation */}
           <nav className="flex-1 p-4 overflow-y-auto">
             <div className="space-y-2">
-              {/* Job Type Tabs */}
-              <Button
-                variant={activeTab === "employee" ? "default" : "ghost"}
-                className={`w-full justify-start gap-3 h-12 ${
-                  activeTab === "employee" 
-                    ? "bg-primary text-primary-foreground" 
-                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTabChange("employee")}
-              >
-                <Briefcase className="h-5 w-5" />
-                <span className="font-medium">Find a Job</span>
-              </Button>
-              <Button
-                variant={activeTab === "employer" ? "default" : "ghost"}
-                className={`w-full justify-start gap-3 h-12 ${
-                  activeTab === "employer" 
-                    ? "bg-primary text-primary-foreground" 
-                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTabChange("employer")}
-              >
-                <Users className="h-5 w-5" />
-                <span className="font-medium">Hire a Worker</span>
-              </Button>
-
-              {/* Home Navigation */}
-              <Link href={appConfig.routes.home}>
-                <Button
-                  variant={pathname === appConfig.routes.home ? "default" : "ghost"}
-                  className={`w-full justify-start gap-3 h-12 ${
-                    pathname === appConfig.routes.home 
-                      ? "bg-primary text-primary-foreground" 
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                  onClick={() => {
-                    // Close mobile menu after navigation
-                    if (window.innerWidth < 1024) {
-                      onToggle();
-                    }
-                  }}
-                >
-                  <Home className="h-5 w-5" />
-                  <span className="font-medium">Home</span>
-                </Button>
-              </Link>
-
               {/* Main Navigation */}
               {menuItems.map((item) => {
                 const Icon = item.icon;

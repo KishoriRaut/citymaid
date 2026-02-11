@@ -26,7 +26,36 @@ function MarketingBanner() {
   );
 }
 
-// Posts Grid Component - Only this part should re-render
+// Job Type Tabs Component
+function JobTypeTabs({ activeTab, onTabChange }: { 
+  activeTab: "all" | "employer" | "employee";
+  onTabChange: (tab: "all" | "employer" | "employee") => void;
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 mb-6 sm:mb-8 bg-gray-100 p-2 sm:p-1 rounded-lg">
+      <button
+        className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all ${
+          activeTab === "employee" 
+            ? "bg-white text-gray-900 shadow-sm" 
+            : "text-gray-600 hover:text-gray-900"
+        }`}
+        onClick={() => onTabChange("employee")}
+      >
+        <span className="text-xs sm:text-sm">Find a Job</span>
+      </button>
+      <button
+        className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all ${
+          activeTab === "employer" 
+            ? "bg-white text-gray-900 shadow-sm" 
+            : "text-gray-600 hover:text-gray-900"
+        }`}
+        onClick={() => onTabChange("employer")}
+      >
+        <span className="text-xs sm:text-sm">Hire a Worker</span>
+      </button>
+    </div>
+  );
+}
 function PostsGrid({ 
   posts, 
   isLoading, 
@@ -254,6 +283,16 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   // Single return statement - no duplicates
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      {/* Job Type Tabs */}
+      <JobTypeTabs 
+        activeTab={activeTab} 
+        onTabChange={(tab) => {
+          // This will be handled by the parent component
+          const event = new CustomEvent('jobTabChange', { detail: { tab } });
+          window.dispatchEvent(event);
+        }}
+      />
+      
       <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
       
       {/* Posts Grid - handles all states internally */}
@@ -277,7 +316,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   );
 }
 
-// Main HomePage Component - Tabs outside stateful component
+// Main HomePage Component - Tabs in main content area
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
@@ -289,16 +328,16 @@ export default function HomePage() {
     setTimeout(() => setIsTabChanging(false), 500);
   }, []);
 
-  // Listen for tab changes from sidebar (using custom event)
+  // Listen for tab changes from main content area
   useEffect(() => {
-    const handleSidebarTabChange = (event: CustomEvent) => {
+    const handleJobTabChange = (event: CustomEvent) => {
       handleTabChange(event.detail.tab);
     };
 
-    window.addEventListener('sidebarTabChange', handleSidebarTabChange as EventListener);
+    window.addEventListener('jobTabChange', handleJobTabChange as EventListener);
     
     return () => {
-      window.removeEventListener('sidebarTabChange', handleSidebarTabChange as EventListener);
+      window.removeEventListener('jobTabChange', handleJobTabChange as EventListener);
     };
   }, [handleTabChange]);
   
@@ -307,9 +346,6 @@ export default function HomePage() {
       <Suspense fallback={<div>Loading...</div>}>
         <div className="min-h-screen bg-background">
           <StableSection />
-          
-          {/* Removed duplicate tabs from main content area */}
-          {/* Tabs are now only in the sidebar */}
           
           <div className="w-full">
             <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
