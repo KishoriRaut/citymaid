@@ -41,6 +41,24 @@ const formSchema = z.object({
   timeOther: z.string().optional(),
   place: z.string().min(1, "Please enter a location"),
   salary: z.string().min(1, "Please enter a salary"),
+  
+  // Common fields for both types
+  email: z.string().email("Please enter a valid email").min(1, "Email is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  bestWayToContact: z.enum(["phone", "email", "whatsapp", "both"]),
+  
+  // Employee-specific fields
+  age: z.string().optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  education: z.string().optional(),
+  experience: z.string().optional(),
+  skills: z.string().optional(),
+  
+  // Employer-specific fields  
+  companyName: z.string().optional(),
+  businessType: z.string().optional(),
+  requirements: z.string().optional(),
+  
   contact: z.string().min(1, "Please enter contact information"),
   details: z.string().min(10, "Please provide at least 10 characters").max(500, "Details must be less than 500 characters"),
   photo: z.any().refine((data) => {
@@ -252,10 +270,21 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
       post_type: postType,
       work: "",
       workOther: "",
-      workTime: "",
+      time: "",
       timeOther: "",
       place: "",
       salary: "",
+      email: "",
+      phone: "",
+      bestWayToContact: "both",
+      age: "",
+      gender: undefined,
+      education: "",
+      experience: "",
+      skills: "",
+      companyName: "",
+      businessType: "",
+      requirements: "",
       contact: "",
       details: "",
       photo: undefined,
@@ -325,6 +354,24 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
         details: values.details,
         photo_url: photoUrl,
         employee_photo: employeePhotoUrl,
+        
+        // New fields
+        email: values.email,
+        phone: values.phone,
+        bestWayToContact: values.bestWayToContact,
+        
+        // Type-specific fields
+        ...(values.post_type === "employee" ? {
+          age: values.age,
+          gender: values.gender,
+          education: values.education,
+          experience: values.experience,
+          skills: values.skills,
+        } : {
+          companyName: values.companyName,
+          businessType: values.businessType,
+          requirements: values.requirements,
+        }),
       };
 
       // Submit post
@@ -547,36 +594,288 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                 )}
               />
 
-              {/* Contact Input */}
-              <FormField
-                control={form.control}
-                name="contact"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <span className="text-primary">📞</span>
-                      </div>
-                      {postType === "employer" ? "Contact Information" : "Contact Details"}
-                      <span className="text-red-500 ml-1">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder={
-                          postType === "employer" 
-                            ? "Phone, email, best time to contact" 
-                            : "Phone, email, LinkedIn, portfolio"
-                        } 
-                        className="min-h-[120px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Contact Information Section */}
+              <div className="space-y-6">
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                  
+                  {/* Email Input */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                          <span className="text-primary">📧</span>
+                          Email Address
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="email"
+                            placeholder="your.email@example.com" 
+                            className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* Details Input */}
+                  {/* Phone Input */}
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                          <span className="text-primary">📱</span>
+                          Phone Number
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g., 9841234567" 
+                            className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Best Way to Contact */}
+                  <FormField
+                    control={form.control}
+                    name="bestWayToContact"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                          <span className="text-primary">💬</span>
+                          Best Way to Contact
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                              <SelectValue placeholder="Select preferred contact method" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="phone">Phone Call</SelectItem>
+                            <SelectItem value="email">Email</SelectItem>
+                            <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                            <SelectItem value="both">Both Phone & Email</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Type-Specific Fields */}
+              <div className="space-y-6">
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    {postType === "employer" ? "Business Information" : "Personal Information"}
+                  </h3>
+
+                  {postType === "employee" ? (
+                    // Employee-specific fields
+                    <>
+                      {/* Age */}
+                      <FormField
+                        control={form.control}
+                        name="age"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">🎂</span>
+                              Age
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., 25" 
+                                className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Gender */}
+                      <FormField
+                        control={form.control}
+                        name="gender"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">⚧</span>
+                              Gender
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                                  <SelectValue placeholder="Select gender" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="male">Male</SelectItem>
+                                <SelectItem value="female">Female</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Education */}
+                      <FormField
+                        control={form.control}
+                        name="education"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">🎓</span>
+                              Education
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., High School, Bachelor's Degree" 
+                                className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Experience */}
+                      <FormField
+                        control={form.control}
+                        name="experience"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">💼</span>
+                              Work Experience
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., 2 years, 5+ years" 
+                                className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Skills */}
+                      <FormField
+                        control={form.control}
+                        name="skills"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">🛠️</span>
+                              Skills & Expertise
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="List your key skills, certifications, and expertise..." 
+                                className="min-h-[100px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  ) : (
+                    // Employer-specific fields
+                    <>
+                      {/* Company Name */}
+                      <FormField
+                        control={form.control}
+                        name="companyName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">🏢</span>
+                              Company Name
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., ABC Restaurant" 
+                                className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Business Type */}
+                      <FormField
+                        control={form.control}
+                        name="businessType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">🏪</span>
+                              Business Type
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="e.g., Restaurant, Hotel, Household Services" 
+                                className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Requirements */}
+                      <FormField
+                        control={form.control}
+                        name="requirements"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">📋</span>
+                              Specific Requirements
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Describe specific requirements, qualifications, or preferences..." 
+                                className="min-h-[100px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Additional Details */}
               <FormField
                 control={form.control}
                 name="details"
@@ -590,15 +889,15 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                           <span className="text-primary">👤</span>
                         )}
                       </div>
-                      {postType === "employer" ? "Job Details" : "Personal Details"}
+                      {postType === "employer" ? "Additional Job Details" : "Additional Personal Details"}
                       <span className="text-red-500 ml-1">*</span>
                     </FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder={
                           postType === "employer" 
-                            ? "Job responsibilities, requirements, work environment..." 
-                            : "Your skills, experience, qualifications, achievements..."
+                            ? "Job responsibilities, work environment, company culture, benefits..." 
+                            : "Personal achievements, career goals, availability, references..."
                         } 
                         className="min-h-[150px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
                         {...field} 
