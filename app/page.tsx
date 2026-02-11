@@ -808,6 +808,33 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                   ) : (
                     // Employer-specific fields
                     <>
+                      {/* Company/Individual Selector */}
+                      <FormField
+                        control={form.control}
+                        name="isIndividual"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                              <span className="text-primary">👥</span>
+                              Posting As
+                              <span className="text-red-500 ml-1">*</span>
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                                  <SelectValue placeholder="Select posting type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="company">Company/Business</SelectItem>
+                                <SelectItem value="individual">Individual Person</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       {/* Company Name */}
                       <FormField
                         control={form.control}
