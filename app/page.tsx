@@ -405,7 +405,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full pb-8">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
