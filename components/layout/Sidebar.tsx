@@ -20,9 +20,11 @@ interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onCreatePost?: () => void;
+  onFAQ?: () => void;
+  onContact?: () => void;
 }
 
-export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [
@@ -31,18 +33,23 @@ export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
       label: "Home",
       href: appConfig.routes.home,
       isActive: pathname === appConfig.routes.home,
+      isNavigation: true,
     },
     {
       icon: MessageSquare,
       label: "FAQ",
       href: "/pages/faq",
       isActive: pathname === "/pages/faq",
+      isNavigation: false,
+      action: onFAQ,
     },
     {
       icon: HelpCircle,
       label: "Contact",
       href: "/pages/contact",
       isActive: pathname === "/pages/contact",
+      isNavigation: false,
+      action: onContact,
     },
   ];
 
@@ -89,8 +96,29 @@ export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link key={item.href} href={item.href}>
+                  item.isNavigation ? (
+                    <Link key={item.href} href={item.href}>
+                      <Button
+                        variant={item.isActive ? "default" : "ghost"}
+                        className={`w-full justify-start gap-3 h-12 ${
+                          item.isActive 
+                            ? "bg-primary text-primary-foreground" 
+                            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                        }`}
+                        onClick={() => {
+                          // Close mobile menu after navigation
+                          if (window.innerWidth < 1024) {
+                            onToggle();
+                          }
+                        }}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span className="font-medium">{item.label}</span>
+                      </Button>
+                    </Link>
+                  ) : (
                     <Button
+                      key={item.label}
                       variant={item.isActive ? "default" : "ghost"}
                       className={`w-full justify-start gap-3 h-12 ${
                         item.isActive 
@@ -98,7 +126,9 @@ export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
                           : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
                       }`}
                       onClick={() => {
-                        // Close mobile menu after navigation
+                        // Call the action handler
+                        item.action?.();
+                        // Close mobile menu after action
                         if (window.innerWidth < 1024) {
                           onToggle();
                         }
@@ -107,7 +137,7 @@ export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
                       <Icon className="h-5 w-5" />
                       <span className="font-medium">{item.label}</span>
                     </Button>
-                  </Link>
+                  )
                 );
               })}
             </div>

@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw, X } from "lucide-react";
-import { registerCreatePostHandler } from "@/components/layout/ConditionalHeader";
+import { registerCreatePostHandler, registerFAQHandler, registerContactHandler } from "@/components/layout/ConditionalHeader";
 import { useToast } from "@/hooks/use-toast";
 
 // Libs
@@ -66,7 +66,39 @@ function MarketingBanner() {
   );
 }
 
-// Post Creation Component - Full form from /post/page.tsx
+// FAQ Component - Placeholder
+function FAQContent() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">❓</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">FAQ</h2>
+          <p className="text-gray-600 mb-2">Frequently Asked Questions</p>
+          <p className="text-sm text-gray-500">No content available for now</p>
+          <p className="text-xs text-gray-400 mt-4">FAQ section coming soon...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Contact Component - Placeholder
+function ContactContent() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">📞</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Contact</h2>
+          <p className="text-gray-600 mb-2">Contact Information</p>
+          <p className="text-sm text-gray-500">No content available for now</p>
+          <p className="text-xs text-gray-400 mt-4">Contact section coming soon...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 function PostCreation({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -710,6 +742,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [isPageChanging, setIsPageChanging] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   // Ref to store the latest loadPosts function
   const loadPostsRef = useRef<typeof loadPosts | null>(null);
@@ -723,6 +756,11 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
     salary: "",
   });
 
+  // Handle mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Handle create post
   const handleCreatePost = useCallback(() => {
     console.log('handleCreatePost called, setting showCreatePost to true');
@@ -734,17 +772,6 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
     setShowCreatePost(false);
   }, []);
 
-  // Register the handler with the ConditionalHeader
-  useEffect(() => {
-    console.log('Registering createPostHandler');
-    registerCreatePostHandler(handleCreatePost);
-    
-    return () => {
-      console.log('Cleaning up createPostHandler');
-      registerCreatePostHandler(() => {});
-    };
-  }, [handleCreatePost]);
-  
   // Load posts - enabled to fetch posts from database
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
     try {
@@ -808,12 +835,13 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
     setCurrentPage(1);
   }, []);
 
-  // Load posts when activeTab changes
+  // Load posts when component mounts or tab changes
   useEffect(() => {
-    if (activeTab && loadPostsRef.current) {
-      loadPostsRef.current(1, true);
-    }
-  }, [activeTab]);
+    if (!mounted) return;
+    
+    console.log('Loading posts for tab:', activeTab);
+    loadPosts(1, true);
+  }, [activeTab, loadPosts, mounted]);
 
   // Use posts from state
   const filteredPosts: PostWithMaskedContact[] = posts;
@@ -883,8 +911,15 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
 
 // Main HomePage Component - Simplified for immediate loading
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
+  const [currentView, setCurrentView] = useState<"home" | "faq" | "contact" | "createPost">("home");
+  
+  // Handle mounting
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const handleTabChange = useCallback((tab: "all" | "employer" | "employee") => {
     setActiveTab(tab);
@@ -893,8 +928,27 @@ export default function HomePage() {
     setTimeout(() => setIsTabChanging(false), 500);
   }, []);
 
+  // Handle view changes
+  const handleFAQ = useCallback(() => {
+    setCurrentView("faq");
+  }, []);
+
+  const handleContact = useCallback(() => {
+    setCurrentView("contact");
+  }, []);
+
+  const handleCreatePost = useCallback(() => {
+    setCurrentView("createPost");
+  }, []);
+
+  const handleCloseCreatePost = useCallback(() => {
+    setCurrentView("home");
+  }, []);
+
   // Listen for tab changes from main content area
   useEffect(() => {
+    if (!mounted) return;
+    
     const handleJobTabChange = (event: CustomEvent) => {
       handleTabChange(event.detail.tab);
     };
@@ -904,12 +958,44 @@ export default function HomePage() {
     return () => {
       window.removeEventListener('jobTabChange', handleJobTabChange as EventListener);
     };
-  }, [handleTabChange]);
+  }, [handleTabChange, mounted]);
+
+  // Register handlers with ConditionalHeader
+  useEffect(() => {
+    if (!mounted) return;
+    
+    registerCreatePostHandler(handleCreatePost);
+    registerFAQHandler(handleFAQ);
+    registerContactHandler(handleContact);
+  }, [handleCreatePost, handleFAQ, handleContact, mounted]);
+  
+  // Don't render until mounted to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // Render different content based on current view
+  const renderContent = () => {
+    switch (currentView) {
+      case "faq":
+        return <FAQContent />;
+      case "contact":
+        return <ContactContent />;
+      case "createPost":
+        return <PostCreation onClose={handleCloseCreatePost} />;
+      default:
+        return <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />;
+    }
+  };
   
   return (
     <div className="min-h-screen bg-background">
       <div className="w-full">
-        <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
+        {renderContent()}
       </div>
     </div>
   );

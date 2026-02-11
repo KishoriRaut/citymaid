@@ -7,9 +7,11 @@ import { DashboardHeader } from "./DashboardHeader";
 interface DashboardLayoutProps {
   children: React.ReactNode;
   onCreatePost?: () => void;
+  onFAQ?: () => void;
+  onContact?: () => void;
 }
 
-export function DashboardLayout({ children, onCreatePost }: DashboardLayoutProps) {
+export function DashboardLayout({ children, onCreatePost, onFAQ, onContact }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -20,7 +22,7 @@ export function DashboardLayout({ children, onCreatePost }: DashboardLayoutProps
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Sidebar */}
       <div className="fixed left-0 top-0 h-full w-64 z-40">
-        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} onCreatePost={onCreatePost} />
+        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} onCreatePost={onCreatePost} onFAQ={onFAQ} onContact={onContact} />
       </div>
       
       {/* Main Content Area */}

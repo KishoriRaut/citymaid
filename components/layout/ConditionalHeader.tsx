@@ -5,8 +5,10 @@ import { useEffect, useState, useRef } from "react";
 import { DashboardLayout } from "./DashboardLayout";
 import { appConfig } from "@/lib/config";
 
-// Global ref to store the create post handler
+// Global refs to store handlers
 let createPostHandler: (() => void) | null = null;
+let faqHandler: (() => void) | null = null;
+let contactHandler: (() => void) | null = null;
 
 export function ConditionalHeader({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,11 +17,28 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
 
   const handleCreatePost = () => {
     console.log('Create Post button clicked, calling handler');
-    // Call the handler directly if it exists
     if (createPostHandler) {
       createPostHandler();
     } else {
       console.log('No createPostHandler found');
+    }
+  };
+
+  const handleFAQ = () => {
+    console.log('FAQ button clicked, calling handler');
+    if (faqHandler) {
+      faqHandler();
+    } else {
+      console.log('No faqHandler found');
+    }
+  };
+
+  const handleContact = () => {
+    console.log('Contact button clicked, calling handler');
+    if (contactHandler) {
+      contactHandler();
+    } else {
+      console.log('No contactHandler found');
     }
   };
 
@@ -33,18 +52,36 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
     return null;
   }
 
-  // Use dashboard layout for homepage, regular header for other pages
+  // Use dashboard layout for homepage and related pages
   const isHomePage = pathname === appConfig.routes.home;
+  const isFAQPage = pathname === "/pages/faq";
+  const isContactPage = pathname === "/pages/contact";
   
-  if (isHomePage) {
-    return <DashboardLayout onCreatePost={handleCreatePost}>{children}</DashboardLayout>;
+  if (isHomePage || isFAQPage || isContactPage) {
+    return (
+      <DashboardLayout 
+        onCreatePost={handleCreatePost}
+        onFAQ={handleFAQ}
+        onContact={handleContact}
+      >
+        {children}
+      </DashboardLayout>
+    );
   }
 
   // For other pages, return null (they'll use their own layouts)
   return null;
 }
 
-// Export function to register the handler
+// Export functions to register handlers
 export const registerCreatePostHandler = (handler: () => void) => {
   createPostHandler = handler;
+};
+
+export const registerFAQHandler = (handler: () => void) => {
+  faqHandler = handler;
+};
+
+export const registerContactHandler = (handler: () => void) => {
+  contactHandler = handler;
 };
