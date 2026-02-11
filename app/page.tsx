@@ -264,6 +264,9 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Debug: Log props
+  console.log('🔍 PostCreation rendered with postType:', postType);
+
   // Initialize form - always called in same order
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -298,6 +301,10 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
 
+  // Debug: Log form values
+  console.log('🔍 Form currentPostType:', currentPostType);
+  console.log('🔍 Form values:', form.getValues());
+
   // Prevent SSR issues with react-hook-form
   useEffect(() => {
     setMounted(true);
@@ -306,14 +313,8 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   // Don't render until mounted to avoid hydration issues
   if (!mounted) {
     return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-muted rounded"></div>
-            <div className="h-64 bg-muted rounded"></div>
-            <div className="h-96 bg-muted rounded"></div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
