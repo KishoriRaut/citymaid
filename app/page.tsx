@@ -249,7 +249,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      post_type: selectedPostType,
+      post_type: postType,
       work: "",
       workOther: "",
       workTime: "",
@@ -457,17 +457,26 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
 
               {/* Work Type */}
               <FormField
-                    control={form.control}
-                    name="work"
-                    render={({ field }) => (
-                      <>
-                        <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                          <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
-                            {currentPostType === "employer" ? (
-                              <span className="text-primary">�</span>
-                            ) : (
-                              <span className="text-primary">💪</span>
-                            )}
+                control={form.control}
+                name="work"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        {currentPostType === "employer" ? (
+                          <span className="text-primary">🔧</span>
+                        ) : (
+                          <span className="text-primary">💪</span>
+                        )}
+                      </div>
+                      {currentPostType === "employer" ? "Job Category" : "Skills & Services"}
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                          <SelectValue placeholder={
+                            currentPostType === "employer" 
                               ? "Select job category" 
                               : "Select your skills/services"
                           } />
