@@ -104,39 +104,34 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 overflow-y-auto">
-            {/* Job Type Tabs */}
-            <div className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Browse</h3>
-              <div className="space-y-1">
-                <Button
-                  variant={activeTab === "employee" ? "default" : "ghost"}
-                  className={`w-full justify-start gap-3 h-12 ${
-                    activeTab === "employee" 
-                      ? "bg-primary text-primary-foreground" 
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                  onClick={() => handleTabChange("employee")}
-                >
-                  <Briefcase className="h-5 w-5" />
-                  <span className="font-medium">Find a Job</span>
-                </Button>
-                <Button
-                  variant={activeTab === "employer" ? "default" : "ghost"}
-                  className={`w-full justify-start gap-3 h-12 ${
-                    activeTab === "employer" 
-                      ? "bg-primary text-primary-foreground" 
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                  }`}
-                  onClick={() => handleTabChange("employer")}
-                >
-                  <Users className="h-5 w-5" />
-                  <span className="font-medium">Hire a Worker</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Main Navigation */}
             <div className="space-y-2">
+              {/* Job Type Tabs */}
+              <Button
+                variant={activeTab === "employee" ? "default" : "ghost"}
+                className={`w-full justify-start gap-3 h-12 ${
+                  activeTab === "employee" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+                onClick={() => handleTabChange("employee")}
+              >
+                <Briefcase className="h-5 w-5" />
+                <span className="font-medium">Find a Job</span>
+              </Button>
+              <Button
+                variant={activeTab === "employer" ? "default" : "ghost"}
+                className={`w-full justify-start gap-3 h-12 ${
+                  activeTab === "employer" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+                onClick={() => handleTabChange("employer")}
+              >
+                <Users className="h-5 w-5" />
+                <span className="font-medium">Hire a Worker</span>
+              </Button>
+
+              {/* Main Navigation */}
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
