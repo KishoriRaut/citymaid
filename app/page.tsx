@@ -922,7 +922,11 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
       }
 
       // Use API endpoint instead of client-side function
-      const response = await fetch(`/api/public-posts?page=${page}&limit=12&postType=${activeTab}`);
+      // Note: We swap the postType parameter to match the tab names
+      // "Available Jobs" tab (activeTab="employee") should show employer posts
+      // "Available Candidates" tab (activeTab="employer") should show employee posts
+      const postTypeToFetch = activeTab === "employee" ? "employer" : "employee";
+      const response = await fetch(`/api/public-posts?page=${page}&limit=12&postType=${postTypeToFetch}`);
       const data = await response.json();
 
       if (!response.ok) {
