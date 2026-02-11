@@ -124,7 +124,7 @@ function HowItWorksContent() {
               <div className="flex items-start gap-3">
                 <span className="text-green-500 mt-1">✓</span>
                 <div>
-                  <p className="font-medium">Browse Verified Workers</p>
+                  <p className="font-medium">Browse Available Candidates</p>
                   <p className="text-gray-600 text-sm">Find background-checked domestic workers for cooking, cleaning, childcare, and elderly care</p>
                 </div>
               </div>
@@ -176,7 +176,7 @@ function HowItWorksContent() {
               <div className="flex items-start gap-3">
                 <span className="text-blue-500 mt-1">✓</span>
                 <div>
-                  <p className="font-medium">Find Opportunities</p>
+                  <p className="font-medium">Find Available Jobs</p>
                   <p className="text-gray-600 text-sm">Browse job postings and apply to positions that match your skills</p>
                 </div>
               </div>
@@ -745,7 +745,7 @@ function JobTypeTabs({ activeTab, onTabChange }: {
         }`}
         onClick={() => onTabChange("employee")}
       >
-        <span className="text-xs sm:text-sm">Find a Job</span>
+        <span className="text-xs sm:text-sm">Available Jobs</span>
       </button>
       <button
         className={`flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all ${
@@ -755,7 +755,7 @@ function JobTypeTabs({ activeTab, onTabChange }: {
         }`}
         onClick={() => onTabChange("employer")}
       >
-        <span className="text-xs sm:text-sm">Hire a Worker</span>
+        <span className="text-xs sm:text-sm">Available Candidates</span>
       </button>
     </div>
   );
