@@ -26,6 +26,17 @@ import { AlertTriangle, RefreshCw, X } from "lucide-react";
 import { registerCreatePostHandler, registerCreateProfileHandler, registerPostJobHandler, registerFAQHandler, registerContactHandler, registerHowItWorksHandler } from "@/components/layout/ConditionalHeader";
 import { useToast } from "@/hooks/use-toast";
 
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { appConfig } from "@/lib/config";
+import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
+import { RegularHeader } from "@/components/layout/RegularHeader";
+import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
+import { Toaster } from "@/components/ui/toaster";
+import { EnvironmentIndicator } from "@/components/EnvironmentIndicator";
+import "./globals.css";
+import "./styles.css";
+
 // Libs
 import { createPost } from "@/lib/posts";
 import { getGroupedWorkTypes, isOtherWorkType } from "@/lib/work-types";
@@ -399,10 +410,10 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   };
 
   return (
-    <div className="w-full pb-8">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="w-full">
+      <div className="bg-white rounded-lg shadow-sm post-creation-form">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 post-creation-container">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">

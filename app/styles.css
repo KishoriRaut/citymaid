@@ -1,0 +1,24 @@
+/* Force full width forms - override any constraints */
+.post-creation-form {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 1.5rem !important;
+}
+
+/* Remove borders from form containers */
+.post-creation-container {
+  border: none !important;
+}
+
+/* Ensure full width for all form content */
+.form-content {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Override any padding constraints */
+.form-p-6 {
+  padding: 1.5rem !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
