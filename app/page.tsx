@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw, X } from "lucide-react";
-import { registerCreatePostHandler, registerFAQHandler, registerContactHandler } from "@/components/layout/ConditionalHeader";
+import { registerCreatePostHandler, registerFAQHandler, registerContactHandler, registerHowItWorksHandler } from "@/components/layout/ConditionalHeader";
 import { useToast } from "@/hooks/use-toast";
 
 // Libs
@@ -94,6 +94,146 @@ function ContactContent() {
           <p className="text-gray-600 mb-2">Contact Information</p>
           <p className="text-sm text-gray-500">No content available for now</p>
           <p className="text-xs text-gray-400 mt-4">Contact section coming soon...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// How It Works Component - Based on About page content
+function HowItWorksContent() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="text-center mb-8">
+          <div className="text-6xl mb-4">📖</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">How It Works</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Learn how CityMaid connects trusted domestic workers with families across Nepal
+          </p>
+        </div>
+
+        <div className="space-y-8">
+          {/* For Families Section */}
+          <div className="border rounded-lg p-6">
+            <h3 className="font-semibold text-xl mb-4 text-gray-900 flex items-center gap-2">
+              <span className="text-2xl">👨‍👩‍👧‍👦</span>
+              For Families
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-green-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Browse Verified Workers</p>
+                  <p className="text-gray-600 text-sm">Find background-checked domestic workers for cooking, cleaning, childcare, and elderly care</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-green-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Post Your Requirements</p>
+                  <p className="text-gray-600 text-sm">Create a job post with your specific needs and requirements</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-green-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Connect & Hire</p>
+                  <p className="text-gray-600 text-sm">Contact workers directly and arrange interviews</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-green-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Secure Payment</p>
+                  <p className="text-gray-600 text-sm">Pay securely through our platform with escrow protection</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* For Workers Section */}
+          <div className="border rounded-lg p-6">
+            <h3 className="font-semibold text-xl mb-4 text-gray-900 flex items-center gap-2">
+              <span className="text-2xl">💼</span>
+              For Workers
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-blue-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Create Your Profile</p>
+                  <p className="text-gray-600 text-sm">Register for free and showcase your skills and experience</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-blue-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Get Verified</p>
+                  <p className="text-gray-600 text-sm">Complete background verification to build trust with families</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-blue-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Find Opportunities</p>
+                  <p className="text-gray-600 text-sm">Browse job postings and apply to positions that match your skills</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-blue-500 mt-1">✓</span>
+                <div>
+                  <p className="font-medium">Get Paid Securely</p>
+                  <p className="text-gray-600 text-sm">Receive timely payments through our secure payment system</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Platform Features */}
+          <div className="border rounded-lg p-6">
+            <h3 className="font-semibold text-xl mb-4 text-gray-900 flex items-center gap-2">
+              <span className="text-2xl">🛡️</span>
+              Platform Features
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-800 mb-2">🔍 Background Checks</h4>
+                <p className="text-blue-700 text-sm">All workers undergo thorough verification for your safety</p>
+              </div>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-800 mb-2">💳 Secure Payments</h4>
+                <p className="text-green-700 text-sm">Escrow protection ensures safe transactions</p>
+              </div>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h4 className="font-medium text-purple-800 mb-2">⭐ Rating System</h4>
+                <p className="text-purple-700 text-sm">Build reputation through honest reviews</p>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="font-medium text-orange-800 mb-2">📞 Direct Communication</h4>
+                <p className="text-orange-700 text-sm">Chat directly with workers or families</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Statistics */}
+          <div className="text-center bg-gray-50 rounded-lg p-6">
+            <h3 className="font-semibold text-lg mb-4 text-gray-900">Trusted by Thousands</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-2">10,000+</div>
+                <div className="text-gray-600">Families Served</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">5,000+</div>
+                <div className="text-gray-600">Verified Workers</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600 mb-2">7</div>
+                <div className="text-gray-600">Major Cities</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -914,7 +1054,7 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
-  const [currentView, setCurrentView] = useState<"home" | "faq" | "contact" | "createPost">("home");
+  const [currentView, setCurrentView] = useState<"home" | "faq" | "contact" | "createPost" | "howItWorks">("home");
   
   // Handle mounting
   useEffect(() => {
@@ -935,6 +1075,10 @@ export default function HomePage() {
 
   const handleContact = useCallback(() => {
     setCurrentView("contact");
+  }, []);
+
+  const handleHowItWorks = useCallback(() => {
+    setCurrentView("howItWorks");
   }, []);
 
   const handleCreatePost = useCallback(() => {
@@ -967,7 +1111,8 @@ export default function HomePage() {
     registerCreatePostHandler(handleCreatePost);
     registerFAQHandler(handleFAQ);
     registerContactHandler(handleContact);
-  }, [handleCreatePost, handleFAQ, handleContact, mounted]);
+    registerHowItWorksHandler(handleHowItWorks);
+  }, [handleCreatePost, handleFAQ, handleContact, handleHowItWorks, mounted]);
   
   // Don't render until mounted to avoid hydration issues
   if (!mounted) {
@@ -985,6 +1130,8 @@ export default function HomePage() {
         return <FAQContent />;
       case "contact":
         return <ContactContent />;
+      case "howItWorks":
+        return <HowItWorksContent />;
       case "createPost":
         return <PostCreation onClose={handleCloseCreatePost} />;
       default:

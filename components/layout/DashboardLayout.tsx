@@ -9,9 +9,10 @@ interface DashboardLayoutProps {
   onCreatePost?: () => void;
   onFAQ?: () => void;
   onContact?: () => void;
+  onHowItWorks?: () => void;
 }
 
-export function DashboardLayout({ children, onCreatePost, onFAQ, onContact }: DashboardLayoutProps) {
+export function DashboardLayout({ children, onCreatePost, onFAQ, onContact, onHowItWorks }: DashboardLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -22,7 +23,7 @@ export function DashboardLayout({ children, onCreatePost, onFAQ, onContact }: Da
     <div className="min-h-screen bg-gray-50 flex">
       {/* Left Sidebar */}
       <div className="fixed left-0 top-0 h-full w-64 z-40">
-        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} onCreatePost={onCreatePost} onFAQ={onFAQ} onContact={onContact} />
+        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} onCreatePost={onCreatePost} onFAQ={onFAQ} onContact={onContact} onHowItWorks={onHowItWorks} />
       </div>
       
       {/* Main Content Area */}

@@ -9,6 +9,7 @@ import { appConfig } from "@/lib/config";
 let createPostHandler: (() => void) | null = null;
 let faqHandler: (() => void) | null = null;
 let contactHandler: (() => void) | null = null;
+let howItWorksHandler: (() => void) | null = null;
 
 export function ConditionalHeader({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,6 +22,15 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
       createPostHandler();
     } else {
       console.log('No createPostHandler found');
+    }
+  };
+
+  const handleHowItWorks = () => {
+    console.log('How It Works button clicked, calling handler');
+    if (howItWorksHandler) {
+      howItWorksHandler();
+    } else {
+      console.log('No howItWorksHandler found');
     }
   };
 
@@ -56,13 +66,15 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
   const isHomePage = pathname === appConfig.routes.home;
   const isFAQPage = pathname === "/pages/faq";
   const isContactPage = pathname === "/pages/contact";
+  const isAboutPage = pathname === "/pages/about";
   
-  if (isHomePage || isFAQPage || isContactPage) {
+  if (isHomePage || isFAQPage || isContactPage || isAboutPage) {
     return (
       <DashboardLayout 
         onCreatePost={handleCreatePost}
         onFAQ={handleFAQ}
         onContact={handleContact}
+        onHowItWorks={handleHowItWorks}
       >
         {children}
       </DashboardLayout>
@@ -84,4 +96,8 @@ export const registerFAQHandler = (handler: () => void) => {
 
 export const registerContactHandler = (handler: () => void) => {
   contactHandler = handler;
+};
+
+export const registerHowItWorksHandler = (handler: () => void) => {
+  howItWorksHandler = handler;
 };

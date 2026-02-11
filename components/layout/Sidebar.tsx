@@ -10,6 +10,7 @@ import {
   PlusCircle, 
   HelpCircle, 
   MessageSquare, 
+  BookOpen, 
   Menu, 
   X 
 } from "lucide-react";
@@ -22,9 +23,10 @@ interface SidebarProps {
   onCreatePost?: () => void;
   onFAQ?: () => void;
   onContact?: () => void;
+  onHowItWorks?: () => void;
 }
 
-export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact, onHowItWorks }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [
@@ -34,6 +36,14 @@ export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact }: Si
       href: appConfig.routes.home,
       isActive: pathname === appConfig.routes.home,
       isNavigation: true,
+    },
+    {
+      icon: BookOpen,
+      label: "How It Works",
+      href: "/pages/about",
+      isActive: pathname === "/pages/about",
+      isNavigation: false,
+      action: onHowItWorks,
     },
     {
       icon: MessageSquare,
