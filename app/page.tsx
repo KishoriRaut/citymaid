@@ -79,7 +79,7 @@ function MarketingBanner() {
   const router = useRouter();
   
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+    <div className="w-full">
       {/* Banner removed completely */}
     </div>
   );
@@ -88,7 +88,7 @@ function MarketingBanner() {
 // FAQ Component - Placeholder
 function FAQContent() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">❓</div>
@@ -105,7 +105,7 @@ function FAQContent() {
 // Contact Component - Placeholder
 function ContactContent() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📞</div>
@@ -122,12 +122,12 @@ function ContactContent() {
 // How It Works Component - Based on About page content
 function HowItWorksContent() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="w-full">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">📖</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">How It Works</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600">
             Learn how CityMaid connects trusted domestic workers with families across Nepal
           </p>
         </div>
