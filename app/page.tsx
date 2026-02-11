@@ -881,7 +881,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   );
 }
 
-// Main HomePage Component - Tabs in main content area
+// Main HomePage Component - Simplified for immediate loading
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
@@ -907,16 +907,10 @@ export default function HomePage() {
   }, [handleTabChange]);
   
   return (
-    <EnvironmentCheck>
-      <Suspense fallback={<div>Loading...</div>}>
-        <div className="min-h-screen bg-background">
-          <StableSection />
-          
-          <div className="w-full">
-            <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
-          </div>
-        </div>
-      </Suspense>
-    </EnvironmentCheck>
+    <div className="min-h-screen bg-background">
+      <div className="w-full">
+        <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />
+      </div>
+    </div>
   );
 }
