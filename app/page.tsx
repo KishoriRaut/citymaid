@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, X } from "lucide-react";
 
 // Static Marketing Banner Component - Won't re-render on tab changes
 function MarketingBanner() {
@@ -26,7 +26,29 @@ function MarketingBanner() {
   );
 }
 
-// Job Type Tabs Component
+// Post Creation Component
+function PostCreation({ onClose }: { onClose: () => void }) {
+  // This will be a simplified version of the post creation form
+  // For now, we'll show a placeholder
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Create New Post</h2>
+          <Button variant="ghost" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="text-gray-600">Loading post creation form...</p>
+          <p className="text-sm text-gray-500 mt-2">This will open the full post creation interface</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 function JobTypeTabs({ activeTab, onTabChange }: { 
   activeTab: "all" | "employer" | "employee";
   onTabChange: (tab: "all" | "employer" | "employee") => void;
@@ -177,6 +199,7 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [isPageChanging, setIsPageChanging] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
   
   // Ref to store the latest loadPosts function
   const loadPostsRef = useRef<typeof loadPosts | null>(null);
@@ -189,6 +212,28 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
     place: "",
     salary: "",
   });
+
+  // Handle create post
+  const handleCreatePost = useCallback(() => {
+    setShowCreatePost(true);
+  }, []);
+
+  const handleCloseCreatePost = useCallback(() => {
+    setShowCreatePost(false);
+  }, []);
+
+  // Listen for create post events
+  useEffect(() => {
+    const handleOpenCreatePost = () => {
+      setShowCreatePost(true);
+    };
+
+    window.addEventListener('openCreatePost', handleOpenCreatePost);
+    
+    return () => {
+      window.removeEventListener('openCreatePost', handleOpenCreatePost);
+    };
+  }, []);
   
   // Load posts - enabled to fetch posts from database
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
@@ -283,35 +328,41 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
   // Single return statement - no duplicates
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
-      {/* Job Type Tabs */}
-      <JobTypeTabs 
-        activeTab={activeTab} 
-        onTabChange={(tab) => {
-          // This will be handled by the parent component
-          const event = new CustomEvent('jobTabChange', { detail: { tab } });
-          window.dispatchEvent(event);
-        }}
-      />
-      
-      <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
-      
-      {/* Posts Grid - handles all states internally */}
-      <PostsGrid 
-        posts={filteredPosts} 
-        isLoading={isLoading} 
-        isTabChanging={isTabChanging}
-      />
-      
-      {/* Pagination */}
-      <div className="mt-8 flex justify-center">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          hasNextPage={hasNextPage}
-          hasPrevPage={hasPrevPage}
-          onPageChange={handlePageChange}
-        />
-      </div>
+      {showCreatePost ? (
+        <PostCreation onClose={handleCloseCreatePost} />
+      ) : (
+        <>
+          {/* Job Type Tabs */}
+          <JobTypeTabs 
+            activeTab={activeTab} 
+            onTabChange={(tab) => {
+              // This will be handled by the parent component
+              const event = new CustomEvent('jobTabChange', { detail: { tab } });
+              window.dispatchEvent(event);
+            }}
+          />
+          
+          <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
+          
+          {/* Posts Grid - handles all states internally */}
+          <PostsGrid 
+            posts={filteredPosts} 
+            isLoading={isLoading} 
+            isTabChanging={isTabChanging}
+          />
+          
+          {/* Pagination */}
+          <div className="mt-8 flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hasNextPage={hasNextPage}
+              hasPrevPage={hasPrevPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

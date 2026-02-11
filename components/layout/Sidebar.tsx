@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,10 @@ import AdminButton from "@/components/AdminButton";
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  onCreatePost?: () => void;
 }
 
-export function Sidebar({ isOpen, onToggle }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [
@@ -29,12 +31,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       label: "Home",
       href: appConfig.routes.home,
       isActive: pathname === appConfig.routes.home,
-    },
-    {
-      icon: PlusCircle,
-      label: "Create Post",
-      href: appConfig.routes.post,
-      isActive: pathname === appConfig.routes.post,
     },
     {
       icon: Settings,
@@ -116,6 +112,23 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               })}
             </div>
           </nav>
+
+          {/* Fixed Create Post Button */}
+          <div className="p-4 border-t border-gray-200">
+            <Button
+              onClick={() => {
+                onCreatePost?.();
+                // Close mobile menu after action
+                if (window.innerWidth < 1024) {
+                  onToggle();
+                }
+              }}
+              className="w-full justify-start gap-3 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <PlusCircle className="h-5 w-5" />
+              <span className="font-medium">Create Post</span>
+            </Button>
+          </div>
 
           {/* Admin Section */}
           <div className="p-4 border-t border-gray-200 mt-auto">
