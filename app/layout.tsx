@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { appConfig } from "@/lib/config";
 import { ConditionalHeader } from "@/components/layout/ConditionalHeader";
+import { RegularHeader } from "@/components/layout/RegularHeader";
 import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { Toaster } from "@/components/ui/toaster";
 import { EnvironmentIndicator } from "@/components/EnvironmentIndicator";
@@ -36,7 +37,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <div className="flex min-h-screen flex-col">
-          <ConditionalHeader />
+          <ConditionalHeader>
+            {children}
+          </ConditionalHeader>
+          <RegularHeader />
           <main className="flex-1">{children}</main>
           <ConditionalFooter />
         </div>

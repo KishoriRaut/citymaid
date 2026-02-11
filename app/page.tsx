@@ -170,7 +170,6 @@ function PageHeader() {
 function StableSection() {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8">
-      <PageHeader />
       <MarketingBanner />
     </div>
   );
