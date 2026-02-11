@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw, X } from "lucide-react";
-import { registerCreatePostHandler, registerFAQHandler, registerContactHandler, registerHowItWorksHandler } from "@/components/layout/ConditionalHeader";
+import { registerCreatePostHandler, registerCreateProfileHandler, registerPostJobHandler, registerFAQHandler, registerContactHandler, registerHowItWorksHandler } from "@/components/layout/ConditionalHeader";
 import { useToast } from "@/hooks/use-toast";
 
 // Libs
@@ -239,7 +239,7 @@ function HowItWorksContent() {
     </div>
   );
 }
-function PostCreation({ onClose }: { onClose: () => void }) {
+function PostCreation({ onClose, postType = "employee" }: { onClose: () => void; postType?: "employee" | "employer" }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -249,10 +249,10 @@ function PostCreation({ onClose }: { onClose: () => void }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      post_type: "employer",
+      post_type: postType,
       work: "",
       workOther: "",
-      time: "",
+      workTime: "",
       timeOther: "",
       place: "",
       salary: "",
@@ -1058,7 +1058,8 @@ export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "employer" | "employee">("employee");
   const [isTabChanging, setIsTabChanging] = useState(false);
-  const [currentView, setCurrentView] = useState<"home" | "faq" | "contact" | "createPost" | "howItWorks">("home");
+  const [currentView, setCurrentView] = useState<"home" | "faq" | "contact" | "createPost" | "howItWorks" | "createProfile" | "postJob">("home");
+  const [postType, setPostType] = useState<"employee" | "employer">("employee");
   
   // Handle mounting
   useEffect(() => {
@@ -1083,6 +1084,16 @@ export default function HomePage() {
 
   const handleHowItWorks = useCallback(() => {
     setCurrentView("howItWorks");
+  }, []);
+
+  const handleCreateProfile = useCallback(() => {
+    setCurrentView("createProfile");
+    setPostType("employee"); // Pre-select employee type for profile
+  }, []);
+
+  const handlePostJob = useCallback(() => {
+    setCurrentView("postJob");
+    setPostType("employer"); // Pre-select employer type for job posting
   }, []);
 
   const handleCreatePost = useCallback(() => {
@@ -1113,10 +1124,12 @@ export default function HomePage() {
     if (!mounted) return;
     
     registerCreatePostHandler(handleCreatePost);
+    registerCreateProfileHandler(handleCreateProfile);
+    registerPostJobHandler(handlePostJob);
     registerFAQHandler(handleFAQ);
     registerContactHandler(handleContact);
     registerHowItWorksHandler(handleHowItWorks);
-  }, [handleCreatePost, handleFAQ, handleContact, handleHowItWorks, mounted]);
+  }, [handleCreatePost, handleCreateProfile, handlePostJob, handleFAQ, handleContact, handleHowItWorks, mounted]);
   
   // Don't render until mounted to avoid hydration issues
   if (!mounted) {
@@ -1136,6 +1149,10 @@ export default function HomePage() {
         return <ContactContent />;
       case "howItWorks":
         return <HowItWorksContent />;
+      case "createProfile":
+        return <PostCreation onClose={handleCloseCreatePost} postType="employee" />;
+      case "postJob":
+        return <PostCreation onClose={handleCloseCreatePost} postType="employer" />;
       case "createPost":
         return <PostCreation onClose={handleCloseCreatePost} />;
       default:

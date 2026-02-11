@@ -11,6 +11,8 @@ import {
   HelpCircle, 
   MessageSquare, 
   BookOpen, 
+  User,
+  Briefcase,
   Menu, 
   X 
 } from "lucide-react";
@@ -21,12 +23,14 @@ interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onCreatePost?: () => void;
+  onCreateProfile?: () => void;
+  onPostJob?: () => void;
   onFAQ?: () => void;
   onContact?: () => void;
   onHowItWorks?: () => void;
 }
 
-export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact, onHowItWorks }: SidebarProps) {
+export function Sidebar({ isOpen, onToggle, onCreatePost, onCreateProfile, onPostJob, onFAQ, onContact, onHowItWorks }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = [
@@ -44,6 +48,22 @@ export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact, onHo
       isActive: pathname === "/pages/about",
       isNavigation: false,
       action: onHowItWorks,
+    },
+    {
+      icon: User,
+      label: "Create Profile",
+      href: "/post",
+      isActive: pathname === "/post",
+      isNavigation: false,
+      action: onCreateProfile,
+    },
+    {
+      icon: Briefcase,
+      label: "Post Job",
+      href: "/post",
+      isActive: pathname === "/post",
+      isNavigation: false,
+      action: onPostJob,
     },
     {
       icon: MessageSquare,
@@ -152,23 +172,6 @@ export function Sidebar({ isOpen, onToggle, onCreatePost, onFAQ, onContact, onHo
               })}
             </div>
           </nav>
-
-          {/* Fixed Create Post Button */}
-          <div className="p-4 border-t border-gray-200">
-            <Button
-              onClick={() => {
-                onCreatePost?.();
-                // Close mobile menu after action
-                if (window.innerWidth < 1024) {
-                  onToggle();
-                }
-              }}
-              className="w-full justify-start gap-3 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <PlusCircle className="h-5 w-5" />
-              <span className="font-medium">Create Post</span>
-            </Button>
-          </div>
 
           {/* Admin Section */}
           <div className="p-4 border-t border-gray-200 mt-auto">

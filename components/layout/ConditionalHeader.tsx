@@ -7,6 +7,8 @@ import { appConfig } from "@/lib/config";
 
 // Global refs to store handlers
 let createPostHandler: (() => void) | null = null;
+let createProfileHandler: (() => void) | null = null;
+let postJobHandler: (() => void) | null = null;
 let faqHandler: (() => void) | null = null;
 let contactHandler: (() => void) | null = null;
 let howItWorksHandler: (() => void) | null = null;
@@ -15,6 +17,24 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
   const pathname = usePathname();
   const [isAdminPage, setIsAdminPage] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const handleCreateProfile = () => {
+    console.log('Create Profile button clicked, calling handler');
+    if (createProfileHandler) {
+      createProfileHandler();
+    } else {
+      console.log('No createProfileHandler found');
+    }
+  };
+
+  const handlePostJob = () => {
+    console.log('Post Job button clicked, calling handler');
+    if (postJobHandler) {
+      postJobHandler();
+    } else {
+      console.log('No postJobHandler found');
+    }
+  };
 
   const handleCreatePost = () => {
     console.log('Create Post button clicked, calling handler');
@@ -67,11 +87,14 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
   const isFAQPage = pathname === "/pages/faq";
   const isContactPage = pathname === "/pages/contact";
   const isAboutPage = pathname === "/pages/about";
+  const isPostPage = pathname === "/post";
   
-  if (isHomePage || isFAQPage || isContactPage || isAboutPage) {
+  if (isHomePage || isFAQPage || isContactPage || isAboutPage || isPostPage) {
     return (
       <DashboardLayout 
         onCreatePost={handleCreatePost}
+        onCreateProfile={handleCreateProfile}
+        onPostJob={handlePostJob}
         onFAQ={handleFAQ}
         onContact={handleContact}
         onHowItWorks={handleHowItWorks}
@@ -88,6 +111,14 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
 // Export functions to register handlers
 export const registerCreatePostHandler = (handler: () => void) => {
   createPostHandler = handler;
+};
+
+export const registerCreateProfileHandler = (handler: () => void) => {
+  createProfileHandler = handler;
+};
+
+export const registerPostJobHandler = (handler: () => void) => {
+  postJobHandler = handler;
 };
 
 export const registerFAQHandler = (handler: () => void) => {
