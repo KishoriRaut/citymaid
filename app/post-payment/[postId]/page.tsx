@@ -386,64 +386,7 @@ export default function PostPaymentPage() {
                   
                   {/* Content */}
                   <div className="relative px-6 py-4 text-white">
-                    <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-                      {/* Contact Unlock Section */}
-                      <div className={`flex-1 ${isContactUnlock ? 'ring-2 ring-yellow-300 ring-opacity-50 rounded-lg p-2' : ''}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <span className="text-lg">🔓</span>
-                          </div>
-                          <h3 className="text-base font-bold">Unlock Contacts</h3>
-                          {isContactUnlock && <span className="text-xs bg-yellow-300 text-purple-900 px-2 py-1 rounded-full font-medium">Selected</span>}
-                        </div>
-                        <p className="text-white/90 text-xs mb-1">
-                          Get instant access for <span className="font-bold text-yellow-300">NRs. 300</span>
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                            ✓ Verified
-                          </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                            ✓ Instant
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Post Promotion Section */}
-                      <div className={`flex-1 ${!isContactUnlock ? 'ring-2 ring-yellow-300 ring-opacity-50 rounded-lg p-2' : ''}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                            <span className="text-lg">⭐</span>
-                          </div>
-                          <h3 className="text-base font-bold">Feature Post</h3>
-                          {!isContactUnlock && <span className="text-xs bg-yellow-300 text-purple-900 px-2 py-1 rounded-full font-medium">Selected</span>}
-                        </div>
-                        <p className="text-white/90 text-xs mb-1">
-                          Get homepage visibility for <span className="font-bold text-yellow-300">NRs. 300</span>
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                            ✓ 30 Days
-                          </span>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                            ✓ Top Placement
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Price Section */}
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="text-xl font-bold text-yellow-300">
-                          NRs. 300
-                        </div>
-                        <div className="text-xs text-white/80 text-center">
-                          {isContactUnlock ? 'Contact Unlock' : 'Post Feature'}
-                        </div>
-                        <div className="text-xs text-white/60 italic text-center">
-                          Complete payment below
-                        </div>
-                      </div>
-                    </div>
+                    {/* Banner removed */}
                   </div>
                 </div>
               </div>

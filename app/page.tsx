@@ -32,72 +32,7 @@ function MarketingBanner() {
             
             {/* Content */}
             <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-white">
-              <div className="flex flex-col xl:flex-row items-center justify-between gap-4 sm:gap-6">
-                {/* Contact Unlock Section */}
-                <div className="flex-1 w-full xl:w-auto">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-lg sm:text-xl">🔓</span>
-                    </div>
-                    <h3 className="text-base sm:text-lg font-bold">Unlock Contacts</h3>
-                  </div>
-                  <p className="text-white/90 text-xs sm:text-sm mb-2">
-                    Get instant access to contact details for just <span className="font-bold text-yellow-300">NRs. 300</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                      ✓ Verified
-                    </span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                      ✓ Instant
-                    </span>
-                  </div>
-                </div>
-
-                {/* Post Promotion Section */}
-                <div className="flex-1 w-full xl:w-auto">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <span className="text-lg sm:text-xl">⭐</span>
-                    </div>
-                    <h3 className="text-base sm:text-lg font-bold">Feature Your Post</h3>
-                  </div>
-                  <p className="text-white/90 text-xs sm:text-sm mb-2">
-                    Get maximum visibility on homepage for <span className="font-bold text-yellow-300">NRs. 300</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                      ✓ 30 Days
-                    </span>
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                      ✓ Top Placement
-                    </span>
-                  </div>
-                </div>
-                
-                {/* CTA Section */}
-                <div className="flex flex-col items-center gap-2 sm:gap-3 lg:gap-4 w-full xl:w-auto">
-                  <div className="text-center">
-                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-300">
-                      Start Today
-                    </div>
-                    <div className="text-xs text-white/80 text-center">
-                      NRs. 300
-                    </div>
-                  </div>
-                  <Button 
-                    variant="secondary" 
-                    size="sm"
-                    className="bg-white text-purple-600 hover:bg-white/90 font-semibold px-4 sm:px-6 py-2 shadow-lg w-full sm:w-auto xl:w-auto"
-                    onClick={() => {
-                      // Navigate to create post page
-                      router.push('/post');
-                    }}
-                  >
-                    Create Post
-                  </Button>
-                </div>
-              </div>
+              {/* Banner removed */}
             </div>
           </div>
         </CardContent>

@@ -288,64 +288,7 @@ export default function NewPostPage() {
               
               {/* Content */}
               <div className="relative px-8 py-6 text-white">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                  {/* Contact Unlock Section */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <span className="text-xl">🔓</span>
-                      </div>
-                      <h3 className="text-lg font-bold">Unlock Contacts</h3>
-                    </div>
-                    <p className="text-white/90 text-sm mb-2">
-                      Get instant access to contact details for <span className="font-bold text-yellow-300">NRs. 300</span>
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                        ✓ Verified
-                      </span>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                        ✓ Instant
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Post Promotion Section */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                        <span className="text-xl">⭐</span>
-                      </div>
-                      <h3 className="text-lg font-bold">Feature Your Post</h3>
-                    </div>
-                    <p className="text-white/90 text-sm mb-2">
-                      Get maximum visibility for <span className="font-bold text-yellow-300">NRs. 300</span>
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                        ✓ 30 Days
-                      </span>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                        ✓ Top Placement
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {/* Info Section */}
-                  <div className="flex flex-col items-center gap-3 lg:gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl lg:text-3xl font-bold text-yellow-300">
-                        Boost Your
-                      </div>
-                      <div className="text-xs text-white/80 text-center">
-                        Success Rate
-                      </div>
-                    </div>
-                    <div className="text-xs text-white/60 italic text-center max-w-[150px]">
-                      Complete your post to unlock premium features
-                    </div>
-                  </div>
-                </div>
+                {/* Banner removed */}
               </div>
             </div>
           </CardContent>
