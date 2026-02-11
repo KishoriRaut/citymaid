@@ -511,6 +511,19 @@ export default function HomePage() {
     // Reset tab changing after a short delay
     setTimeout(() => setIsTabChanging(false), 500);
   }, []);
+
+  // Listen for tab changes from sidebar (using custom event)
+  useEffect(() => {
+    const handleSidebarTabChange = (event: CustomEvent) => {
+      handleTabChange(event.detail.tab);
+    };
+
+    window.addEventListener('sidebarTabChange', handleSidebarTabChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('sidebarTabChange', handleSidebarTabChange as EventListener);
+    };
+  }, [handleTabChange]);
   
   return (
     <EnvironmentCheck>
@@ -518,9 +531,8 @@ export default function HomePage() {
         <div className="min-h-screen bg-background">
           <StableSection />
           
-          <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
-            <StableTabs activeTab={activeTab} onTabChange={handleTabChange} />
-          </div>
+          {/* Removed duplicate tabs from main content area */}
+          {/* Tabs are now only in the sidebar */}
           
           <div className="w-full">
             <HomePageContent activeTab={activeTab} isTabChanging={isTabChanging} />

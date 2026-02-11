@@ -11,7 +11,9 @@ import {
   Settings, 
   HelpCircle, 
   Menu, 
-  X 
+  X,
+  Briefcase,
+  Users
 } from "lucide-react";
 import { appConfig } from "@/lib/config";
 import AdminButton from "@/components/AdminButton";
@@ -23,6 +25,19 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState<"employee" | "employer">("employee");
+
+  const handleTabChange = (tab: "employee" | "employer") => {
+    setActiveTab(tab);
+    // Dispatch custom event to notify homepage
+    window.dispatchEvent(new CustomEvent('sidebarTabChange', { 
+      detail: { tab } 
+    }));
+    // Close mobile menu after tab selection
+    if (window.innerWidth < 1024) {
+      onToggle();
+    }
+  };
 
   const menuItems = [
     {
@@ -89,6 +104,38 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 overflow-y-auto">
+            {/* Job Type Tabs */}
+            <div className="mb-6">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Browse</h3>
+              <div className="space-y-1">
+                <Button
+                  variant={activeTab === "employee" ? "default" : "ghost"}
+                  className={`w-full justify-start gap-3 h-12 ${
+                    activeTab === "employee" 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                  onClick={() => handleTabChange("employee")}
+                >
+                  <Briefcase className="h-5 w-5" />
+                  <span className="font-medium">Find a Job</span>
+                </Button>
+                <Button
+                  variant={activeTab === "employer" ? "default" : "ghost"}
+                  className={`w-full justify-start gap-3 h-12 ${
+                    activeTab === "employer" 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                  onClick={() => handleTabChange("employer")}
+                >
+                  <Users className="h-5 w-5" />
+                  <span className="font-medium">Hire a Worker</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Main Navigation */}
             <div className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
