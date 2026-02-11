@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Home, 
   PlusCircle, 
-  Settings, 
   HelpCircle, 
+  MessageSquare, 
   Menu, 
   X 
 } from "lucide-react";
@@ -33,16 +33,16 @@ export function Sidebar({ isOpen, onToggle, onCreatePost }: SidebarProps) {
       isActive: pathname === appConfig.routes.home,
     },
     {
-      icon: Settings,
-      label: "Settings",
-      href: "/settings",
-      isActive: pathname === "/settings",
+      icon: MessageSquare,
+      label: "FAQ",
+      href: "/pages/faq",
+      isActive: pathname === "/pages/faq",
     },
     {
       icon: HelpCircle,
-      label: "Help",
-      href: "/help",
-      isActive: pathname === "/help",
+      label: "Contact",
+      href: "/pages/contact",
+      isActive: pathname === "/pages/contact",
     },
   ];
 
