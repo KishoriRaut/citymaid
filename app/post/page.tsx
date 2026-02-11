@@ -277,22 +277,7 @@ export default function NewPostPage() {
           </CardContent>
         </Card>
 
-        {/* Marketing Banner - Platform Features Promotion */}
-        <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden">
-          <CardContent className="p-0">
-            <div className="relative">
-              {/* Background Pattern */}
-              <div className="absolute inset-0 bg-black/10">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-              </div>
-              
-              {/* Content */}
-              <div className="relative px-8 py-6 text-white">
-                {/* Banner removed */}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Marketing Banner - Platform Features Promotion - Removed */}
 
         {/* Main Form Card */}
         <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50">

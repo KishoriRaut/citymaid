@@ -375,22 +375,7 @@ export default function PostPaymentPage() {
               </p>
             </div>
 
-            {/* Marketing Banner - Platform Features Promotion */}
-            <div className="mx-6 mb-6">
-              <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden rounded-lg">
-                <div className="relative">
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 bg-black/10">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="relative px-6 py-4 text-white">
-                    {/* Banner removed */}
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Marketing Banner - Platform Features Promotion - Removed */}
 
             <div className="p-6">
               <div className="mb-6">

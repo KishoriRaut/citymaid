@@ -22,21 +22,7 @@ function MarketingBanner() {
   
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-      <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border-0 shadow-xl overflow-hidden">
-        <CardContent className="p-0">
-          <div className="relative">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-black/10">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-            </div>
-            
-            {/* Content */}
-            <div className="relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 text-white">
-              {/* Banner removed */}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Banner removed completely */}
     </div>
   );
 }
