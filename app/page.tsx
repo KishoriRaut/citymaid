@@ -251,90 +251,12 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
     loadPosts(currentPage + 1, false);
   }, [currentPage, loadPosts]);
 
-  // Show disabled message
-  if (error) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 text-center">
-        <AlertTriangle className="h-12 w-12 text-yellow-500 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">Temporarily Unavailable</h2>
-        <p className="text-muted-foreground max-w-md">
-          We're currently performing maintenance on our post loading system. 
-          Please check back later or contact support if you need assistance.
-        </p>
-      </div>
-    );
-  }
-
-  // Show loading skeleton
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <Skeleton className="h-8 w-1/4 mb-4" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="p-6">
-                <Skeleton className="h-4 w-3/4 mb-2" />
-                <Skeleton className="h-3 w-1/2 mb-4" />
-                <div className="space-y-2">
-                  <Skeleton className="h-3" />
-                  <Skeleton className="h-3 w-5/6" />
-                  <Skeleton className="h-3 w-4/6" />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center py-12">
-            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-            <Alert variant="destructive" className="max-w-md">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Unable to Load Posts</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-            <div className="flex justify-center mt-6">
-              <Button onClick={() => loadPosts(1, true)} className="mr-4">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show empty state
-  if (filteredPosts.length === 0) {
-    return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
-        <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
-        
-        <EmptyState 
-          activeTab={activeTab}
-        />
-      </div>
-    );
-  }
-
-  // Show posts
+  // Single return statement - no duplicates
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
       <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
       
-      {/* Posts Grid */}
+      {/* Posts Grid - handles all states internally */}
       <PostsGrid 
         posts={filteredPosts} 
         isLoading={isLoading} 
