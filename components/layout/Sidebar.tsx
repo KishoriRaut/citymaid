@@ -63,14 +63,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       
       {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 z-50 h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out
+        fixed top-0 left-0 h-full bg-white border-r border-gray-200 shadow-lg transition-all duration-300 ease-in-out z-50
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto
         w-64
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
             <Link 
               href={appConfig.routes.home}
               className="text-xl font-bold text-primary hover:opacity-80 transition-opacity"
@@ -88,7 +88,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4">
+          <nav className="flex-1 p-4 overflow-y-auto">
             <div className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -96,7 +96,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   <Link key={item.href} href={item.href}>
                     <Button
                       variant={item.isActive ? "default" : "ghost"}
-                      className={`w-full justify-start gap-3 ${
+                      className={`w-full justify-start gap-3 h-12 ${
                         item.isActive 
                           ? "bg-primary text-primary-foreground" 
                           : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
@@ -108,8 +108,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                         }
                       }}
                     >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
+                      <Icon className="h-5 w-5" />
+                      <span className="font-medium">{item.label}</span>
                     </Button>
                   </Link>
                 );
@@ -118,7 +118,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </nav>
 
           {/* Admin Section */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 mt-auto">
             <AdminButton />
           </div>
         </div>

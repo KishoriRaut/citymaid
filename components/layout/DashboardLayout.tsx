@@ -16,17 +16,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Sidebar */}
+      <div className="fixed left-0 top-0 h-full w-64 z-40">
+        <Sidebar isOpen={isSidebarOpen} onToggle={toggleSidebar} />
+      </div>
       
-      <div className="lg:ml-64">
+      {/* Main Content Area */}
+      <div className="lg:ml-64 min-h-screen">
         <DashboardHeader 
           onMenuToggle={toggleSidebar} 
           isSidebarOpen={isSidebarOpen} 
         />
         
-        <main className="flex-1">
-          {children}
+        {/* Dashboard Content - Right Side */}
+        <main className="flex-1 p-6">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
