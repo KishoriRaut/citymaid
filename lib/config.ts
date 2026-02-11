@@ -6,7 +6,7 @@
 export const appConfig = {
   // Brand Information
   brand: {
-    name: "City Maid Services Pvt. Ltd.",
+    name: "City Maid Services",
     tagline: "Find work or hire help in your city",
     description: "CityMaid Marketplace - Connect employers with workers for local services",
   },

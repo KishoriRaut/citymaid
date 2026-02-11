@@ -428,7 +428,7 @@ export default function PostPaymentPage() {
                         <p className="font-medium text-gray-900 mb-2">eSewa Details:</p>
                         <div className="space-y-1 text-xs text-gray-700">
                           <p><strong>eSewa ID:</strong> +9779841317273</p>
-                          <p><strong>Company Name:</strong> City Maid Services Pvt. Ltd.</p>
+                          <p><strong>Company Name:</strong> City Maid Services</p>
                         </div>
                         <div className="mt-2 pt-2 border-t border-green-200">
                           <p className="text-xs text-gray-600">Open eSewa app → Send Money → Enter details → Pay Rs. 300</p>
@@ -500,7 +500,7 @@ export default function PostPaymentPage() {
                           <h5 className="font-medium text-purple-800 mb-2 text-sm">For Bank Transfer:</h5>
                           <div className="text-xs text-purple-700 space-y-1">
                             <p><strong>Account Number:</strong> 005010010001200</p>
-                            <p><strong>Account Name:</strong> City Maid Services Pvt. Ltd.</p>
+                            <p><strong>Account Name:</strong> City Maid Services</p>
                             <p><strong>Branch Name:</strong> Kumaripati</p>
                             <p><strong>Bank Code:</strong> SNMANPKA</p>
                             <p className="mt-2 font-medium">Transfer Rs. 300 and save receipt</p>
