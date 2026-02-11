@@ -415,11 +415,11 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
               <h2 className="text-2xl font-bold text-gray-900">
                 {postType === "employer" ? (
                   <>
-                    <span className="text-primary">💼</span> Post a Job Requirement
+                    <span className="text-primary">💼</span> EMPLOYER - Post a Job Requirement
                   </>
                 ) : (
                   <>
-                    <span className="text-primary">👤</span> Create Your Work Profile
+                    <span className="text-primary">👤</span> EMPLOYEE - Create Your Work Profile
                   </>
                 )}
               </h2>
