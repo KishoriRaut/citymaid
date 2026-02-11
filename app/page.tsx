@@ -390,69 +390,17 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-              {/* Role Toggle */}
+              {/* Hidden post_type field */}
               <FormField
                 control={form.control}
                 name="post_type"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-semibold text-center block mb-4">
-                      I want to
-                    </FormLabel>
+                  <FormItem className="hidden">
                     <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                      >
-                        <div className="relative">
-                          <RadioGroupItem
-                            value="employer"
-                            id="employer"
-                            className="peer sr-only"
-                          />
-                          <label
-                            htmlFor="employer"
-                            className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
-                              field.value === "employer"
-                                ? "border-primary bg-primary/5 shadow-lg scale-105"
-                                : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
-                            }`}
-                          >
-                            <div className="space-y-3">
-                              <div className="text-4xl">💼</div>
-                              <div className="text-lg font-semibold">Post a Job</div>
-                              <div className="text-sm text-muted-foreground">Post a job requirement and find talent</div>
-                            </div>
-                          </label>
-                        </div>
-                        <div className="relative">
-                          <RadioGroupItem
-                            value="employee"
-                            id="employee"
-                            className="peer sr-only"
-                          />
-                          <label
-                            htmlFor="employee"
-                            className={`flex items-center justify-center rounded-xl border-2 p-6 text-center font-medium transition-all duration-300 cursor-pointer ${
-                              field.value === "employee"
-                                ? "border-primary bg-primary/5 shadow-lg scale-105"
-                                : "border-border bg-background hover:bg-primary/5 hover:border-primary/50 hover:scale-102"
-                            }`}
-                          >
-                            <div className="space-y-3">
-                              <div className="text-4xl">👤</div>
-                              <div className="text-lg font-semibold">Create Your Work Profile</div>
-                              <div className="text-sm text-muted-foreground">Create your professional work profile</div>
-                            </div>
-                          </label>
-                        </div>
-                      </RadioGroup>
+                      <input {...field} type="hidden" />
                     </FormControl>
-                    <FormMessage />
                   </FormItem>
-                )
-              }
+                )}
               />
 
               {/* Work Type */}
