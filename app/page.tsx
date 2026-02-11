@@ -54,9 +54,10 @@ const formSchema = z.object({
   experience: z.string().optional(),
   skills: z.string().optional(),
   
-  // Employer-specific fields  
+  // Employer-specific fields (for both companies and individuals)
   companyName: z.string().optional(),
   businessType: z.string().optional(),
+  isIndividual: z.enum(["company", "individual"]).optional(),
   requirements: z.string().optional(),
   
   contact: z.string().min(1, "Please enter contact information"),
@@ -284,6 +285,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
       skills: "",
       companyName: "",
       businessType: "",
+      isIndividual: undefined,
       requirements: "",
       contact: "",
       details: "",
@@ -370,6 +372,7 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
         } : {
           companyName: values.companyName,
           businessType: values.businessType,
+          isIndividual: values.isIndividual,
           requirements: values.requirements,
         }),
       };
@@ -809,22 +812,25 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                       <FormField
                         control={form.control}
                         name="companyName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
-                              <span className="text-primary">🏢</span>
-                              Company Name
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="e.g., ABC Restaurant" 
-                                className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const isIndividualSelected = form.watch("isIndividual") === "individual";
+                          return (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">🏢</span>
+                                {isIndividualSelected ? "Your Name" : "Company Name"}
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder={isIndividualSelected ? "e.g., John Doe" : "e.g., ABC Restaurant"} 
+                                  className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
 
                       {/* Business Type */}
