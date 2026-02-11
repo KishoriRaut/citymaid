@@ -1,7 +1,7 @@
 /* Force full width forms - override any constraints */
 .post-creation-form {
-  width: 100% !important;
-  max-width: 100% !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
   margin: 0 !important;
   padding: 1.5rem !important;
 }
@@ -13,12 +13,47 @@
 
 /* Ensure full width for all form content */
 .form-content {
-  width: 100% !important;
-  max-width: none !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
 }
 
 /* Override any padding constraints */
 .form-p-6 {
   padding: 1.5rem !important;
   border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Force main page content full width */
+.main-page-content {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override any container constraints */
+.content-container {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Remove all width constraints */
+.w-full {
+  width: 100vw !important;
+  max-width: 100vw !important;
+}
+
+/* Override Tailwind container classes */
+.container {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.px-4, .px-6, .px-8, .lg:px-8 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }

@@ -1448,7 +1448,7 @@ export default function HomePage() {
   
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full">
+      <div className="w-full main-page-content">
         {renderContent()}
       </div>
     </div>
