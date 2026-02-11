@@ -264,9 +264,6 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Debug: Log props
-  console.log('🔍 PostCreation rendered with postType:', postType);
-
   // Initialize form - always called in same order
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -300,10 +297,6 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   const currentPostType = form.watch("post_type");
   const workValue = form.watch("work");
   const timeValue = form.watch("time");
-
-  // Debug: Log form values
-  console.log('🔍 Form currentPostType:', currentPostType);
-  console.log('🔍 Form values:', form.getValues());
 
   // Prevent SSR issues with react-hook-form
   useEffect(() => {
