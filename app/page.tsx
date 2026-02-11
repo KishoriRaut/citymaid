@@ -5,7 +5,6 @@ import React from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { PostWithMaskedContact } from "@/lib/types";
 import { EnvironmentCheck } from "@/components/EnvironmentCheck";
-import { Tabs } from "@/components/marketplace/Tabs";
 import { FilterBar } from "@/components/marketplace/FilterBar";
 import { PostCard } from "@/components/marketplace/PostCard";
 import { EmptyState } from "@/components/marketplace/EmptyState";
@@ -23,60 +22,6 @@ function MarketingBanner() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
       {/* Banner removed completely */}
-    </div>
-  );
-}
-
-// Individual Tab Components - No props that change, completely stable
-const EmployeeTab = React.memo(function EmployeeTab({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      data-tab="employee"
-      className="tab-button flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
-      onClick={onClick}
-    >
-      <span className="text-xs sm:text-sm">Find a Job</span>
-    </button>
-  );
-});
-
-const EmployerTab = React.memo(function EmployerTab({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      data-tab="employer"
-      className="tab-button flex-1 py-2 px-3 sm:px-4 rounded-md text-sm font-medium transition-all text-gray-600 hover:text-gray-900"
-      onClick={onClick}
-    >
-      <span className="text-xs sm:text-sm">Hire a Worker</span>
-    </button>
-  );
-});
-
-// Tabs Container - Handles active state with CSS, individual tabs never re-render
-function StableTabs({ activeTab, onTabChange }: { 
-  activeTab: "all" | "employer" | "employee";
-  onTabChange: (tab: "all" | "employer" | "employee") => void;
-}) {
-  // Update CSS to show active state
-  useEffect(() => {
-    // Remove active class from all tabs
-    document.querySelectorAll('.tab-button').forEach(tab => {
-      tab.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
-      tab.classList.add('text-gray-600');
-    });
-    
-    // Add active class to current tab
-    const activeTabElement = document.querySelector(`[data-tab="${activeTab}"]`);
-    if (activeTabElement) {
-      activeTabElement.classList.remove('text-gray-600');
-      activeTabElement.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
-    }
-  }, [activeTab]);
-
-  return (
-    <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 mb-6 sm:mb-8 bg-gray-100 p-2 sm:p-1 rounded-lg">
-      <EmployeeTab onClick={() => onTabChange("employee")} />
-      <EmployerTab onClick={() => onTabChange("employer")} />
     </div>
   );
 }
@@ -115,7 +60,24 @@ function PostsGrid({
     );
   }
 
+  if (isLoading) {
     return (
+      <div className="text-center py-8">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-2 text-gray-600">Loading posts...</p>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">No posts found</p>
+      </div>
+    );
+  }
+
+  return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
@@ -171,81 +133,6 @@ function StableSection() {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8">
       <MarketingBanner />
-    </div>
-  );
-}
-
-// Tab Section Component - Only this re-renders
-function TabSection({ 
-  activeTab, 
-  filters, 
-  onFilterChange, 
-  filteredPosts, 
-  isLoading, 
-  isTabChanging, 
-  isPageChanging, 
-  currentPage, 
-  totalPages, 
-  hasNextPage, 
-  hasPrevPage, 
-  onPageChange, 
-  totalPosts, 
-  handleLoadMore 
-}: {
-  activeTab: "all" | "employer" | "employee";
-  filters: any;
-  onFilterChange: (filters: any) => void;
-  filteredPosts: PostWithMaskedContact[];
-  isLoading: boolean;
-  isTabChanging: boolean;
-  isPageChanging: boolean;
-  currentPage: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-  onPageChange: (page: number) => void;
-  totalPosts: number;
-  handleLoadMore: () => void;
-}) {
-  return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
-      <StaticFilterBar filters={filters} onFilterChange={onFilterChange} />
-      
-      {/* Only Posts Grid should change */}
-      <PostsGrid posts={filteredPosts} isLoading={isLoading} isTabChanging={isTabChanging} />
-
-      {/* Page change loading indicator */}
-      {isPageChanging && (
-        <div className="flex justify-center py-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      )}
-
-      {/* Pagination */}
-      <div className="space-y-4">
-        {/* Traditional pagination for desktop */}
-        <div className="hidden md:block">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            hasNextPage={hasNextPage}
-            hasPrevPage={hasPrevPage}
-            onPageChange={onPageChange}
-            isLoading={isPageChanging}
-            totalPosts={totalPosts}
-          />
-        </div>
-
-        {/* Load more button for mobile */}
-        <div className="md:hidden">
-          <LoadMoreButton
-            hasNextPage={hasNextPage}
-            isLoading={isPageChanging}
-            onLoadMore={handleLoadMore}
-            remainingPosts={totalPosts - (currentPage * 12)} // Keep original calculation for pagination
-          />
-        </div>
-      </div>
     </div>
   );
 }
@@ -447,46 +334,14 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
     <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
       <StaticFilterBar filters={filters} onFilterChange={handleFilterChange} />
       
-      {/* Loading state */}
-      {isLoading && (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-gray-600">Loading posts...</p>
-        </div>
-      )}
+      {/* Posts Grid */}
+      <PostsGrid 
+        posts={filteredPosts} 
+        isLoading={isLoading} 
+        isTabChanging={isTabChanging}
+      />
       
-      {/* Error state */}
-      {error && !isLoading && (
-        <div className="text-center py-8">
-          <p className="text-red-600">Error: {error}</p>
-          <button 
-            onClick={() => loadPosts(1, true)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-      
-      {/* Posts */}
-      {!isLoading && !error && posts.length > 0 && (
-        <>
-          <p className="mb-4 text-gray-600">Showing {posts.length} posts</p>
-          <PostsGrid 
-            posts={filteredPosts} 
-            isLoading={isLoading} 
-            isTabChanging={isTabChanging}
-          />
-        </>
-      )}
-      
-      {/* Empty state */}
-      {!isLoading && !error && posts.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-600">No posts found</p>
-        </div>
-      )}
-      
+      {/* Pagination */}
       <div className="mt-8 flex justify-center">
         <Pagination
           currentPage={currentPage}
