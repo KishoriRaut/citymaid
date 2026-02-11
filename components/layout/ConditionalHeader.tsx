@@ -1,9 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DashboardLayout } from "./DashboardLayout";
 import { appConfig } from "@/lib/config";
+
+// Global ref to store the create post handler
+let createPostHandler: (() => void) | null = null;
 
 export function ConditionalHeader({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname();
@@ -11,9 +14,13 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
   const [mounted, setMounted] = useState(false);
 
   const handleCreatePost = () => {
-    console.log('Create Post button clicked, dispatching event');
-    // Dispatch custom event to open the post creation form
-    window.dispatchEvent(new CustomEvent('openCreatePost'));
+    console.log('Create Post button clicked, calling handler');
+    // Call the handler directly if it exists
+    if (createPostHandler) {
+      createPostHandler();
+    } else {
+      console.log('No createPostHandler found');
+    }
   };
 
   useEffect(() => {
@@ -36,3 +43,8 @@ export function ConditionalHeader({ children }: { children?: React.ReactNode }) 
   // For other pages, return null (they'll use their own layouts)
   return null;
 }
+
+// Export function to register the handler
+export const registerCreatePostHandler = (handler: () => void) => {
+  createPostHandler = handler;
+};

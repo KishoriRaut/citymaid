@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Pagination, LoadMoreButton } from "@/components/ui/pagination";
 import { AlertTriangle, RefreshCw, X } from "lucide-react";
+import { registerCreatePostHandler } from "@/components/layout/ConditionalHeader";
 
 // Static Marketing Banner Component - Won't re-render on tab changes
 function MarketingBanner() {
@@ -215,26 +216,25 @@ function HomePageContent({ activeTab, isTabChanging }: { activeTab: "all" | "emp
 
   // Handle create post
   const handleCreatePost = useCallback(() => {
+    console.log('handleCreatePost called, setting showCreatePost to true');
     setShowCreatePost(true);
   }, []);
 
   const handleCloseCreatePost = useCallback(() => {
+    console.log('handleCloseCreatePost called, setting showCreatePost to false');
     setShowCreatePost(false);
   }, []);
 
-  // Listen for create post events
+  // Register the handler with the ConditionalHeader
   useEffect(() => {
-    const handleOpenCreatePost = () => {
-      console.log('openCreatePost event received');
-      setShowCreatePost(true);
-    };
-
-    window.addEventListener('openCreatePost', handleOpenCreatePost);
+    console.log('Registering createPostHandler');
+    registerCreatePostHandler(handleCreatePost);
     
     return () => {
-      window.removeEventListener('openCreatePost', handleOpenCreatePost);
+      console.log('Cleaning up createPostHandler');
+      registerCreatePostHandler(() => {});
     };
-  }, []);
+  }, [handleCreatePost]);
   
   // Load posts - enabled to fetch posts from database
   const loadPosts = useCallback(async (page: number = 1, reset: boolean = false) => {
