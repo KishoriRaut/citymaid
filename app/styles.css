@@ -5,20 +5,26 @@
   margin: 0 auto;
 }
 
-/* Full width form containers */
+/* Responsive form layout */
 .post-creation-form {
-  width: 100vw !important;
-  max-width: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  display: block;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .post-creation-container {
-  width: 100% !important;
+  width: 100%;
+  max-width: none;
+  padding: 1rem 1.5rem;
+  margin: 0;
+}
+
+/* Override DashboardLayout for forms */
+.main-content-wrapper:has(.post-creation-form) {
   max-width: none !important;
-  padding: 1rem 1.5rem !important;
   margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Main content wrapper - full width for forms, constrained otherwise */
