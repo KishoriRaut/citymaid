@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { supabaseClientServer } from '@/lib/supabase-client-server';
+import { supabase } from '@/lib/supabase';
 
 export async function POST() {
   try {
-    if (!supabaseClientServer) {
+    if (!supabase) {
       return NextResponse.json({ error: 'Supabase client not initialized' }, { status: 500 });
     }
 
     // Update employee posts to use real photos
-    const { error: employeeError } = await supabaseClientServer
+    const { error: employeeError } = await supabase
       .from('posts')
       .update({ 
         photo_url: 'https://jjnibbkhubafesjqjohm.supabase.co/storage/v1/object/public/post-photos/1769064665740-zdd54a.jpg' 
@@ -22,7 +22,7 @@ export async function POST() {
     }
 
     // Update employer posts to use real receipt photos
-    const { error: employerError } = await supabaseClientServer
+    const { error: employerError } = await supabase
       .from('posts')
       .update({ 
         photo_url: 'https://jjnibbkhubafesjqjohm.supabase.co/storage/v1/object/public/post-photos/receipt-1769094508664-5ci5h.webp' 
@@ -36,7 +36,7 @@ export async function POST() {
     }
 
     // Get updated posts
-    const { data: updatedPosts, error: fetchError } = await supabaseClientServer
+    const { data: updatedPosts, error: fetchError } = await supabase
       .from('posts')
       .select('id, post_type, work, photo_url, status, created_at')
       .eq('status', 'approved')

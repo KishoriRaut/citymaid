@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseClientServer } from '@/lib/supabase-client-server';
+import { supabaseClient } from '@/lib/supabase-client';
 
 export async function GET() {
   try {
@@ -19,7 +19,7 @@ export async function GET() {
     // Test basic connection with client-side Supabase
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { data: _connectionTest, error: connectionError } = await supabaseClientServer
+      const { data: _connectionTest, error: connectionError } = await supabaseClient
         .from("posts")
         .select("id")
         .limit(1);
@@ -38,7 +38,7 @@ export async function GET() {
     if (results.connectionTest) {
       // Get total posts
       try {
-        const { count: totalCount, error: totalError } = await supabaseClientServer
+        const { count: totalCount, error: totalError } = await supabaseClient
           .from("posts")
           .select("*", { count: "exact", head: true });
 
@@ -55,7 +55,7 @@ export async function GET() {
       // Get approved posts
       if (results.tableExists) {
         try {
-          const { count: approvedCount, error: approvedError } = await supabaseClientServer
+          const { count: approvedCount, error: approvedError } = await supabaseClient
             .from("posts")
             .select("*", { count: "exact", head: true })
             .eq("status", "approved");
@@ -71,7 +71,7 @@ export async function GET() {
 
         // Get sample posts
         try {
-          const { data: sampleData, error: sampleError } = await supabaseClientServer
+          const { data: sampleData, error: sampleError } = await supabaseClient
             .from("posts")
             .select("id, status, post_type, work, created_at")
             .order("created_at", { ascending: false })

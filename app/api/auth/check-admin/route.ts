@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseClientServer } from '@/lib/supabase-client-server'
+import { supabase } from '@/lib/supabase'
 
 // List of admin emails
 const ADMIN_EMAILS = [
@@ -11,7 +11,7 @@ export async function GET() {
   console.log('API check-admin: Starting admin check...')
   
   try {
-    const { data: { user }, error } = await supabaseClientServer.auth.getUser()
+    const { data: { user }, error } = await supabase.auth.getUser()
     console.log('API check-admin: User data:', { user: user?.email || 'none', error })
     
     if (!user?.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
