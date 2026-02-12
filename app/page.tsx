@@ -416,8 +416,9 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   };
 
   return (
-    <div className="post-creation-form">
-      <div className="bg-white post-creation-container">
+    <div className="w-full bg-gray-50">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
         {/* Header */}
         <div className="border-b border-gray-200 pb-6 mb-6">
           <div className="flex justify-between items-center">
