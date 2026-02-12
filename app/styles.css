@@ -5,6 +5,34 @@
   margin: 0 auto;
 }
 
+/* Full width form containers */
+.post-creation-form {
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block;
+}
+
+.post-creation-container {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 1rem 1.5rem !important;
+  margin: 0 !important;
+}
+
+/* Main content wrapper - full width for forms, constrained otherwise */
+.main-content-wrapper {
+  max-width: 7xl;
+  margin: 0 auto;
+}
+
+body.form-page-active .main-content-wrapper {
+  max-width: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
 .post-card-container {
   padding: 1rem;
 }

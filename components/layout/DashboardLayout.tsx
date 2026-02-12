@@ -37,7 +37,7 @@ export function DashboardLayout({ children, onCreatePost, onCreateProfile, onPos
         
         {/* Dashboard Content - Right Side */}
         <main className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="main-content-wrapper">
             {children}
           </div>
         </main>

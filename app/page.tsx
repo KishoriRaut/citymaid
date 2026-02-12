@@ -312,6 +312,12 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   // Prevent SSR issues with react-hook-form
   useEffect(() => {
     setMounted(true);
+    // Add class to body when form is mounted
+    document.body.classList.add('form-page-active');
+    
+    return () => {
+      document.body.classList.remove('form-page-active');
+    };
   }, []);
 
   // Don't render until mounted to avoid hydration issues
@@ -410,10 +416,10 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
   };
 
   return (
-    <div className="w-full">
-      <div className="bg-white rounded-lg shadow-sm post-creation-form">
+    <div className="post-creation-form">
+      <div className="bg-white post-creation-container">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 post-creation-container">
+        <div className="border-b border-gray-200 pb-6 mb-6">
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
