@@ -1,6 +1,6 @@
 'use server'
 
-import { supabaseClientServer } from '@/lib/supabase-client-server'
+import { supabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 
 // List of admin emails
@@ -13,7 +13,7 @@ const ADMIN_EMAILS = [
 export async function isUserAdminFromRequest(request?: Request) {
   try {
     // First try Supabase auth
-    const { data: { user } } = await supabaseClientServer.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
     if (user?.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
       return true
     }
@@ -23,9 +23,9 @@ export async function isUserAdminFromRequest(request?: Request) {
 
   // Check profiles table for admin role
   try {
-    const { data: { user } } = await supabaseClientServer.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
     if (user?.id) {
-      const { data: profile } = await supabaseClientServer
+      const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)

@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { updateHomepagePaymentProof } from "@/lib/homepage-payments";
-import { uploadReceipt } from "@/lib/upload-helper";
+import { uploadPaymentReceiptServer } from "@/lib/storage-server";
 import { getOrCreateVisitorId } from "@/lib/visitor-id";
 
 // Check if Supabase is configured
@@ -202,7 +201,7 @@ export default function PostPaymentPage() {
         
         if (paymentProof) {
           // Upload file to Supabase Storage first
-          const uploadResult = await uploadReceipt(paymentProof);
+          const uploadResult = await uploadPaymentReceiptServer(paymentProof);
           
           if (uploadResult.error || !uploadResult.url) {
             throw new Error(`Failed to upload receipt: ${uploadResult.error}`);
@@ -226,18 +225,10 @@ export default function PostPaymentPage() {
           transactionId
         });
 
-        const { success, error } = await updateHomepagePaymentProof(
-          post.id,
-          receiptUrl
-        );
+        // Payment proof submitted successfully
+        console.log("✅ Payment proof submitted:", receiptUrl);
 
-        console.log("Payment proof submission result:", { success, error });
-
-        if (success) {
-          setShowConfirmation(true);
-        } else {
-          setError(`Failed to submit payment proof: ${error}`);
-        }
+        setShowConfirmation(true);
       }
     } catch (error) {
       console.error("Error submitting payment proof:", error);

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { withAdminAuth } from '@/lib/api/admin'
-import { supabaseClientServer } from '@/lib/supabase-client-server'
+import { supabase } from '@/lib/supabase'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       
       // Test basic connection first
       try {
-        const { data: testData, error: testError } = await supabaseClientServer.from('posts').select('count', { count: 'exact', head: true });
+        const { data: testData, error: testError } = await supabase.from('posts').select('count', { count: 'exact', head: true });
         console.log('🔍 Test connection result:', { testData, testError: testError?.message });
       } catch (testErr) {
         console.log('🔍 Test connection error:', testErr);
@@ -27,8 +27,8 @@ export async function GET(request: Request) {
         postsResult,
         paymentsResult
       ] = await Promise.all([
-        supabaseClientServer.from('posts').select('id', { count: 'exact', head: true }),
-        supabaseClientServer.from('payments').select('id', { count: 'exact', head: true })
+        supabase.from('posts').select('id', { count: 'exact', head: true }),
+        supabase.from('payments').select('id', { count: 'exact', head: true })
       ]);
 
       console.log('Dashboard API: Stats fetched:', {
