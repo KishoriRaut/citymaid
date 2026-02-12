@@ -35,7 +35,6 @@ import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
 import { Toaster } from "@/components/ui/toaster";
 import { EnvironmentIndicator } from "@/components/EnvironmentIndicator";
 import "./globals.css";
-import "./styles.css";
 
 // Libs
 import { createPost } from "@/lib/posts";
