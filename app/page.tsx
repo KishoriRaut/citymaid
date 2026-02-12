@@ -419,11 +419,11 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
     <div className="w-full bg-gray-50">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
-        {/* Header */}
-        <div className="border-b border-gray-200 pb-6 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+          {/* Header */}
+          <div className="border-b border-gray-200 pb-6 mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
                 {postType === "employer" ? (
                   <>
                     <span className="text-primary">Job</span> EMPLOYER - Post a Job Requirement
@@ -434,23 +434,23 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                   </>
                 )}
               </h2>
-              <p className="text-gray-600 mt-1">
-                {postType === "employer" 
-                  ? "Find the perfect worker for your needs"
-                  : "Showcase your skills and find opportunities"
-                }
-              </p>
+                <p className="text-gray-600 mt-1">
+                  {postType === "employer" 
+                    ? "Find the perfect worker for your needs"
+                    : "Showcase your skills and find opportunities"
+                  }
+                </p>
+              </div>
+              <Button variant="ghost" onClick={onClose}>
+                <X className="h-5 w-5" />
+              </Button>
             </div>
-            <Button variant="ghost" onClick={onClose}>
-              <X className="h-5 w-5" />
-            </Button>
           </div>
-        </div>
 
         {/* Form Content */}
-        <div className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
               {/* Hidden post_type field */}
               <FormField
