@@ -296,6 +296,480 @@ function PostCreation({ onClose, postType = "employee" }: { onClose: () => void;
                   )}
                 />
 
+                {/* Time Options */}
+                <FormField
+                  control={form.control}
+                  name="time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-primary">⏰</span>
+                        </div>
+                        {postType === "employer" ? "Work Schedule" : "Availability"}
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                            <SelectValue placeholder={
+                              postType === "employer" 
+                                ? "Select work schedule" 
+                                : "Select your availability"
+                            } />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {getGroupedTimeOptions().map((group) => (
+                            <div key={group.label}>
+                              <div className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+                                {group.label}
+                              </div>
+                              {group.types.map((timeOption) => (
+                                <SelectItem key={timeOption} value={timeOption}>
+                                  {timeOption}
+                                </SelectItem>
+                              ))}
+                            </div>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Place Input */}
+                <FormField
+                  control={form.control}
+                  name="place"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-primary">📍</span>
+                        </div>
+                        {postType === "employer" ? "Job Location" : "Work Location"}
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., Kathmandu, Lalitpur, Remote" 
+                          className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Salary Input */}
+                <FormField
+                  control={form.control}
+                  name="salary"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-primary">💰</span>
+                        </div>
+                        {postType === "employer" ? "Compensation" : "Expected Salary"}
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder={
+                            postType === "employer" 
+                              ? "e.g., NPR 15,000/month, Negotiable" 
+                              : "e.g., NPR 15,000-20,000/month"
+                          } 
+                          className="h-12 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Contact Information Section */}
+                <div className="space-y-6">
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
+                    
+                    {/* Email Input */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                            <span className="text-primary">📧</span>
+                            Email Address
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="your.email@example.com" 
+                              className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Phone Input */}
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                            <span className="text-primary">📱</span>
+                            Phone Number
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="e.g., 9841234567" 
+                              className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Best Way to Contact */}
+                    <FormField
+                      control={form.control}
+                      name="bestWayToContact"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                            <span className="text-primary">💬</span>
+                            Best Way to Contact
+                            <span className="text-red-500 ml-1">*</span>
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                                <SelectValue placeholder="Select preferred contact method" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="phone">Phone Call</SelectItem>
+                              <SelectItem value="email">Email</SelectItem>
+                              <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                              <SelectItem value="both">Both Phone & Email</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Type-Specific Fields */}
+                <div className="space-y-6">
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      {postType === "employer" ? "Business Information" : "Personal Information"}
+                    </h3>
+
+                    {postType === "employee" ? (
+                      // Employee-specific fields
+                      <>
+                        {/* Age */}
+                        <FormField
+                          control={form.control}
+                          name="age"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">🎂</span>
+                                Age
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="e.g., 25" 
+                                  className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Gender */}
+                        <FormField
+                          control={form.control}
+                          name="gender"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">⚧</span>
+                                Gender
+                              </FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                                    <SelectValue placeholder="Select gender" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="male">Male</SelectItem>
+                                  <SelectItem value="female">Female</SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Education */}
+                        <FormField
+                          control={form.control}
+                          name="education"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">🎓</span>
+                                Education
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="e.g., High School, Bachelor's Degree" 
+                                  className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Experience */}
+                        <FormField
+                          control={form.control}
+                          name="experience"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">💼</span>
+                                Work Experience
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="e.g., 2 years, 5+ years" 
+                                  className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Skills */}
+                        <FormField
+                          control={form.control}
+                          name="skills"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">🛠️</span>
+                                Skills & Expertise
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="List your key skills, certifications, and expertise..." 
+                                  className="min-h-[100px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    ) : (
+                      // Employer-specific fields
+                      <>
+                        {/* Company/Individual Selector */}
+                        <FormField
+                          control={form.control}
+                          name="isIndividual"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">👥</span>
+                                Posting As
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary">
+                                    <SelectValue placeholder="Select posting type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="company">Company/Business</SelectItem>
+                                  <SelectItem value="individual">Individual Person</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Company Name */}
+                        <FormField
+                          control={form.control}
+                          name="companyName"
+                          render={({ field }) => {
+                            const isIndividualSelected = form.watch("isIndividual") === "individual";
+                            return (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                  <span className="text-primary">🏢</span>
+                                  {isIndividualSelected ? "Your Name" : "Company Name"}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder={isIndividualSelected ? "e.g., John Doe" : "e.g., ABC Restaurant"} 
+                                    className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
+                        />
+
+                        {/* Business Type */}
+                        <FormField
+                          control={form.control}
+                          name="businessType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">🏪</span>
+                                Business Type
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="e.g., Restaurant, Hotel, Household Services" 
+                                  className="h-11 text-base border-gray-300 focus:border-primary focus:ring-primary"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Requirements */}
+                        <FormField
+                          control={form.control}
+                          name="requirements"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium text-gray-700 flex items-center gap-2 mb-2">
+                                <span className="text-primary">📋</span>
+                                Specific Requirements
+                              </FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Describe specific requirements, qualifications, or preferences..." 
+                                  className="min-h-[100px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Additional Details */}
+                <FormField
+                  control={form.control}
+                  name="details"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          {postType === "employer" ? (
+                            <span className="text-primary">📋</span>
+                          ) : (
+                            <span className="text-primary">👤</span>
+                          )}
+                        </div>
+                        {postType === "employer" ? "Additional Job Details" : "Additional Personal Details"}
+                        <span className="text-red-500 ml-1">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={
+                            postType === "employer" 
+                              ? "Job responsibilities, work environment, company culture, benefits..." 
+                              : "Personal achievements, career goals, availability, references..."
+                          } 
+                          className="min-h-[150px] text-base border-gray-300 focus:border-primary focus:ring-primary resize-none"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Photo Upload */}
+                <FormField
+                  control={form.control}
+                  name="photo"
+                  render={({ field: { onChange, ref } }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <span className="text-primary">📷</span>
+                        </div>
+                        {postType === "employer" ? "Job Photo" : "Professional Photo"}
+                        <span className="text-muted-foreground ml-2">
+                          {postType === "employee" ? "(Required)" : "(Optional)"}
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            onChange(file);
+                          }}
+                          ref={ref}
+                          required={postType === "employee"}
+                          className="text-base border-gray-300 focus:border-primary focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Form Actions */}
                 <div className="flex justify-between items-center pt-6 border-t border-gray-200">
                   <Button
